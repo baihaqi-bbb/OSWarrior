@@ -357,32 +357,97 @@ document.addEventListener("DOMContentLoaded", () => {
   const changeAvatarBtn = document.getElementById("change-avatar");
   if (changeAvatarBtn) {
     changeAvatarBtn.addEventListener("click", () => {
-      const avatars = [
-        "image/default-profile.png",
-        "image/avatar1.png", 
-        "image/avatar2.png",
-        "image/avatar3.png"
-      ];
-      const current = document.getElementById("profile-img").src;
-      const currentIndex = avatars.findIndex(av => current.includes(av.split('/').pop()));
-      const nextIndex = (currentIndex + 1) % avatars.length;
-      document.getElementById("profile-img").src = avatars[nextIndex];
-      localStorage.setItem("avatar", avatars[nextIndex]);
+      const modal = document.getElementById("modal-change-avatar");
+      const currentSrc = document.getElementById("profile-img").src;
+      const input = document.getElementById("input-avatar-url");
+      
+      if (modal && input) {
+        input.value = currentSrc;
+        modal.style.display = "block";
+      }
+    });
+  }
+  
+  // Avatar modal save
+  const saveAvatarBtn = document.getElementById("save-avatar-btn");
+  if (saveAvatarBtn) {
+    saveAvatarBtn.addEventListener("click", () => {
+      const input = document.getElementById("input-avatar-url");
+      const modal = document.getElementById("modal-change-avatar");
+      
+      if (input && input.value.trim()) {
+        const newAvatarUrl = input.value.trim();
+        const profileImg = document.getElementById("profile-img");
+        
+        if (profileImg) {
+          profileImg.src = newAvatarUrl;
+          localStorage.setItem("avatar", newAvatarUrl);
+        }
+        
+        if (modal) modal.style.display = "none";
+      } else {
+        alert("Please enter a valid image URL");
+      }
+    });
+  }
+  
+  // Avatar modal cancel
+  const cancelAvatarBtn = document.getElementById("cancel-avatar-btn");
+  if (cancelAvatarBtn) {
+    cancelAvatarBtn.addEventListener("click", () => {
+      const modal = document.getElementById("modal-change-avatar");
+      if (modal) modal.style.display = "none";
     });
   }
   
   const editNameBtn = document.getElementById("edit-name");
   if (editNameBtn) {
     editNameBtn.addEventListener("click", () => {
-      const newName = prompt("Enter new display name:", document.getElementById("username-navbar").textContent);
-      if (newName && newName.trim()) {
-        const trimmedName = newName.trim();
-        document.getElementById("username-navbar").textContent = trimmedName;
-        document.getElementById("username").textContent = trimmedName;
-        const playerName = document.getElementById("player-name");
-        if (playerName) playerName.textContent = trimmedName + " 👑";
-        localStorage.setItem("displayName", trimmedName);
+      const modal = document.getElementById("modal-edit-name");
+      const currentName = document.getElementById("username-navbar").textContent;
+      const input = document.getElementById("input-new-name");
+      
+      if (modal && input) {
+        input.value = currentName;
+        modal.style.display = "block";
       }
+    });
+  }
+  
+  // Name modal save
+  const saveNameBtn = document.getElementById("save-name-btn");
+  if (saveNameBtn) {
+    saveNameBtn.addEventListener("click", () => {
+      const input = document.getElementById("input-new-name");
+      const modal = document.getElementById("modal-edit-name");
+      
+      if (input && input.value.trim()) {
+        const newName = input.value.trim();
+        
+        // Update all name displays
+        const usernameNavbar = document.getElementById("username-navbar");
+        const username = document.getElementById("username");
+        const playerName = document.getElementById("player-name");
+        
+        if (usernameNavbar) usernameNavbar.textContent = newName;
+        if (username) username.textContent = newName;
+        if (playerName) playerName.textContent = newName + " 👑";
+        
+        localStorage.setItem("displayName", newName);
+        
+        if (modal) modal.style.display = "none";
+      } else {
+        alert("Please enter a valid name");
+      }
+    });
+  }
+  
+  // Name modal cancel
+  const cancelNameBtn = document.getElementById("cancel-name-btn");
+  if (cancelNameBtn) {
+    cancelNameBtn.addEventListener("click", () => {
+      const modal = document.getElementById("modal-edit-name");
+      if (modal) modal.style.display = "none";
     });
   }
   
@@ -421,6 +486,19 @@ document.addEventListener("DOMContentLoaded", () => {
     if (username) username.textContent = savedName;
     if (playerName) playerName.textContent = savedName + " 👑";
   }
+  
+  // Close modals when clicking outside
+  window.addEventListener("click", (event) => {
+    const nameModal = document.getElementById("modal-edit-name");
+    const avatarModal = document.getElementById("modal-change-avatar");
+    
+    if (event.target === nameModal) {
+      nameModal.style.display = "none";
+    }
+    if (event.target === avatarModal) {
+      avatarModal.style.display = "none";
+    }
+  });
   
   loadTop3();
   retriggerCardAnimations(60);

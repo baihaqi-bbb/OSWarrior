@@ -559,3 +559,77 @@ body.dark-mode a {
 }
 .btn-action:hover { background: #7f00ff; color: #fff; }
 .btn-action.btn-cancel:hover { background: #ff0066; color: #fff; }
+
+/* ==========================================================
+   DARK THEME SUPPORT
+   ========================================================== */
+body.home-user.dark-theme {
+  background: 
+    linear-gradient(rgba(10,10,20,0.9), rgba(5,5,15,0.9)),
+    url("https://wallpaperbat.com/img/58270849-neon-laser-tag-battle-wallpaper-hd.png")
+    no-repeat center center fixed !important;
+  background-size: cover !important;
+  color: #e0e0e0 !important;
+}
+
+body.home-user.dark-theme .navbar {
+  background: rgba(15, 15, 25, 0.95);
+  border-bottom: 1px solid rgba(100, 100, 120, 0.3);
+}
+
+body.home-user.dark-theme .card {
+  background: rgba(20, 20, 35, 0.8);
+  border: 1px solid rgba(100, 100, 120, 0.2);
+  color: #e0e0e0;
+}
+
+body.home-user.dark-theme .xp-bar {
+  background: rgba(40, 40, 60, 0.6);
+}
+
+body.home-user.dark-theme .xp-progress {
+  background: linear-gradient(90deg, #4a00e0, #8e2de2);
+}
+
+body.home-user.dark-theme .top3-card {
+  background: rgba(25, 25, 40, 0.9);
+  border: 1px solid rgba(100, 100, 120, 0.3);
+}
+
+body.home-user.dark-theme .profile-dropdown {
+  background: rgba(15, 15, 25, 0.95);
+  border: 1px solid rgba(100, 100, 120, 0.3);
+}
+
+body.home-user.dark-theme .profile-dropdown a,
+body.home-user.dark-theme .profile-dropdown button {
+  color: #e0e0e0;
+  background: transparent;
+}
+
+body.home-user.dark-theme .profile-dropdown a:hover,
+body.home-user.dark-theme .profile-dropdown button:hover {
+  background: rgba(100, 100, 120, 0.2);
+}
+
+body.home-user.dark-theme .settings-title {
+  color: #b0b0c0;
+}
+
+/* Modal dark theme */
+body.home-user.dark-theme .modal-content {
+  background: rgba(20, 20, 35, 0.95);
+  border: 1px solid rgba(100, 100, 120, 0.3);
+  color: #e0e0e0;
+}
+
+body.home-user.dark-theme .modal-content input {
+  background: rgba(40, 40, 60, 0.8);
+  border: 1px solid rgba(100, 100, 120, 0.4);
+  color: #e0e0e0;
+}
+
+body.home-user.dark-theme .btn-action {
+  background: rgba(100, 100, 120, 0.3);
+  color: #e0e0e0;
+}
