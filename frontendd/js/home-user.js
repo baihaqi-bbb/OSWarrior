@@ -269,9 +269,14 @@ onAuthStateChanged(auth, async (user) => {
       if (Object.keys(updates).length) await setDoc(userRef, updates, { merge: true });
     } catch (e) { console.warn("ensure user doc failed:", e); }
 
-    const displayName = user.displayName || (await getDoc(userRef)).data()?.name || "Warrior";
+    const displayName = user.displayName || user.email?.split('@')[0] || "Aqi Mi";
     const usernameWelcome = document.getElementById("username");
     if (usernameWelcome) usernameWelcome.textContent = displayName;
+    
+    // Update navbar username
+    const usernameNavbar = document.getElementById("username-navbar");
+    if (usernameNavbar) usernameNavbar.textContent = displayName;
+    
     const playerName = document.getElementById("player-name");
     if (playerName) playerName.textContent = displayName + " 👑";
 
@@ -335,6 +340,84 @@ function setupProfileDropdown() {
 document.addEventListener("DOMContentLoaded", () => {
   ensurePublicProfileModal();
   setupProfileDropdown(); // <-- added
+  
+  // Setup dropdown button functions
+  const toggleThemeBtn = document.getElementById("toggle-theme");
+  if (toggleThemeBtn) {
+    toggleThemeBtn.addEventListener("click", () => {
+      document.body.classList.toggle("dark-theme");
+      localStorage.setItem("theme", document.body.classList.contains("dark-theme") ? "dark" : "light");
+    });
+  }
+  
+  const changeAvatarBtn = document.getElementById("change-avatar");
+  if (changeAvatarBtn) {
+    changeAvatarBtn.addEventListener("click", () => {
+      const avatars = [
+        "image/default-profile.png",
+        "image/avatar1.png", 
+        "image/avatar2.png",
+        "image/avatar3.png"
+      ];
+      const current = document.getElementById("profile-img").src;
+      const currentIndex = avatars.findIndex(av => current.includes(av.split('/').pop()));
+      const nextIndex = (currentIndex + 1) % avatars.length;
+      document.getElementById("profile-img").src = avatars[nextIndex];
+      localStorage.setItem("avatar", avatars[nextIndex]);
+    });
+  }
+  
+  const editNameBtn = document.getElementById("edit-name");
+  if (editNameBtn) {
+    editNameBtn.addEventListener("click", () => {
+      const newName = prompt("Enter new display name:", document.getElementById("username-navbar").textContent);
+      if (newName && newName.trim()) {
+        const trimmedName = newName.trim();
+        document.getElementById("username-navbar").textContent = trimmedName;
+        document.getElementById("username").textContent = trimmedName;
+        const playerName = document.getElementById("player-name");
+        if (playerName) playerName.textContent = trimmedName + " 👑";
+        localStorage.setItem("displayName", trimmedName);
+      }
+    });
+  }
+  
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+        localStorage.clear();
+        window.location.href = "index.html";
+      } catch (error) {
+        console.error("Logout error:", error);
+        alert("Logout failed: " + error.message);
+      }
+    });
+  }
+  
+  // Load saved preferences
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "dark") {
+    document.body.classList.add("dark-theme");
+  }
+  
+  const savedAvatar = localStorage.getItem("avatar");
+  if (savedAvatar) {
+    const profileImg = document.getElementById("profile-img");
+    if (profileImg) profileImg.src = savedAvatar;
+  }
+  
+  const savedName = localStorage.getItem("displayName");
+  if (savedName) {
+    const usernameNavbar = document.getElementById("username-navbar");
+    const username = document.getElementById("username");
+    const playerName = document.getElementById("player-name");
+    if (usernameNavbar) usernameNavbar.textContent = savedName;
+    if (username) username.textContent = savedName;
+    if (playerName) playerName.textContent = savedName + " 👑";
+  }
+  
   loadTop3();
   retriggerCardAnimations(60);
 });
