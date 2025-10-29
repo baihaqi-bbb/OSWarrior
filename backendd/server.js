@@ -564,7 +564,11 @@ app.post("/api/week/:week/submit", async (req, res) => {
 
     try {
       const xpGain = (Number(score) || 0) * 10 + ((Number(score) === Number(total)) ? 20 : 0);
+      console.log(`XP Calculation: score=${score}, total=${total}, xpGain=${xpGain}`);
+      console.log(`useFirestore=${useFirestore}, userId=${userId}`);
+      
       if (useFirestore && db) {
+        console.log("Using Firestore for XP update");
         const userRef = db.collection("users").doc(String(userId));
         await db.runTransaction(async (tx) => {
           const snap = await tx.get(userRef);
@@ -579,20 +583,42 @@ app.post("/api/week/:week/submit", async (req, res) => {
             lastXpAt: new Date().toISOString()
           }, { merge: true });
         });
+        console.log(`Firestore XP updated for user ${userId}`);
       } else {
+        console.log("Using JSON file for XP update");
         const usersPath = path.join(process.cwd(), "data", "users.json");
+        console.log("Users file path:", usersPath);
+        
         let users = {};
         if (fs.existsSync(usersPath)) {
-          try { users = JSON.parse(fs.readFileSync(usersPath, "utf8") || "{}"); } catch { users = {}; }
+          try { 
+            users = JSON.parse(fs.readFileSync(usersPath, "utf8") || "{}"); 
+            console.log("Current users data:", Object.keys(users));
+          } catch { 
+            console.log("Failed to parse users.json, using empty object");
+            users = {}; 
+          }
+        } else {
+          console.log("users.json doesn't exist, creating new");
         }
+        
         const uid = String(userId);
         const cur = users[uid] || { xp: 0, level: 1, displayName: resultDoc.userDisplayName || resultDoc.username || `User-${uid.slice(0,6)}` };
-        cur.xp = Number(cur.xp || 0) + xpGain;
+        const oldXp = Number(cur.xp || 0);
+        cur.xp = oldXp + xpGain;
         cur.level = Math.floor(cur.xp / 100) + 1;
         cur.displayName = resultDoc.userDisplayName || resultDoc.username || cur.displayName;
         cur.email = resultDoc.userEmail || cur.email || null;
         users[uid] = cur;
-        try { fs.writeFileSync(usersPath, JSON.stringify(users, null, 2), "utf8"); } catch(e){ console.warn("save users.json failed", e?.message || e); }
+        
+        console.log(`XP Update: ${uid} ${oldXp} -> ${cur.xp} (gained ${xpGain})`);
+        
+        try { 
+          fs.writeFileSync(usersPath, JSON.stringify(users, null, 2), "utf8"); 
+          console.log("Successfully saved users.json");
+        } catch(e){ 
+          console.warn("save users.json failed", e?.message || e); 
+        }
       }
     } catch (e) {
       console.warn("award xp failed:", e?.message || e);
