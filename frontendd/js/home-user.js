@@ -153,27 +153,31 @@ function updateXPBar(xp = 0, maxXP = 100, level = 1, name = 'Warrior') {
 }
 function loadUserXP(uid, displayName) {
   if (!uid) return;
-  const userRef = doc(db, "users", uid);
-  try {
-    onSnapshot(userRef, snap => {
-      const data = snap.exists() ? snap.data() : null;
-      const xp = Number(data?.xp || 0);
-      const level = Number(data?.level || Math.floor(xp / 100) + 1);
-      const maxForLevel = Math.max(100, level * 100);
-      const name = data?.name || data?.displayName || displayName || "Warrior";
-      updateXPBar(xp, maxForLevel, level, name);
-    });
-  } catch (e) {
-    console.warn("loadUserXP failed:", e);
-    // fallback one-time read
-    getDoc(userRef).then(snap => {
-      const data = snap.exists() ? snap.data() : null;
-      const xp = Number(data?.xp || 0);
-      const level = Number(data?.level || Math.floor(xp / 100) + 1);
-      const name = data?.name || data?.displayName || displayName || "Warrior";
-      updateXPBar(xp, Math.max(100, level * 100), level, name);
-    }).catch(() => {});
-  }
+  
+  // Load XP from backend API instead of Firestore
+  fetch(`${API_BASE}/api/user/${encodeURIComponent(uid)}`, {
+    credentials: 'include'
+  })
+  .then(res => {
+    if (res.ok) {
+      return res.json();
+    } else {
+      throw new Error(`API error: ${res.status}`);
+    }
+  })
+  .then(userData => {
+    console.log("User XP data from backend:", userData);
+    const xp = Number(userData.xp || 0);
+    const level = Number(userData.level || Math.floor(xp / 100) + 1);
+    const maxForLevel = Math.max(100, level * 100);
+    const name = userData.name || userData.displayName || displayName || "Aqi Mi";
+    updateXPBar(xp, maxForLevel, level, name);
+  })
+  .catch(err => {
+    console.warn("loadUserXP failed:", err);
+    // Fallback to default values
+    updateXPBar(0, 100, 1, displayName || "Aqi Mi");
+  });
 }
 
 // Top3 rendering

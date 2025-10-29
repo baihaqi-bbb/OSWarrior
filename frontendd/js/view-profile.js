@@ -18,6 +18,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// Backend API URL
+const API_BASE = "https://oswarrior-backend.onrender.com";
+
 // ===== Element UI =====
 const profileName = document.getElementById('profile-name');
 const profileEmail = document.getElementById('profile-email');
@@ -50,23 +53,41 @@ onAuthStateChanged(auth, async (user) => {
   currentUser = user;
 
   // Update UI dari Firebase Auth
-  profileName.textContent = user.displayName || "Nama Tidak Ditetapkan";
+  profileName.textContent = user.displayName || user.email?.split('@')[0] || "Aqi Mi";
   profileEmail.textContent = user.email || "Tiada Email";
   profilePicture.src = user.photoURL || "image/default-profile.png";
 
-  // Ambil data level, XP, achievements dari Firestore
+  // Get data dari backend API instead of Firestore
   try {
-    const docRef = doc(db, "users", user.uid);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      profileLevel.textContent = data.level || 0;
-      profileXP.textContent = data.xp || 0;
-      profileAchievements.textContent = data.achievements?.length || 0;
+    const res = await fetch(`${API_BASE}/api/user/${encodeURIComponent(user.uid)}`, {
+      credentials: 'include'
+    });
+    
+    if (res.ok) {
+      const userData = await res.json();
+      console.log("User data from backend:", userData);
+      
+      profileLevel.textContent = userData.level || 1;
+      profileXP.textContent = userData.xp || 0;
+      profileAchievements.textContent = userData.achievements?.length || 0;
+      
+      // Update name if available from backend
+      if (userData.name) {
+        profileName.textContent = userData.name;
+      }
+    } else {
+      console.log("User not found in backend, using defaults");
+      // Fallback values
+      profileLevel.textContent = 1;
+      profileXP.textContent = 0;
+      profileAchievements.textContent = 0;
     }
   } catch (err) {
-    console.error("Error ambil data Firestore:", err);
+    console.error("Error getting user data from backend:", err);
+    // Fallback values
+    profileLevel.textContent = 1;
+    profileXP.textContent = 0;
+    profileAchievements.textContent = 0;
   }
 });
 
