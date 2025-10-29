@@ -829,6 +829,116 @@ app.get("/api/top3", async (req, res) => {
   }
 });
 
+// Get single user by ID
+app.get("/api/user/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    let user = null;
+
+    if (useFirestore && db) {
+      const doc = await db.collection("users").doc(userId).get();
+      if (doc.exists) {
+        const data = doc.data();
+        user = {
+          userId: doc.id,
+          name: data.name || data.displayName || data.username || `User-${String(doc.id).slice(0,6)}`,
+          email: data.email || null,
+          photoURL: data.photoURL || data.profileURL || data.avatar || null,
+          xp: Number(data.xp || 0),
+          level: Number(data.level || Math.floor((data.xp || 0) / 100) + 1)
+        };
+      }
+    } else {
+      const usersPath = path.join(process.cwd(), "data", "users.json");
+      if (fs.existsSync(usersPath)) {
+        try {
+          const usersObj = JSON.parse(fs.readFileSync(usersPath, "utf8") || "{}");
+          const userData = usersObj[userId];
+          if (userData) {
+            user = {
+              userId,
+              name: userData.displayName || userData.name || userData.username || `User-${String(userId).slice(0,6)}`,
+              email: userData.email || null,
+              photoURL: userData.photoURL || userData.avatar || null,
+              xp: Number(userData.xp || 0),
+              level: Number(userData.level || Math.floor((userData.xp || 0) / 100) + 1)
+            };
+          }
+        } catch (err) {
+          console.error("Error reading users.json:", err);
+        }
+      }
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    return res.json(user);
+  } catch (err) {
+    console.error("/api/user/:userId error:", err);
+    return res.status(500).json({ error: String(err) });
+  }
+});
+
+// Get users (with query support)
+app.get("/api/users", async (req, res) => {
+  try {
+    const { id } = req.query;
+    
+    // If specific ID requested, redirect to single user endpoint
+    if (id) {
+      return res.redirect(`/api/user/${id}`);
+    }
+
+    let users = [];
+
+    if (useFirestore && db) {
+      const snap = await db.collection("users").orderBy("xp", "desc").get();
+      snap.forEach(doc => {
+        const data = doc.data();
+        users.push({
+          userId: doc.id,
+          name: data.name || data.displayName || data.username || `User-${String(doc.id).slice(0,6)}`,
+          email: data.email || null,
+          photoURL: data.photoURL || data.profileURL || data.avatar || null,
+          xp: Number(data.xp || 0),
+          level: Number(data.level || Math.floor((data.xp || 0) / 100) + 1)
+        });
+      });
+    } else {
+      const usersPath = path.join(process.cwd(), "data", "users.json");
+      if (fs.existsSync(usersPath)) {
+        try {
+          const usersObj = JSON.parse(fs.readFileSync(usersPath, "utf8") || "{}");
+          users = Object.entries(usersObj)
+            .map(([uid, userData]) => ({
+              userId: uid,
+              name: userData.displayName || userData.name || userData.username || `User-${String(uid).slice(0,6)}`,
+              email: userData.email || null,
+              photoURL: userData.photoURL || userData.avatar || null,
+              xp: Number(userData.xp || 0),
+              level: Number(userData.level || Math.floor((userData.xp || 0) / 100) + 1)
+            }))
+            .sort((a, b) => b.xp - a.xp);
+        } catch (err) {
+          console.error("Error reading users.json:", err);
+        }
+      }
+    }
+
+    return res.json({ users });
+  } catch (err) {
+    console.error("/api/users error:", err);
+    return res.status(500).json({ error: String(err) });
+  }
+});
+
+// Alternative endpoint for users by ID
+app.get("/api/users/:userId", async (req, res) => {
+  return res.redirect(`/api/user/${req.params.userId}`);
+});
+
 app.get("/api/quizzes", async (req, res) => {
   try {
     let arr = [];
