@@ -1,0 +1,23 @@
+{
+  "demo-user-1": {
+    "displayName": "Ahmad Ali",
+    "email": "ahmad@example.com",
+    "xp": 250,
+    "level": 3,
+    "photoURL": null
+  },
+  "demo-user-2": {
+    "displayName": "Siti Sarah",
+    "email": "siti@example.com", 
+    "xp": 180,
+    "level": 2,
+    "photoURL": null
+  },
+  "demo-user-3": {
+    "displayName": "Rahman Ibrahim",
+    "email": "rahman@example.com",
+    "xp": 120,
+    "level": 2,
+    "photoURL": null
+  }
+}
