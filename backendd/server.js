@@ -11,7 +11,7 @@ dotenv.config();
 const PORT = process.env.PORT || 4000;
 const app = express();
 
-// CORS: reflect origin and allow credentials for dev hosts
+// CORS: reflect origin and allow credentials for dev and production hosts
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
@@ -21,7 +21,10 @@ const corsOptions = {
       'http://127.0.0.1:5173',
       'http://localhost:5173',
       'http://localhost:4000',
-      'http://127.0.0.1:4000'
+      'http://127.0.0.1:4000',
+      'https://oswarrior.com',
+      'https://www.oswarrior.com',
+      'https://frontendd-zne8.onrender.com'
     ];
     if (allowed.includes(origin) || /^(https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?)$/.test(origin)) {
       return callback(null, true);
