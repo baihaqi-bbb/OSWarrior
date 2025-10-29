@@ -749,9 +749,22 @@ app.get("/api/top3", async (req, res) => {
       }
     } else {
       const usersPath = path.join(process.cwd(), "data", "users.json");
+      console.log("Looking for users.json at:", usersPath);
+      console.log("File exists:", fs.existsSync(usersPath));
+      console.log("Current working directory:", process.cwd());
+      
       let usersObj = {};
       if (fs.existsSync(usersPath)) {
-        try { usersObj = JSON.parse(fs.readFileSync(usersPath, "utf8") || "{}"); } catch { usersObj = {}; }
+        try { 
+          const fileContent = fs.readFileSync(usersPath, "utf8");
+          console.log("File content:", fileContent);
+          usersObj = JSON.parse(fileContent || "{}"); 
+        } catch (err) { 
+          console.error("Error parsing users.json:", err);
+          usersObj = {}; 
+        }
+      } else {
+        console.log("users.json file not found, using empty object");
       }
       top = Object.entries(usersObj)
         .map(([uid, u]) => ({
