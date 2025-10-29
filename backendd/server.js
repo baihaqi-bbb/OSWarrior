@@ -1,0 +1,968 @@
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import multer from "multer";
+import fs from "fs";
+import path from "path";
+import admin from "firebase-admin";
+
+dotenv.config();
+
+const PORT = process.env.PORT || 4000;
+const app = express();
+
+// CORS: reflect origin and allow credentials for dev hosts
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const allowed = [
+      'http://127.0.0.1:5500',
+      'http://localhost:5500',
+      'http://127.0.0.1:5173',
+      'http://localhost:5173',
+      'http://localhost:4000',
+      'http://127.0.0.1:4000'
+    ];
+    if (allowed.includes(origin) || /^(https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?)$/.test(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'), false);
+  },
+  credentials: true,
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization','X-Requested-With','X-User-Id','X-Request-Id']
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+app.use(express.json());
+
+// memoryStorage for uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024 } // 20MB
+});
+
+// try initialize Firestore using service account (env GOOGLE_APPLICATION_CREDENTIALS or known filenames)
+let useFirestore = false;
+let db = null;
+try {
+  const envPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+  const candidatePaths = [
+    envPath,
+    path.join(process.cwd(), "firebase-service-account.json"),
+    path.join(process.cwd(), "serviceAccountKey.json"),
+    path.join(process.cwd(), "service-account.json")
+  ].filter(Boolean);
+  let found = null;
+  for (const p of candidatePaths) {
+    if (p && fs.existsSync(p)) { found = p; break; }
+  }
+  if (found) {
+    const sa = JSON.parse(fs.readFileSync(found, "utf8"));
+    admin.initializeApp({ credential: admin.credential.cert(sa) });
+    db = admin.firestore();
+    useFirestore = true;
+    console.log("✅ Firebase Admin initialized — using Firestore (", found, ")");
+  } else {
+    try {
+      admin.initializeApp();
+      db = admin.firestore();
+      useFirestore = true;
+      console.log("✅ Firebase Admin initialized — using application default credentials");
+    } catch (e) {
+      console.log("⚠️ Firebase credentials not found — using local DB");
+      useFirestore = false;
+    }
+  }
+} catch (e) {
+  console.warn("⚠️ Firebase init failed — falling back to local DB:", e?.message || e);
+  useFirestore = false;
+}
+
+// ensure local data folder
+const dataDir = path.join(process.cwd(), "data");
+if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+const localDbPath = path.join(dataDir, "quizzes.json");
+if (!fs.existsSync(localDbPath)) fs.writeFileSync(localDbPath, "[]", "utf8");
+
+function readLocalQuizzes() {
+  try { return JSON.parse(fs.readFileSync(localDbPath, "utf8") || "[]"); } catch { return []; }
+}
+function saveLocalQuiz(q) {
+  const arr = readLocalQuizzes();
+  const id = String(Date.now());
+  arr.push({ id, ...q });
+  fs.writeFileSync(localDbPath, JSON.stringify(arr, null, 2), "utf8");
+  return id;
+}
+
+async function extractTextFromBuffer(file) {
+  if (!file || !file.buffer) throw new Error("No uploaded file buffer");
+  const buffer = file.buffer;
+  const name = (file.originalname || "").toLowerCase();
+  const ext = path.extname(name).replace(".", "");
+
+  if (ext === "pdf") {
+    try {
+      const mod = await import("pdf-parse");
+      const pdfParse = mod?.default || mod;
+      const data = await pdfParse(buffer);
+      return String(data.text || "").trim();
+    } catch (err) {
+      console.warn("pdf-parse failed, fallback to utf8:", err?.message || err);
+      return buffer.toString("utf8");
+    }
+  }
+
+  if (ext === "docx" || ext === "doc") {
+    try {
+      const mammothMod = await import("mammoth");
+      const mammoth = mammothMod?.default || mammothMod;
+      const res = await mammoth.extractRawText({ buffer });
+      return String(res.value || "").trim();
+    } catch (err) {
+      console.warn("mammoth failed, fallback to utf8:", err?.message || err);
+      return buffer.toString("utf8");
+    }
+  }
+
+  return buffer.toString("utf8").trim();
+}
+
+const OPENAI_KEY = process.env.OPENAI_API_KEY || "";
+async function callOpenAI(prompt) {
+  if (!OPENAI_KEY) throw new Error("OPENAI_API_KEY not set");
+  const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${OPENAI_KEY}`
+    },
+    body: JSON.stringify({
+      model: "gpt-4",
+      messages: [
+        { role: "system", content: "You are an assistant that returns STRICT JSON only." },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.2,
+      max_tokens: 1500
+    })
+  });
+  if (!resp.ok) {
+    const t = await resp.text();
+    throw new Error(`OpenAI error ${resp.status}: ${t}`);
+  }
+  const j = await resp.json();
+  return j.choices?.[0]?.message?.content || "";
+}
+
+// routes
+app.get("/", (req, res) => res.send("Server OK"));
+app.get("/api/health", (req, res) => res.json({ ok: true, port: PORT, storage: useFirestore ? "firestore" : "local" }));
+
+app.post("/api/upload-notes", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "No file uploaded (use field 'file')" });
+
+    let weeks = null;
+    if (req.body?.weeks) {
+      try {
+        weeks = JSON.parse(req.body.weeks);
+        if (!Array.isArray(weeks)) weeks = [String(weeks)];
+      } catch {
+        weeks = String(req.body.weeks).split(",").map(s => s.trim()).filter(Boolean);
+        if (!weeks.length) weeks = null;
+      }
+    } else if (req.body?.week) {
+      weeks = [String(req.body.week)];
+    }
+
+    let extractedText = "";
+    try {
+      extractedText = await extractTextFromBuffer(req.file);
+    } catch (e) {
+      console.error("extract error:", e);
+      return res.status(500).json({ error: "Failed to extract text: " + String(e.message) });
+    }
+
+    let parsed = null;
+    if (OPENAI_KEY) {
+      const prompt = `
+Given the lecture notes below, generate STRICT JSON ONLY with this exact structure and nothing else:
+{
+  "title": "short title",
+  "sourcePreview": "first 200 chars",
+  "questions": [
+    { "question":"...","type":"mcq","options":["opt1","opt2","opt3","opt4"], "answerIndex": 0 }
+  ]
+}
+Produce exactly 5 questions. Each question must be type "mcq" and have exactly 4 options. answerIndex must be the index (0-3) of the correct option.
+Notes:
+\`\`\`
+${extractedText.slice(0, 4000)}
+\`\`\`
+`;
+      let modelOutput = "";
+      try {
+        modelOutput = await callOpenAI(prompt);
+        const m = modelOutput.match(/\{[\s\S]*\}$/m);
+        const jsonText = m ? m[0] : modelOutput;
+        parsed = JSON.parse(jsonText);
+      } catch (e) {
+        console.error("OpenAI/parse failed:", e, "raw:", modelOutput);
+        return res.status(500).json({ error: "OpenAI or parse failed: " + String(e.message) });
+      }
+    } else {
+      const lines = extractedText.split(/\r?\n/).filter(Boolean);
+      parsed = {
+        title: `Quiz from ${req.file.originalname || "notes"}`,
+        sourcePreview: extractedText.slice(0, 200),
+        questions: Array.from({length:5}).map((_,i)=>{
+          const stem = lines[i] || `Placeholder question ${i+1}`;
+          return {
+            question: stem.slice(0,300) + "?",
+            type: "mcq",
+            options: [`A ${i+1}`, `B ${i+1}`, `C ${i+1}`, `D ${i+1}`],
+            answerIndex: 0
+          };
+        })
+      };
+    }
+
+    async function expandShortOptions(questionText, shortOptions) {
+      if (!OPENAI_KEY) return null;
+      const prompt = `
+You are given a multiple choice question and a set of 1-letter choice labels (e.g. ["A","B","C","D"]) or similar short tokens.
+Produce STRICT JSON only: {"options":["full option A text","full option B text","full option C text","full option D text"], "answerIndex": <0-3>}
+Make options plausible, distinct, and relevant to the question. Use the original correct label if possible.
+Question:
+${questionText}
+Short labels: ${JSON.stringify(shortOptions)}
+`;
+      try {
+        const out = await callOpenAI(prompt);
+        const m = out.match(/\{[\s\S]*\}/m);
+        const jsonText = m ? m[0] : out;
+        const parsed = JSON.parse(jsonText);
+        if (Array.isArray(parsed.options) && parsed.options.length === 4 && Number.isFinite(parsed.answerIndex)) {
+          return { options: parsed.options.map(String), answerIndex: Number(parsed.answerIndex) };
+        }
+      } catch (e) {
+        console.warn("expandShortOptions failed:", e?.message || e);
+      }
+      return null;
+    }
+
+    const normalizedQuestions = [];
+    const rawQuestions = Array.isArray(parsed.questions) ? parsed.questions : [];
+    for (let idx = 0; idx < Math.min(5, rawQuestions.length); idx++) {
+      const q = rawQuestions[idx] || {};
+      const qq = {};
+      qq.question = String(q.question || (`Question ${idx+1}`)).trim();
+      qq.type = "mcq";
+
+      let opts = Array.isArray(q.options) ? q.options.map(s => String(s||"").trim()) : [];
+      const allSingleLetter = opts.length && opts.every(o => /^[A-Za-z]{1,2}$/.test(o));
+      if (allSingleLetter) {
+        const expanded = await expandShortOptions(qq.question, opts).catch(()=>null);
+        if (expanded) {
+          opts = expanded.options;
+          qq.answerIndex = expanded.answerIndex;
+        }
+      }
+
+      opts = opts.filter(Boolean).slice(0,4);
+      while (opts.length < 4) opts.push(`Option ${opts.length+1}`);
+      qq.options = opts;
+
+      if (typeof qq.answerIndex !== "number") {
+        let ai = (q && Number.isFinite(Number(q.answerIndex))) ? Number(q.answerIndex) : null;
+        if (ai === null && q && q.answer) {
+          const found = opts.findIndex(o => o.trim() === String(q.answer).trim());
+          ai = found >= 0 ? found : 0;
+        }
+        if (ai === null) ai = 0;
+        if (ai < 0 || ai > 3) ai = 0;
+        qq.answerIndex = ai;
+      }
+
+      normalizedQuestions.push(qq);
+    }
+
+    while (normalizedQuestions.length < 5) {
+      const i = normalizedQuestions.length + 1;
+      normalizedQuestions.push({ question: `Extra question ${i}?`, type: "mcq", options: ["A","B","C","D"], answerIndex: 0 });
+    }
+
+    const quizDoc = {
+      title: parsed.title || `Quiz from ${req.file.originalname || "notes"}`,
+      sourcePreview: parsed.sourcePreview || extractedText.slice(0, 200),
+      questions: normalizedQuestions,
+      weeks: weeks || null,
+      sourceFileName: req.file.originalname || null,
+      createdAt: new Date().toISOString()
+    };
+
+    let quizId = null;
+    if (useFirestore && db) {
+      const docRef = await db.collection("quizzes").add(quizDoc);
+      quizId = docRef.id;
+    } else {
+      quizId = saveLocalQuiz(quizDoc);
+    }
+
+    return res.json({ ok: true, quizId, quiz: quizDoc });
+  } catch (err) {
+    console.error("upload error:", err);
+    return res.status(500).json({ error: String(err) });
+  }
+});
+
+// session store + quiz handlers (unchanged)
+const QUESTIONS_PER_QUIZ = 5;
+const activeQuizzes = {};
+
+function shuffle(array) {
+  return array
+    .map(v => ({ v, r: Math.random() }))
+    .sort((a, b) => a.r - b.r)
+    .map(x => x.v);
+}
+
+async function findQuizByWeekParam(weekParam) {
+  const w = String(weekParam || "").trim();
+  const maybeNum = Number(w);
+  const matches = [];
+
+  if (useFirestore && db) {
+    const snap = await db.collection("quizzes").where("published", "==", true).get();
+    snap.forEach(d => matches.push({ id: d.id, data: d.data() || {} }));
+  } else {
+    const p = path.join(process.cwd(), "data", "quizzes.json");
+    const arr = fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8") || "[]") : [];
+    arr.filter(q => q && q.published).forEach(q => matches.push({ id: q.id || q.quizId, data: q }));
+  }
+
+  if (!Number.isNaN(maybeNum) && maybeNum >= 1) {
+    const byNum = matches.find(x => Number(x.data.weekNumber) === maybeNum || Number(x.data.week) === maybeNum);
+    if (byNum) return byNum;
+  }
+
+  for (const m of matches) {
+    const wk = m.data.weekKey || m.data.week || m.data.weeks;
+    if (!wk) continue;
+    if (typeof wk === "string" && wk === w) return m;
+    if (typeof wk === "string") {
+      const mm = wk.match(/-(\d{1,2})$/);
+      if (mm && mm[1] === w) return m;
+    }
+    if (Array.isArray(wk)) {
+      if (wk.includes(w)) return m;
+      if (wk.find(x => String(x) === w)) return m;
+    }
+  }
+
+  return matches.length ? matches[0] : null;
+}
+
+app.get("/api/week/:week/take", async (req, res) => {
+  try {
+    const week = String(req.params.week);
+    if (!week) return res.status(400).json({ error: "Week required" });
+
+    const userId = req.query.userId ? String(req.query.userId) : `anon_${Math.random().toString(36).slice(2,8)}`;
+    const sessionKey = `${userId}_${week}`;
+
+    let quiz = null;
+    let quizId = null;
+
+    if (useFirestore && db) {
+      let snap = await db.collection("quizzes").where("published", "==", true).where("weeks", "array-contains", week).get();
+      if (!snap.empty) {
+        const docs = snap.docs;
+        const chosen = docs[Math.floor(Math.random() * docs.length)];
+        quizId = chosen.id;
+        quiz = chosen.data();
+      } else {
+        let snap2 = await db.collection("quizzes").where("published", "==", true).where("week", "==", week).get();
+        if (!snap2.empty) {
+          const docs = snap2.docs;
+          const chosen = docs[Math.floor(Math.random() * docs.length)];
+          quizId = chosen.id;
+          quiz = chosen.data();
+        }
+      }
+    } else {
+      const all = readLocalQuizzes();
+      const candidates = all.filter(q => {
+        if (!q || !q.published) return false;
+        if (Array.isArray(q.weeks)) return q.weeks.map(String).includes(week);
+        return String(q.week || q.weeks) === week;
+      });
+      if (candidates.length) {
+        const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+        quizId = chosen.id;
+        quiz = chosen;
+      }
+    }
+
+    if (!quiz) return res.status(404).json({ error: "No quizzes found for this week" });
+
+    const allQuestions = Array.isArray(quiz.questions) ? quiz.questions : [];
+    if (!allQuestions.length) return res.status(404).json({ error: "Quiz has no questions" });
+
+    const indices = allQuestions.map((_, i) => i);
+    const shuffled = shuffle(indices);
+    const pickCount = Math.min(QUESTIONS_PER_QUIZ, allQuestions.length);
+    const selected = shuffled.slice(0, pickCount);
+
+    const questions = selected.map(i => {
+      const q = allQuestions[i] || {};
+      let opts = Array.isArray(q.options) ? q.options.slice() : [];
+      if (!Array.isArray(opts) || opts.length === 0) opts = ["A","B","C","D"];
+      for (let a = opts.length - 1; a > 0; a--) {
+        const r = Math.floor(Math.random() * (a + 1));
+        [opts[a], opts[r]] = [opts[r], opts[a]];
+      }
+      return {
+        index: i,
+        question: q.question || "",
+        options: opts,
+        type: "mcq"
+      };
+    });
+
+    const correctAnswers = selected.map((i, idx) => {
+      const origQ = allQuestions[i] || {};
+      const origOptions = Array.isArray(origQ.options) ? origQ.options : null;
+      const origCorrectText = (origOptions && typeof origQ.answerIndex === "number") ? String(origOptions[origQ.answerIndex]) : null;
+      const returned = questions[idx];
+      if (returned && Array.isArray(returned.options) && origCorrectText !== null) {
+        const found = returned.options.find(o => String(o).trim() === String(origCorrectText).trim());
+        return found !== undefined ? String(found) : null;
+      }
+      return null;
+    });
+
+    activeQuizzes[sessionKey] = {
+      quizId,
+      indices: selected,
+      correctAnswers,
+      expiresAt: Date.now() + 15 * 60 * 1000
+    };
+
+    return res.json({ quizId, sessionKey, questions });
+  } catch (err) {
+    console.error("take quiz error:", err);
+    return res.status(500).json({ error: String(err) });
+  }
+});
+
+app.post("/api/week/:week/submit", async (req, res) => {
+  try {
+    const week = String(req.params.week);
+    const {
+      userId,
+      username,
+      displayName,
+      email,
+      userEmail,
+      answers,
+      quizId,
+      questionIndexes,
+      sessionKey: bodySessionKey
+    } = req.body || {};
+
+    if (!userId || !Array.isArray(answers)) return res.status(400).json({ error: "userId and answers array required" });
+
+    const sessionKey = bodySessionKey || `${userId}_${week}`;
+    let correctAnswers = null;
+
+    if (activeQuizzes[sessionKey] && Array.isArray(activeQuizzes[sessionKey].correctAnswers)) {
+      correctAnswers = activeQuizzes[sessionKey].correctAnswers;
+    } else {
+      let quizDoc = null;
+      if (useFirestore && db && quizId) {
+        const doc = await db.collection("quizzes").doc(String(quizId)).get();
+        if (doc.exists) quizDoc = doc.data();
+      } else if (quizId) {
+        const all = readLocalQuizzes();
+        quizDoc = all.find(q => String(q.id) === String(quizId)) || null;
+      }
+      if (quizDoc && Array.isArray(questionIndexes)) {
+        correctAnswers = questionIndexes.map(idx => {
+          const q = quizDoc.questions?.[idx];
+          if (!q) return null;
+          if (Array.isArray(q.options) && typeof q.answerIndex === "number") return String(q.options[q.answerIndex]);
+          return null;
+        });
+      }
+    }
+
+    if (!correctAnswers) return res.status(400).json({ error: "No correct answers available for this session (session expired or invalid quizId)" });
+
+    const total = Math.min(answers.length, correctAnswers.length);
+    let score = 0;
+    const details = [];
+
+    for (let i = 0; i < total; i++) {
+      const userAns = answers[i] == null ? null : String(answers[i]).trim();
+      const corr = correctAnswers[i] == null ? null : String(correctAnswers[i]).trim();
+      const correct = userAns && corr && userAns.toLowerCase() === corr.toLowerCase();
+      if (correct) score++;
+      details.push({ questionIndex: questionIndexes?.[i] ?? null, userAnswer: userAns, correctAnswer: corr, correct: !!correct });
+    }
+
+    const normalizedUsername =
+      (displayName && String(displayName).trim()) ||
+      (username && String(username).trim()) ||
+      (email && String(email).includes("@") ? String(email).split("@")[0] : null) ||
+      (userEmail && String(userEmail).includes("@") ? String(userEmail).split("@")[0] : null) ||
+      (userId ? `User-${String(userId).slice(0,6)}` : "Anonymous");
+
+    const resultDoc = {
+      userId,
+      username: normalizedUsername,
+      userDisplayName: displayName || null,
+      userEmail: email || userEmail || null,
+      quizId: quizId || null,
+      week,
+      score,
+      total,
+      details,
+      createdAt: new Date().toISOString()
+    };
+
+    let resultId = null;
+    if (useFirestore && db) {
+      const rRef = await db.collection("results").add(resultDoc);
+      resultId = rRef.id;
+    } else {
+      const resultsPath = path.join(process.cwd(), "data", "results.json");
+      try {
+        let arr = [];
+        if (fs.existsSync(resultsPath)) arr = JSON.parse(fs.readFileSync(resultsPath, "utf8") || "[]");
+        const id = String(Date.now());
+        arr.push({ id, ...resultDoc });
+        fs.writeFileSync(resultsPath, JSON.stringify(arr, null, 2), "utf8");
+        resultId = id;
+      } catch (e) {
+        console.warn("Failed to save local result:", e?.message || e);
+      }
+    }
+
+    try {
+      const xpGain = (Number(score) || 0) * 10 + ((Number(score) === Number(total)) ? 20 : 0);
+      if (useFirestore && db) {
+        const userRef = db.collection("users").doc(String(userId));
+        await db.runTransaction(async (tx) => {
+          const snap = await tx.get(userRef);
+          const curXp = snap.exists ? Number(snap.data().xp || 0) : 0;
+          const newXp = curXp + xpGain;
+          const newLevel = Math.floor(newXp / 100) + 1;
+          tx.set(userRef, {
+            xp: newXp,
+            level: newLevel,
+            displayName: resultDoc.userDisplayName || resultDoc.username || null,
+            email: resultDoc.userEmail || null,
+            lastXpAt: new Date().toISOString()
+          }, { merge: true });
+        });
+      } else {
+        const usersPath = path.join(process.cwd(), "data", "users.json");
+        let users = {};
+        if (fs.existsSync(usersPath)) {
+          try { users = JSON.parse(fs.readFileSync(usersPath, "utf8") || "{}"); } catch { users = {}; }
+        }
+        const uid = String(userId);
+        const cur = users[uid] || { xp: 0, level: 1, displayName: resultDoc.userDisplayName || resultDoc.username || `User-${uid.slice(0,6)}` };
+        cur.xp = Number(cur.xp || 0) + xpGain;
+        cur.level = Math.floor(cur.xp / 100) + 1;
+        cur.displayName = resultDoc.userDisplayName || resultDoc.username || cur.displayName;
+        cur.email = resultDoc.userEmail || cur.email || null;
+        users[uid] = cur;
+        try { fs.writeFileSync(usersPath, JSON.stringify(users, null, 2), "utf8"); } catch(e){ console.warn("save users.json failed", e?.message || e); }
+      }
+    } catch (e) {
+      console.warn("award xp failed:", e?.message || e);
+    }
+
+    const lbEntry = {
+      id: resultId || String(Date.now()),
+      userId,
+      username: normalizedUsername || null,
+      score,
+      total,
+      quizId: quizId || null,
+      createdAt: new Date().toISOString()
+    };
+
+    if (useFirestore && db) {
+      const docRef = db.collection("leaderboards").doc(String(week));
+      const snap = await docRef.get();
+      let board = [];
+      if (snap.exists) board = snap.data().items || [];
+      board.push(lbEntry);
+      board.sort((a,b) => (b.score - a.score) || (new Date(b.createdAt) - new Date(a.createdAt)));
+      board = board.slice(0, 10);
+      await docRef.set({ items: board }, { merge: true });
+    } else {
+      const lbPath = path.join(process.cwd(), "data", "leaderboard.json");
+      let dbObj = {};
+      if (fs.existsSync(lbPath)) {
+        try { dbObj = JSON.parse(fs.readFileSync(lbPath, "utf8") || "{}"); } catch { dbObj = {}; }
+      }
+      const weekArr = Array.isArray(dbObj[week]) ? dbObj[week] : [];
+      weekArr.push(lbEntry);
+      weekArr.sort((a,b) => (b.score - a.score) || (new Date(b.createdAt) - new Date(a.createdAt)));
+      dbObj[week] = weekArr.slice(0, 10);
+      try { fs.writeFileSync(lbPath, JSON.stringify(dbObj, null, 2), "utf8"); } catch (e) { console.warn("Failed to save local leaderboard:", e?.message || e); }
+    }
+
+    if (activeQuizzes[sessionKey]) delete activeQuizzes[sessionKey];
+
+    return res.json({ ok: true, score, total, resultId, details });
+  } catch (err) {
+    console.error("submit error:", err);
+    return res.status(500).json({ error: String(err) });
+  }
+});
+
+app.get("/api/leaderboard", async (req, res) => {
+  try {
+    if (useFirestore && db) {
+      const snap = await db.collection("leaderboards").get();
+      const totals = {};
+      snap.forEach(doc => {
+        const data = doc.data() || {};
+        const items = Array.isArray(data.items) ? data.items : [];
+        items.forEach(it => {
+          const uid = String(it.userId || it.id || it.username || "anon");
+          totals[uid] = totals[uid] || { userId: uid, username: it.username || it.name || uid, totalScore: 0, totalAttempts: 0 };
+          totals[uid].totalScore += Number(it.score || 0);
+          totals[uid].totalAttempts += 1;
+        });
+      });
+      const arr = Object.values(totals).sort((a,b) => b.totalScore - a.totalScore);
+      return res.json(arr);
+    } else {
+      const lbPath = path.join(process.cwd(), "data", "leaderboard.json");
+      let dbObj = {};
+      if (fs.existsSync(lbPath)) {
+        try { dbObj = JSON.parse(fs.readFileSync(lbPath, "utf8") || "{}"); } catch { dbObj = {}; }
+      }
+      const totals = {};
+      Object.values(dbObj).forEach((weekArr) => {
+        if (!Array.isArray(weekArr)) return;
+        weekArr.forEach(it => {
+          const uid = String(it.userId || it.id || it.username || "anon");
+          totals[uid] = totals[uid] || { userId: uid, username: it.username || it.name || uid, totalScore: 0, totalAttempts: 0 };
+          totals[uid].totalScore += Number(it.score || 0);
+          totals[uid].totalAttempts += 1;
+        });
+      });
+      const arr = Object.values(totals).sort((a,b) => b.totalScore - a.totalScore);
+      return res.json(arr);
+    }
+  } catch (err) {
+    console.error("/api/leaderboard error:", err);
+    return res.status(500).json({ error: String(err) });
+  }
+});
+
+app.get("/api/leaderboard/:week", async (req, res) => {
+  try {
+    const week = String(req.params.week);
+    if (!week) return res.status(400).json({ error: "Week required" });
+
+    if (useFirestore && db) {
+      const doc = await db.collection("leaderboards").doc(String(week)).get();
+      if (!doc.exists) return res.status(404).json({ error: "Not found" });
+      return res.json({ week, items: doc.data().items || [] });
+    } else {
+      const lbPath = path.join(process.cwd(), "data", "leaderboard.json");
+      let dbObj = {};
+      if (fs.existsSync(lbPath)) {
+        try { dbObj = JSON.parse(fs.readFileSync(lbPath, "utf8") || "{}"); } catch { dbObj = {}; }
+      }
+      const items = Array.isArray(dbObj[week]) ? dbObj[week] : [];
+      return res.json({ week, items });
+    }
+  } catch (err) {
+    console.error("/api/leaderboard/:week error:", err);
+    return res.status(500).json({ error: String(err) });
+  }
+});
+
+app.post("/api/admin/set-role", async (req, res) => {
+  try {
+    const { targetUid, role } = req.body || {};
+    if (!targetUid || !role) return res.status(400).json({ error: "targetUid and role required" });
+
+    if (useFirestore && db) {
+      await db.collection("users").doc(String(targetUid)).set({ role }, { merge: true });
+      return res.json({ ok: true, method: "firestore" });
+    } else {
+      const usersPath = path.join(process.cwd(), "data", "users.json");
+      let arr = [];
+      if (fs.existsSync(usersPath)) {
+        try { arr = JSON.parse(fs.readFileSync(usersPath, "utf8") || "[]"); } catch { arr = []; }
+      }
+      let found = arr.find(u => String(u.id) === String(targetUid) || String(u.uid) === String(targetUid));
+      if (found) {
+        found.role = role;
+      } else {
+        arr.push({ id: String(targetUid), uid: String(targetUid), role });
+      }
+      fs.writeFileSync(usersPath, JSON.stringify(arr, null, 2), "utf8");
+      return res.json({ ok: true, method: "local" });
+    }
+  } catch (err) {
+    console.error("/api/admin/set-role error:", err);
+    return res.status(500).json({ error: String(err) });
+  }
+});
+
+app.get("/api/top3", async (req, res) => {
+  try {
+    let top = [];
+
+    if (typeof useFirestore !== "undefined" && useFirestore && db) {
+      const q = await db.collection("users").orderBy("xp", "desc").limit(3).get();
+      for (const doc of q.docs) {
+        const d = doc.data() || {};
+        let email = d.email || null;
+        if (!email) {
+          try { const au = await admin.auth().getUser(doc.id); email = au.email || null; } catch (e) { /* ignore */ }
+        }
+        top.push({
+          userId: doc.id,
+          name: d.name || d.displayName || d.username || `User-${String(doc.id).slice(0,6)}`,
+          email,
+          photoURL: d.photoURL || d.profileURL || d.avatar || null,
+          xp: Number(d.xp || 0),
+          level: Number(d.level || Math.floor((d.xp || 0) / 100) + 1)
+        });
+      }
+    } else {
+      const usersPath = path.join(process.cwd(), "data", "users.json");
+      let usersObj = {};
+      if (fs.existsSync(usersPath)) {
+        try { usersObj = JSON.parse(fs.readFileSync(usersPath, "utf8") || "{}"); } catch { usersObj = {}; }
+      }
+      top = Object.entries(usersObj)
+        .map(([uid, u]) => ({
+          userId: uid,
+          name: u.displayName || u.name || u.username || `User-${String(uid).slice(0,6)}`,
+          email: u.email || null,
+          photoURL: u.photoURL || u.avatar || null,
+          xp: Number(u.xp || 0),
+          level: Number(u.level || Math.floor((u.xp || 0) / 100) + 1)
+        }))
+        .sort((a, b) => b.xp - a.xp)
+        .slice(0, 3);
+    }
+
+    return res.json({ top });
+  } catch (err) {
+    console.error("/api/top3 error:", err);
+    return res.status(500).json({ error: String(err) });
+  }
+});
+
+app.get("/api/quizzes", async (req, res) => {
+  try {
+    let arr = [];
+    if (useFirestore && db) {
+      const snap = await db.collection("quizzes").orderBy("createdAt","desc").get();
+      snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+    } else {
+      const p = path.join(process.cwd(), "data", "quizzes.json");
+      if (fs.existsSync(p)) arr = JSON.parse(fs.readFileSync(p, "utf8") || "[]");
+    }
+    res.json(arr);
+  } catch (e) { console.error(e); res.status(500).json({ error: String(e) }); }
+});
+
+app.get("/api/quizzes/:id", async (req, res) => {
+  try {
+    const id = String(req.params.id);
+    if (useFirestore && db) {
+      const docSnap = await db.collection("quizzes").doc(id).get();
+      if (!docSnap.exists) return res.status(404).json({ error: "Not found" });
+      return res.json({ id: docSnap.id, ...docSnap.data() });
+    } else {
+      const p = path.join(process.cwd(), "data", "quizzes.json");
+      const arr = fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8") || "[]") : [];
+      const found = arr.find(x => (x.id||x.quizId) === id);
+      if (!found) return res.status(404).json({ error: "Not found" });
+      return res.json(found);
+    }
+  } catch (e) { console.error(e); res.status(500).json({ error: String(e) }); }
+});
+
+app.post("/api/quizzes", async (req, res) => {
+  try {
+    const body = req.body || {};
+    if (useFirestore && db) {
+      const r = await db.collection("quizzes").add(body);
+      return res.json({ id: r.id });
+    } else {
+      const p = path.join(process.cwd(), "data", "quizzes.json");
+      const arr = fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8") || "[]") : [];
+      const id = String(Date.now());
+      arr.unshift({ id, ...body });
+      fs.writeFileSync(p, JSON.stringify(arr, null, 2), "utf8");
+      return res.json({ id });
+    }
+  } catch (e) { console.error(e); res.status(500).json({ error: String(e) }); }
+});
+
+app.put("/api/quizzes/:id", async (req, res) => {
+  try {
+    const id = String(req.params.id);
+    const payload = req.body || {};
+    if (useFirestore && db) {
+      await db.collection("quizzes").doc(id).set(payload, { merge: true });
+      return res.json({ ok: true });
+    } else {
+      const p = path.join(process.cwd(), "data", "quizzes.json");
+      const arr = fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8") || "[]") : [];
+      const idx = arr.findIndex(x => (x.id||x.quizId) === id);
+      if (idx === -1) return res.status(404).json({ error: "Not found" });
+      arr[idx] = Object.assign({}, arr[idx], payload);
+      fs.writeFileSync(p, JSON.stringify(arr, null, 2), "utf8");
+      return res.json({ ok: true });
+    }
+  } catch (e) { console.error(e); res.status(500).json({ error: String(e) }); }
+});
+
+app.delete("/api/quizzes/:id", async (req, res) => {
+  try {
+    const id = String(req.params.id);
+    if (useFirestore && db) {
+      await db.collection("quizzes").doc(id).delete();
+      return res.json({ ok: true });
+    } else {
+      const p = path.join(process.cwd(), "data", "quizzes.json");
+      let arr = fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8") || "[]") : [];
+      arr = arr.filter(x => (x.id||x.quizId) !== id);
+      fs.writeFileSync(p, JSON.stringify(arr, null, 2), "utf8");
+      return res.json({ ok: true });
+    }
+  } catch (e) { console.error(e); res.status(500).json({ error: String(e) }); }
+});
+
+app.post("/api/quizzes/:id/generate", async (req, res) => {
+  try {
+    const id = String(req.params.id);
+    if (useFirestore && db) {
+      const docRef = db.collection("quizzes").doc(id);
+      const docSnap = await docRef.get();
+      if (!docSnap.exists) return res.status(404).json({ error: "Not found" });
+      const data = docSnap.data() || {};
+      const newQuestions = data.questions || [];
+      await docRef.set({ title: (data.title || "") + " (regenerated)", questions: newQuestions, regeneratedAt: new Date().toISOString() }, { merge: true });
+      return res.json({ ok: true });
+    } else {
+      const p = path.join(process.cwd(), "data", "quizzes.json");
+      const arr = fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8") || "[]") : [];
+      const idx = arr.findIndex(x => (x.id||x.quizId) === id);
+      if (idx === -1) return res.status(404).json({ error: "Not found" });
+      arr[idx].title = (arr[idx].title || "") + " (regenerated)";
+      arr[idx].regeneratedAt = new Date().toISOString();
+      fs.writeFileSync(p, JSON.stringify(arr, null, 2), "utf8");
+      return res.json({ ok: true });
+    }
+  } catch (e) { console.error(e); res.status(500).json({ error: String(e) }); }
+});
+
+app.get("/api/reports", async (req, res) => {
+  try {
+    const { from, to, type = "summary" } = req.query || {};
+    const fromTs = from ? new Date(String(from)) : null;
+    const toTs = to ? new Date(String(to)) : null;
+
+    if (useFirestore && db) {
+      const snap = await db.collection("results").get();
+      const byUser = {};
+      snap.forEach(doc => {
+        const d = doc.data() || {};
+        const created = d.createdAt ? new Date(d.createdAt) : null;
+        if (fromTs && created && created < fromTs) return;
+        if (toTs && created && created > toTs) return;
+        const user = d.username || d.userId || "anon";
+        byUser[user] = byUser[user] || { attempts: 0, totalScore: 0 };
+        byUser[user].attempts++;
+        byUser[user].totalScore += Number(d.score || 0);
+      });
+      const resultRows = Object.keys(byUser).map(u => [u, byUser[u].attempts, +(byUser[u].totalScore / byUser[u].attempts).toFixed(2)]);
+      return res.json({
+        meta: { title: "Summary Report", columns: ["User", "Attempts", "Avg Score"] },
+        rows: resultRows,
+        chart: { labels: resultRows.map(r => r[0]), values: resultRows.map(r => r[2]) }
+      });
+    }
+
+    const resultsPath = path.join(process.cwd(), "data", "results.json");
+    let results = [];
+    if (fs.existsSync(resultsPath)) {
+      try { results = JSON.parse(fs.readFileSync(resultsPath, "utf8") || "[]"); } catch { results = []; }
+    }
+
+    if ((fromTs || toTs) && Array.isArray(results)) {
+      results = results.filter(r => {
+        const created = r.createdAt ? new Date(r.createdAt) : null;
+        if (!created) return true;
+        if (fromTs && created < fromTs) return false;
+        if (toTs && created > toTs) return false;
+        return true;
+      });
+    }
+
+    if (type === "by-quiz") {
+      const byQuiz = {};
+      results.forEach(r => {
+        const k = r.quizId || "unknown";
+        byQuiz[k] = byQuiz[k] || { attempts: 0, totalScore: 0 };
+        byQuiz[k].attempts++;
+        byQuiz[k].totalScore += Number(r.score || 0);
+      });
+      const rows = Object.keys(byQuiz).map(k => [k, byQuiz[k].attempts, +(byQuiz[k].totalScore / byQuiz[k].attempts).toFixed(2)]);
+      return res.json({ meta: { title: "By Quiz", columns: ["QuizId", "Attempts", "Avg Score"] }, rows, chart: { labels: rows.map(r => r[0]), values: rows.map(r => r[2]) } });
+    }
+
+    if (type === "by-user") {
+      const byUser = {};
+      results.forEach(r => {
+        const u = r.username || r.userId || "anon";
+        byUser[u] = byUser[u] || { attempts: 0, totalScore: 0 };
+        byUser[u].attempts++;
+        byUser[u].totalScore += Number(r.score || 0);
+      });
+      const rows = Object.keys(byUser).map(u => [u, byUser[u].attempts, +(byUser[u].totalScore / byUser[u].attempts).toFixed(2)]);
+      return res.json({ meta: { title: "By User", columns: ["User", "Attempts", "Avg Score"] }, rows, chart: { labels: rows.map(r => r[0]), values: rows.map(r => r[2]) } });
+    }
+
+    const byUser = {};
+    results.forEach(r => {
+      const u = r.username || r.userId || "anon";
+      byUser[u] = byUser[u] || { attempts: 0, totalScore: 0 };
+      byUser[u].attempts++;
+      byUser[u].totalScore += Number(r.score || 0);
+    });
+    const rows = Object.keys(byUser).map(u => [u, byUser[u].attempts, +(byUser[u].totalScore / byUser[u].attempts).toFixed(2)]);
+    return res.json({
+      meta: { title: "Summary Report", columns: ["User", "Attempts", "Avg Score"] },
+      rows,
+      chart: { labels: rows.map(r => r[0]), values: rows.map(r => r[2]) }
+    });
+  } catch (err) {
+    console.error("/api/reports error:", err);
+    return res.status(500).json({ error: String(err) });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});

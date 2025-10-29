@@ -1,0 +1,63 @@
+:root{
+  --card:#0f1724;
+  --panel:#071026;
+  --muted: #9aa4b2;
+  --accent: #00d1ff;
+}
+.label-muted { color: var(--muted); font-size:14px; display:block; margin-bottom:6px; }
+
+/* dropdown */
+.dropdown { position: relative; display:inline-block; }
+.dropdown-btn {
+  padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.06);
+  background: var(--card); color:#e6eef6; cursor:pointer; min-width:180px; text-align:left;
+}
+#selected-count { opacity:0.8; margin-left:8px; }
+
+/* panel */
+.dropdown-panel {
+  position:absolute; top:calc(100% + 10px); left:0; min-width:260px; max-height:360px; overflow:auto;
+  background: var(--panel); border:1px solid rgba(255,255,255,0.04); border-radius:10px; padding:10px;
+  box-shadow:0 12px 40px rgba(2,6,23,0.6); z-index:60;
+}
+.dropdown-panel.hidden { display:none; }
+.panel-actions { display:flex; justify-content:space-between; margin-bottom:8px; gap:8px; }
+
+/* week rows */
+.week-list .week-row {
+  display:flex; align-items:center; gap:10px; padding:8px; border-radius:8px; cursor:pointer;
+  background: var(--card); border:1px solid rgba(255,255,255,0.02); color:#e6eef6; margin-bottom:6px;
+}
+.week-list .week-row:hover { background: rgba(255,255,255,0.02); }
+.week-row input { transform:scale(1.05); }
+
+/* selected chips */
+.weeks-selected { display:flex; gap:8px; flex-wrap:wrap; margin-left:8px; }
+.chip {
+  padding:6px 10px; border-radius:999px; background:#071826; color:var(--muted); border:1px solid rgba(255,255,255,0.04);
+  display:inline-flex; gap:8px; align-items:center;
+}
+.chip button { background:transparent; border:0; color:var(--muted); cursor:pointer; }
+
+/* buttons */
+.btn { padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.04); background:var(--card); color:#e6eef6; cursor:pointer; }
+.btn.ghost { background:transparent; }
+.btn.primary { background: linear-gradient(90deg,var(--accent),#6ef0ff); color:#022026; border:0; }
+
+/* upload table card */
+.upload-table-card { margin-top:12px; background: var(--card); border-radius:12px; padding:14px; box-shadow:0 10px 30px rgba(2,6,23,0.6); }
+
+/* table */
+.table-responsive { overflow:auto; max-height:420px; border-radius:10px; }
+.upload-table { width:100%; border-collapse:separate; border-spacing:0; min-width:760px; color:#e6eef6; }
+.upload-table thead th {
+  position:sticky; top:0; background:#071026; color:var(--muted); padding:12px 14px; text-align:left; font-weight:600;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.upload-table th, .upload-table td { padding:12px 14px; vertical-align:middle; border-bottom:1px solid rgba(255,255,255,0.03); }
+.upload-table tbody tr:hover { background: rgba(255,255,255,0.02); transform: translateY(-1px); }
+.upload-table a { color: var(--accent); text-decoration:none; font-weight:600; }
+.muted { color: var(--muted); }
+
+/* responsive */
+@media (max-width:900px){ .upload-table { min-width:600px; } }

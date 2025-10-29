@@ -1,0 +1,209 @@
+/* Profile / dropdown (keperluan admin) */
+.profile-container{position:relative;display:flex;align-items:center;gap:8px;cursor:pointer;}
+.profile-img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #ffd700;}
+.profile-dropdown{position:absolute;top:48px;right:0;background:rgba(12,12,30,.96);border:1px solid #ffd700;border-radius:10px;padding:8px 0;min-width:200px;display:none;z-index:999;}
+.profile-dropdown a, .profile-dropdown button{display:block;padding:10px 14px;color:#fff;text-align:left;background:none;border:0;}
+.profile-dropdown.show{display:flex;flex-direction:column;}
+
+/* ===========================================================
+   Leaderboard styles — copied from css/leaderboard.css verbatim
+   =========================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@400;600&display=swap');
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+  background:
+    linear-gradient(rgba(5, 1, 10, 0.8), rgba(20, 0, 42, 0.9)),
+    url("https://wallpaperbat.com/img/12107870-cyberpunk-city-street-sci-fi-wallpaper.jpg")
+    no-repeat center center fixed;
+  background-size: cover;
+  color: #fff;
+  min-height: 100vh;
+}
+
+.leaderboard-container {
+  display: flex;
+  flex-direction: row;
+  max-width: 700px;      /* Naikkan dari 500px ke 700px */
+  margin: 40px auto;
+  background: rgba(0,0,0,0.7);
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.25);
+  overflow-x: auto;
+  gap: 8px;
+}
+
+.sidebar {
+  background: rgba(44, 62, 80, 0.95);
+  padding: 18px 10px;
+  min-width: 90px;      /* Kecilkan sidebar */
+  max-width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border-right: 1px solid #00ffff44;
+}
+
+.sidebar h6 {
+  font-size: 1rem;
+  font-family: 'Orbitron', sans-serif;
+  margin-bottom: 14px;
+  color: #00ffff;
+  letter-spacing: 1px;
+}
+
+.sidebar button {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 8px 0;
+  border: none;
+  border-radius: 5px;
+  background: #222b3a;
+  color: #fff;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.sidebar button:hover {
+  background: #2c3e50;
+}
+
+.sidebar button.active {
+  background: #00ffff;
+  color: #222;
+  font-weight: bold;
+}
+
+.board {
+  flex: 1;
+  padding: 18px 8px;
+  min-width: 0;
+  overflow-x: auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.board h2 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.5rem;
+  color: #fff;
+  margin-bottom: 24px;
+  letter-spacing: 1px;
+}
+
+#rankingTable {
+  width: 100%;
+  min-width: 280px;      /* Table sentiasa ada ruang */
+  max-width: 100%;
+  border-collapse: collapse;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 8px #0002;
+  margin: 0 auto;
+}
+
+#rankingTable, #rankingTable th, #rankingTable td {
+  border: 1px solid #00ffff22;
+}
+
+#rankingTable th, #rankingTable td {
+  padding: 12px 8px;
+  text-align: center;
+}
+
+#rankingTable th {
+  background: rgba(0,255,255,0.10);
+  color: #00ffff;
+  font-size: 1rem;
+  letter-spacing: 1px;
+}
+
+#rankingTable tr:nth-child(even) {
+  background: rgba(255,255,255,0.04);
+}
+
+#rankingTable tr:nth-child(odd) {
+  background: rgba(0,0,0,0.08);
+}
+
+#rankingTable td {
+  font-size: 1rem;
+  color: #fff;
+}
+
+#rankingTable tr:hover {
+  background: rgba(0,255,255,0.10);
+  transition: background 0.2s;
+}
+
+#rankingTable tr.my-row {
+  background: #00ffff33 !important;
+  color: #222 !important;
+  font-weight: bold;
+}
+
+#rankingTable td.rank-1 { color: gold; font-weight: bold; }
+#rankingTable td.rank-2 { color: silver; font-weight: bold; }
+#rankingTable td.rank-3 { color: #cd7f32; font-weight: bold; }
+
+/* Responsive untuk tablet dan mobile */
+@media (max-width: 900px) {
+  .leaderboard-container {
+    flex-direction: column;
+    max-width: 98vw;
+  }
+  .sidebar {
+    flex-direction: row;
+    align-items: center;
+    border-right: none;
+    border-bottom: 1px solid #00ffff44;
+    width: 100%;
+    padding: 10px 4px;
+    min-width: unset;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+  .sidebar h6 {
+    margin-bottom: 0;
+    margin-right: 10px;
+    font-size: 0.98rem;
+  }
+  .board {
+    padding: 10px 2vw;
+  }
+  #rankingTable {
+    min-width: 220px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .leaderboard-container {
+    margin: 0;
+    border-radius: 0;
+  }
+  .sidebar {
+    padding: 6px 1px;
+    font-size: 0.95rem;
+  }
+  .board {
+    padding: 6px 1vw;
+  }
+  #rankingTable th, #rankingTable td {
+    padding: 6px 1px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Pastikan table boleh scroll jika terlalu lebar */
+.board {
+  overflow-x: auto;
+}

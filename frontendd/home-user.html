@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OSwarrior Dashboard</title>
+  <link rel="stylesheet" href="css/home-user.css">
+  <link rel="stylesheet" href="css/profile-dropdown.css" />
+</head>
+<body class="home-user">
+  <!-- Navbar -->
+  <div class="navbar">
+    <h1>OSwarrior Dashboard</h1>
+    <div class="navbar-right">
+      <div class="profile-container" id="profile-toggle">
+        <span id="username-navbar">Warrior</span>
+        <img id="profile-img" class="profile-img" src="image/default-profile.png" alt="Profile"/>
+        <div id="profile-dropdown" class="profile-dropdown hidden">
+          <a id="view-profile" href="profile.html">👤 View Profile</a>
+          <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
+
+          <!-- 🧰 Quick Settings Section -->
+          <div class="settings-section">
+            <p class="settings-title">⚙️ Quick Settings</p>
+            <button id="toggle-theme">🌗 Dark / Light Mode</button>
+            <button id="change-avatar">🖼️ Change Avatar</button>
+            <button id="edit-name">✏️ Edit Name</button>
+          </div>
+
+          <button id="logout-btn">🚪 Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="welcome-banner">
+  <h2>Welcome, <span id="username">Warrior</span> 👑</h2>
+  <p>Ready to level up your OS skills today?</p>
+</div>
+
+<!-- XP Bar Section -->
+<div class="xp-section">
+  <div class="xp-header">
+    <span id="player-name">Warrior 👑</span>
+    <span id="player-level">Level 1</span>
+  </div>
+  <div class="xp-bar">
+    <div id="xp-progress"></div>
+  </div>
+  <div class="xp-footer">
+    <span id="xp-current">0 XP</span>
+    <span id="xp-max">/ 100 XP</span>
+  </div>
+</div>
+
+<!-- 🔔 Mission / Notification Alert -->
+<div id="mission-alert" class="mission-alert hidden">
+  <span id="mission-icon">🎯</span>
+  <span id="mission-text">New mission available!</span>
+  <button id="mission-close">✖</button>
+</div>
+
+<!-- 🏆 Leaderboard Mini Panel -->
+<section class="leaderboard-mini">
+  <h2>🏆 Top 3 Warriors</h2>
+  <div id="top3-container" class="top3-container" aria-live="polite">
+    <!-- populated dynamically by js/home-user.js (uses .player .first/.second/.third classes so CSS remains unchanged) -->
+  </div>
+</section>
+
+  <!-- Content -->
+  <div class="content">
+    <div class="card quiz">
+      <span class="badge">New</span>
+      <span class="icon">📝</span>
+      <h2>Quiz</h2>
+      <p>Test your knowledge with interactive quizzes.</p>
+      <a href="quiz.html">Go</a>
+    </div>
+    <div class="card leaderboard">
+      <span class="icon">🏆</span>
+      <h2>Leaderboard</h2>
+      <p>See your ranking among players.</p>
+      <a href="leaderboard.html">Go</a>
+    </div>
+    <div class="card achievement">
+      <span class="icon">🎖️</span>
+      <h2>Achievements</h2>
+      <p>Unlock and track your milestones.</p>
+      <a href="achievement.html">Go</a>
+    </div>
+  </div>
+
+  <!-- Modal Edit Name -->
+  <div id="modal-edit-name" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>Edit Name</h3>
+      <input type="text" id="input-new-name" placeholder="Enter new name">
+      <div class="modal-actions">
+        <button id="save-name-btn" class="btn-action">Save</button>
+        <button id="cancel-name-btn" class="btn-action btn-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Change Avatar -->
+  <div id="modal-change-avatar" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>Change Avatar</h3>
+      <input type="text" id="input-avatar-url" placeholder="Paste image URL">
+      <div class="modal-actions">
+        <button id="save-avatar-btn" class="btn-action">Save</button>
+        <button id="cancel-avatar-btn" class="btn-action btn-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Link ke JS luaran -->
+  <script type="module" src="js/home-user.js"></script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sign up — OSwarrior</title>
+  <link rel="stylesheet" href="css/login.css" />
+  <link rel="icon" type="image/png" href="image/icon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="cyber-grid"></div>
+
+  <div class="login-container">
+    <h1>OSwarrior</h1>
+
+    <input id="su-email" type="email" placeholder="Email" />
+    <input id="su-password" type="password" placeholder="Password (≥6 chars)" />
+    <input id="su-confirm" type="password" placeholder="Confirm password" />
+    <button id="su-submit">Sign up</button>
+
+    <div class="divider">OR</div>
+    <button id="su-google" class="google-btn">Sign up with Google</button>
+
+    <p id="su-msg" class="msg"></p>
+    <p class="small">Already have an account? <a href="index.html">Log in</a></p>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      GoogleAuthProvider,
+      signInWithPopup,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDofTjaWk5M8m_hyrDRqxOGofzOV7Qlitw",
+      authDomain: "test-4fdf4.firebaseapp.com",
+      projectId: "test-4fdf4",
+      storageBucket: "test-4fdf4.appspot.com",
+      messagingSenderId: "346273796107",
+      appId: "1:346273796107:web:f6fcc32860025bf406770e"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    const emailEl = document.getElementById('su-email');
+    const passEl = document.getElementById('su-password');
+    const confEl = document.getElementById('su-confirm');
+    const msgEl = document.getElementById('su-msg');
+    const btn = document.getElementById('su-submit');
+
+    function showMsg(text, color='red'){ msgEl.style.color = color; msgEl.textContent = text; }
+
+    // If already signed in, go to index
+    onAuthStateChanged(auth, user => {
+      if (user) location.href = 'index.html';
+    });
+
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault(); showMsg('');
+      const email = (emailEl.value||'').trim();
+      const pass = (passEl.value||'').trim();
+      const conf = (confEl.value||'').trim();
+      if (!email || !pass || !conf) return showMsg('Fill all fields.');
+      if (pass !== conf) return showMsg('Passwords do not match.');
+      if (pass.length < 6) return showMsg('Password too short (>=6).');
+      btn.disabled = true;
+      try {
+        await createUserWithEmailAndPassword(auth, email, pass);
+        showMsg('Signup successful — redirecting...', 'green');
+        setTimeout(()=> location.href = 'index.html', 700);
+      } catch (err) {
+        console.error('signup error', err);
+        if (err.code === 'auth/email-already-in-use') showMsg('Email already in use.');
+        else if (err.code === 'auth/invalid-email') showMsg('Invalid email.');
+        else showMsg(err.message || 'Signup failed.');
+      } finally { btn.disabled = false; }
+    });
+
+    // Optional: Google signup
+    document.getElementById('su-google').addEventListener('click', async () => {
+      try {
+        await signInWithPopup(auth, provider);
+        showMsg('Signed in with Google — redirecting...', 'green');
+        setTimeout(()=> location.href = 'index.html', 700);
+      } catch (err) {
+        console.error('google signup error', err);
+        showMsg(err.message || 'Google sign-in failed.');
+      }
+    });
+
+    // Enter key support
+    [emailEl, passEl, confEl].forEach(i => i.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter') btn.click();
+    }));
+  </script>
+</body>
+</html>

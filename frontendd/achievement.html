@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Achievements - OSwarrior</title>
+  <link rel="stylesheet" href="css/achievement.css">
+  <link rel="stylesheet" href="css/profile-dropdown.css" />
+  <script type="module" src="js/achievement.js"></script>
+</head>
+<body class="achievement-user">
+  <!-- Navbar -->
+  <div class="navbar">
+    <h1>Achievements</h1>
+    <div class="navbar-right">
+      <div class="profile-container" id="profile-toggle">
+        <span id="username-navbar">Warrior</span>
+        <img id="profile-img" class="profile-img" src="image/default-profile.png" alt="Profile"/>
+        <div id="profile-dropdown" class="profile-dropdown hidden">
+          <a id="view-profile" href="profile.html">👤 View Profile</a>
+          <a id="view-achievements" href="achievements.html">🏆 Achievements</a>
+
+          <!-- 🧰 Quick Settings Section -->
+          <div class="settings-section">
+            <p class="settings-title">⚙️ Quick Settings</p>
+            <button id="toggle-theme">🌗 Dark / Light Mode</button>
+            <button id="change-avatar">🖼️ Change Avatar</button>
+            <button id="edit-name">✏️ Edit Name</button>
+          </div>
+
+          <button id="logout-btn">🚪 Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Achievements Section -->
+  <div class="achievement-container">
+    <h2>Your Achievements</h2>
+    <div id="achievement-list" class="achievements-grid">
+      <!-- Dummy Achievements -->
+      <div class="achievement-card">
+        <h3>First Quiz Completed</h3>
+        <p>Week: 1</p>
+        <small>2025-01-15</small>
+      </div>
+      <div class="achievement-card">
+        <h3>Top Scorer</h3>
+        <p>Week: 3</p>
+        <small>2025-02-05</small>
+      </div>
+      <div class="achievement-card">
+        <h3>Level Up</h3>
+        <p>Week: 5</p>
+        <small>2025-03-01</small>
+      </div>
+      <div class="achievement-card">
+        <h3>Consistency Award</h3>
+        <p>Week: 8</p>
+        <small>2025-04-12</small>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // === PROFILE DROPDOWN ===
+    const profileContainer = document.querySelector(".profile-container");
+    const profileDropdown = document.getElementById("profile-dropdown");
+    let dropdownOpen = false;
+
+    profileContainer.addEventListener("click", (e) => {
+      e.stopPropagation(); // elak close bila klik dalam dropdown
+      if (dropdownOpen) {
+        profileDropdown.classList.remove("show");
+        setTimeout(() => profileDropdown.classList.add("hidden"), 300);
+      } else {
+        profileDropdown.classList.remove("hidden");
+        setTimeout(() => profileDropdown.classList.add("show"), 10);
+      }
+      dropdownOpen = !dropdownOpen;
+    });
+
+    // Klik luar untuk tutup dropdown
+    document.addEventListener("click", (e) => {
+      if (dropdownOpen && !profileContainer.contains(e.target)) {
+        profileDropdown.classList.remove("show");
+        setTimeout(() => profileDropdown.classList.add("hidden"), 300);
+        dropdownOpen = false;
+      }
+    });
+
+    // Logout (dummy)
+    const logoutBtn = document.getElementById("logout-btn");
+    logoutBtn.addEventListener("click", () => {
+      alert("Logout clicked!");
+      // window.location.href = "index.html"; // uncomment bila guna Firebase
+    });
+  </script>
+</body>
+</html>

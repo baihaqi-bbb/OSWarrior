@@ -1,0 +1,360 @@
+/* ==========================================================
+   OSwarrior - Futuristic Login Page
+   Enhanced Cyberpunk Theme with Animations
+   ========================================================== */
+
+/* Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@400;600&display=swap');
+
+/* ==========================================================
+   Base Layout
+   ========================================================== */
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Poppins', sans-serif;
+  color: #fff;
+  background:
+    linear-gradient(rgba(5, 1, 10, 0.8), rgba(20, 0, 42, 0.9)),
+    url("https://wallpaperbat.com/img/12107870-cyberpunk-city-street-sci-fi-wallpaper.jpg")
+    no-repeat center center fixed;
+  background-size: cover;
+  position: relative;
+}
+
+/* ==========================================================
+   Animated Grid Background
+   ========================================================== */
+.cyber-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    linear-gradient(#00ffff10 1px, transparent 1px),
+    linear-gradient(90deg, #00ffff10 1px, transparent 1px);
+  background-size: 50px 50px;
+  transform: perspective(500px) rotateX(60deg);
+  animation: moveGrid 8s linear infinite;
+  opacity: 0.3;
+  z-index: 0;
+}
+
+@keyframes moveGrid {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 100px 100px, 100px 100px; }
+}
+
+/* ==========================================================
+   Login Container
+   ========================================================== */
+.login-container {
+  position: relative;
+  z-index: 2;
+  background: rgba(10, 10, 25, 0.85);
+  padding: 40px 40px;
+  border-radius: 15px;
+  width: 340px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(0, 255, 255, 0.4);
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.3);
+  animation: fadeInUp 0.8s ease, neonPulse 3s infinite alternate;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes neonPulse {
+  from { box-shadow: 0 0 20px rgba(0,255,255,0.4), 0 0 40px rgba(127,0,255,0.2); }
+  to { box-shadow: 0 0 35px rgba(0,255,255,0.7), 0 0 60px rgba(127,0,255,0.5); }
+}
+
+/* Gradient border glow */
+.login-container::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 15px;
+  background: linear-gradient(45deg, #00ffff, #7f00ff, #00ffff);
+  z-index: -1;
+  animation: cyberGlow 6s linear infinite;
+}
+
+@keyframes cyberGlow {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+/* Neon reflection */
+.login-container::after {
+  content: "";
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 20px;
+  background: radial-gradient(ellipse at center, rgba(0,255,255,0.4) 0%, transparent 70%);
+  filter: blur(8px);
+}
+
+/* ==========================================================
+   Header
+   ========================================================== */
+h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 22px;
+  margin-bottom: 25px;
+  color: #00ffff;
+  text-shadow: 0 0 8px #00ffff, 0 0 16px #0ff, 0 0 32px #0ff;
+  animation: neonPulseTitle 2s infinite alternate;
+}
+
+@keyframes neonPulseTitle {
+  from {
+    text-shadow: 0 0 8px #00ffff, 0 0 16px #0ff, 0 0 32px #0ff;
+    color: #00ffff;
+  }
+  to {
+    text-shadow: 0 0 16px #00ffff, 0 0 32px #0ff, 0 0 48px #0ff;
+    color: #0ff;
+  }
+}
+
+h1 span {
+  color: #ff00ff;
+}
+
+/* ==========================================================
+   Inputs & Buttons
+   ========================================================== */
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 8px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 14px;
+  box-shadow: inset 0 0 8px #00ffff44;
+}
+
+input::placeholder { color: #aaa; }
+
+button {
+  width: 106%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #00ffff, #7f00ff);
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 1px;
+}
+
+button:hover {
+  box-shadow: 0 0 15px #00ffff, 0 0 30px #7f00ff;
+  transform: translateY(-2px);
+}
+
+/* Sign Up Button Spacing */
+.signup-btn {
+  margin-top: 16px;
+  margin-bottom: 10px;
+  opacity: 0;
+  animation: fadeSlide 0.6s ease forwards;
+  animation-delay: 1.7s;
+}
+
+/* Google Login Button */
+.google-btn {
+  background: #fff;
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.google-btn img {
+  width: 20px;
+}
+
+/* ==========================================================
+   Animations for Input & Button Entrance
+   ========================================================== */
+input,
+button,
+.divider,
+.help-text {
+  opacity: 0;
+  animation: fadeSlide 0.6s ease forwards;
+}
+
+input:nth-of-type(1) { animation-delay: 1.2s; }
+input:nth-of-type(2) { animation-delay: 1.4s; }
+input:nth-of-type(3) { animation-delay: 1.6s; }
+button#login-btn, button#signup-submit { animation-delay: 1.8s; }
+.help-text { animation-delay: 1.8s; }
+.divider { animation-delay: 2s; }
+.google-btn { animation-delay: 2.2s; }
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================
+   Extra Elements
+   ========================================================== */
+.help-text {
+  margin: 15px 0;
+  font-size: 13px;
+  color: #aaa;
+}
+
+.help-text a {
+  color: #00ffff;
+  text-decoration: none;
+}
+
+.help-text a:hover {
+  text-decoration: underline;
+  text-shadow: 0 0 6px #00ffff;
+}
+
+.divider {
+  position: relative;
+  text-align: center;
+  margin: 20px 0;
+  color: #999;
+  font-size: 12px;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background: #333;
+}
+
+.divider::before { left: 0; }
+.divider::after { right: 0; }
+
+#message {
+  margin-top: 15px;
+  font-size: 13px;
+  text-shadow: 0 0 5px #00ffff;
+}
+
+/* ==========================================================
+   Forgot Password Modal
+   ========================================================== */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0; 
+  left: 0;
+  width: 100%; 
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: rgba(15, 15, 30, 0.95);
+  padding: 30px;
+  border-radius: 12px;
+  text-align: center;
+  width: 320px;
+  border: 2px solid #0ff;
+  box-shadow: 0 0 25px #0ff, 0 0 50px #f0f;
+  animation: fadeIn 0.4s ease;
+}
+
+.close-btn {
+  background: #f0f;
+  margin-top: 10px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ==========================================================
+   Responsive
+   ========================================================== */
+@media (max-width: 480px) {
+  .login-container {
+    width: 85%;
+    padding: 35px 25px;
+  }
+
+  h1 { font-size: 18px; }
+}
+
+/* 🔹 Shake Animation */
+@keyframes shake {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+  100% { transform: translateX(0); }
+}
+
+.shake {
+  animation: shake 0.4s ease;
+}
+
+.profile-img {
+  width: 45px;               
+  height: 45px;              
+  border-radius: 50%;        
+  object-fit: cover;         
+  border: 2px solid #00ffff; 
+  box-shadow: 0 0 10px #00ffff;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  background-color: #000;    
+}
+
+.profile-img:hover {
+  transform: scale(1.05);    
+}
+
+/* === WELCOME BANNER === */
+.welcome-banner {
+  position: relative;
+  text-align: center;
+  padding: 25px 15px;
+  margin: 20px auto;
+  background: rgba(0, 0, 0, 0.4);
+  border: 2px solid rgba(0, 255, 255, 0.5);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+  border-radius: 15px;
+  max-width: 600px;
+  overflow: hidden;
+  animation: glowPulse 3s ease-in-out infinite;
+}

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin — Reports</title>
+  <link rel="stylesheet" href="css/home-admin.css" />
+  <link rel="stylesheet" href="css/admin-reports.css" />
+  <link rel="stylesheet" href="css/profile-dropdown.css" />
+</head>
+<body class="home-admin">
+  <div class="navbar">
+    <h1>Reports</h1>
+    <div class="navbar-right">
+      <div class="profile-container" id="profile-toggle">
+        <span id="username-navbar">Admin</span>
+        <img id="profile-img" class="profile-img" src="image/default-profile.png" alt="Profile"/>
+        <div id="profile-dropdown" class="profile-dropdown hidden">
+          <a id="view-profile" href="profile.html">👤 View Profile</a>
+          <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
+          <div class="settings-section">
+            <p class="settings-title">⚙️ Quick Settings</p>
+            <button id="toggle-theme">🌗 Dark / Light Mode</button>
+          </div>
+          <button id="logout-btn">🚪 Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main class="reports-main" style="max-width:1100px;margin:20px auto;padding:0 16px;">
+    <div class="reports-controls">
+      <div class="controls-left">
+        <label>From <input type="date" id="r-from"></label>
+        <label>To <input type="date" id="r-to"></label>
+        <select id="r-type" title="Report type">
+          <option value="summary">Summary</option>
+          <option value="by-user">By User</option>
+          <option value="by-quiz">By Quiz</option>
+        </select>
+        <button id="r-generate" class="btn">Generate</button>
+      </div>
+
+      <div class="controls-right">
+        <button id="r-export" class="btn outline">Export CSV</button>
+        <button id="r-refresh" class="btn">Refresh</button>
+      </div>
+    </div>
+
+    <section class="reports-chart">
+      <h2 id="reports-title">Report</h2>
+      <canvas id="reportsCanvas" width="900" height="300"></canvas>
+    </section>
+
+    <section class="reports-table">
+      <table id="reportsTable" aria-label="Reports table">
+        <thead><tr id="reportsHead"><th>Loading...</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <div id="r-status" class="status"></div>
+  </main>
+
+  <!-- shared admin behaviour -->
+  <script type="module" src="js/home-admin.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module" src="js/admin-reports.js"></script>
+</body>
+</html>

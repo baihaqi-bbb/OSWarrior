@@ -1,0 +1,116 @@
+/* Bold, colorful quiz theme — replace existing file */
+:root{
+  --bg-start:#f7fbff;
+  --bg-end:#eef2ff;
+  --card:#ffffff;
+  --muted:#6b7280;
+  --accent:#06b6d4;    /* teal */
+  --accent-2:#7c3aed;  /* purple */
+  --accent-3:#f97316;  /* orange */
+  --text:#071124;
+  --border:rgba(7,17,36,0.06);
+  --radius:14px;
+  --max-width:960px;
+  --shadow:0 12px 36px rgba(7,17,36,0.08);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body.quiz-page{
+  margin:0;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  /* same background as home-user */
+  background:
+    linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+    url("https://wallpaperbat.com/img/58270849-neon-laser-tag-battle-wallpaper-hd.png") no-repeat center center fixed;
+  background-size: cover;
+  color: #fff;
+  padding:28px 16px;
+}
+
+/* layout */
+#quiz-meta{ max-width:var(--max-width); margin:0 auto 12px; color:var(--muted); font-weight:700; }
+#quizzes-list{ max-width:var(--max-width); margin:14px auto; }
+
+/* cards darker/translucent so page bg shows through */
+.quiz-card{
+  background: rgba(10,12,20,0.62); /* dark translucent */
+  border-radius:var(--radius);
+  padding:20px;
+  box-shadow:0 12px 36px rgba(2,6,23,0.6);
+  border:1px solid rgba(0,255,255,0.06);
+  margin-bottom:18px;
+  color: #fff;
+}
+
+/* question header with badge */
+.quiz-question{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin-bottom:12px;
+}
+.q-badge{
+  min-width:44px;
+  height:44px;
+  border-radius:10px;
+  display:inline-grid;
+  place-items:center;
+  color:#fff;
+  font-weight:800;
+  font-size:15px;
+  background:linear-gradient(120deg,var(--accent),var(--accent-2));
+  box-shadow:0 8px 20px rgba(37,99,235,0.12);
+}
+.q-title{ font-size:18px; font-weight:700; line-height:1.25; color:var(--text); }
+
+/* body */
+.quiz-body{ margin-top:6px; }
+
+/* options */
+.quiz-options{ display:flex; flex-direction:column; gap:10px; margin-top:8px; }
+.opt-label{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  padding:12px 14px;
+  border-radius:10px;
+  background: rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.04);
+  cursor:pointer;
+  transition:transform .08s ease, box-shadow .12s ease, background .12s ease;
+}
+.opt-label:hover{ transform:translateY(-4px); box-shadow:0 10px 26px rgba(2,6,23,0.06); }
+
+/* custom radio */
+.opt-label input[type="radio"]{
+  appearance:none;
+  width:20px; height:20px; border-radius:50%;
+  border:2px solid rgba(7,17,36,0.12);
+  background:transparent; margin-top:3px;
+  flex:0 0 20px;
+  position:relative;
+}
+.opt-label input[type="radio"]::after{
+  content:""; display:block; width:10px; height:10px; margin:auto; border-radius:50%; transform:scale(0); transition:transform .12s ease;
+  background: linear-gradient(90deg,var(--accent),var(--accent-2));
+}
+.opt-label:has(input[type="radio"]:checked) input[type="radio"]{ border-color:transparent; background:linear-gradient(90deg,var(--accent),var(--accent-2)); box-shadow:0 8px 20px rgba(37,99,235,0.12); }
+.opt-label:has(input[type="radio"]:checked) input[type="radio"]::after{ transform:scale(1); background: var(--card); }
+
+/* option text */
+.opt-label .opt-text{ font-size:15px; color:var(--text); }
+
+/* textarea */
+.quiz-textarea{
+  width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.04); min-height:110px; font-size:15px;
+  background: rgba(255,255,255,0.02);
+  color: #fff;
+}
+
+/* nav */
+.quiz-nav{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:18px; }
+.nav-left{ color:var(--muted); font-size:13px; }
+.btn{ padding:10px 14px; border-radius:10px; font-weight:700; border:1px solid rgba(255,255,255,0.04); background:transparent; cursor:pointer; color:#e6f7ff; }
+.btn.primary{ background:linear-gradient(90deg,var(--accent),var(--accent-2)); color:#fff; border:0; box-shadow:0 10px 30px rgba(37,99,235,0.12); }
+/* ...existing code... */

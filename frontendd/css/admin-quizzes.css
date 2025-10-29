@@ -1,0 +1,354 @@
+/* Profile / dropdown (shared look) */
+.profile-container{position:relative;display:flex;align-items:center;gap:8px;cursor:pointer;}
+.profile-img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #00ffff;}
+.profile-dropdown{position:absolute;top:48px;right:0;background:rgba(20,20,40,.95);border:1px solid #00ffff;border-radius:10px;padding:8px 0;min-width:200px;display:none;z-index:999;}
+.profile-dropdown a, .profile-dropdown button{display:block;padding:10px 14px;color:#fff;text-align:left;background:none;border:0;}
+.profile-dropdown.show{display:flex;flex-direction:column;}
+
+/* Quiz page specific */
+body.home-admin{font-family:'Poppins',sans-serif;background:#071028;color:#fff;}
+.navbar{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:rgba(0,0,0,.45);}
+main{background:rgba(255,255,255,0.02);padding:18px;border-radius:10px;}
+
+/* Minimal styling for Manage Quizzes page — non-invasive, relies on existing classes/markup */
+
+.admin-quizzes {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  color: #1f2937;
+  padding: 20px;
+  background: #f7fafc;
+  min-height: 100vh;
+}
+
+/* Table */
+.table-wrapper { width:100%; display:flex; justify-content:center; padding:8px 12px; box-sizing:border-box; }
+#quizzesTable {
+  width:100%;
+  max-width:1200px;
+  margin:0;
+  border-collapse:collapse;
+  background:#fff;
+  border-radius:8px;
+  overflow:hidden;
+  box-shadow:0 6px 18px rgba(15,23,42,0.06);
+  table-layout: fixed;           /* important: make columns respect colgroup */
+  font-family: inherit;
+}
+
+/* header */
+#quizzesTable thead th {
+  padding:12px 14px;
+  background: linear-gradient(180deg,#e6eef8 0%,#d7e6f5 100%) !important;
+  color: #0b1220 !important;
+  border-bottom: 1px solid rgba(11,17,32,0.06) !important;
+  box-shadow: inset 0 -1px 0 rgba(11,17,32,0.02);
+  font-weight:600;
+  font-size:13px;
+  color:#0f172a;
+  border-bottom:1px solid #eef2f7;
+  text-align:left;
+}
+
+/* body cells: single-line with ellipsis to keep rows compact */
+#quizzesTable tbody td {
+  padding:8px 10px;           /* tighter spacing */
+  border-bottom:1px solid #f1f5f9;
+  font-size:13px;            /* slightly smaller */
+  color:#0b1220;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* allow Title to wrap if very long but prefer ellipsis */
+#quizzesTable td:nth-child(2) { white-space:nowrap; } /* keep title compact */
+
+/* ID column: show ellipsis */
+#quizzesTable td.id-col { max-width:220px; }
+
+/* actions: compact buttons row */
+#quizzesTable td.actions { padding-top:10px; padding-bottom:10px; }
+.actions { display:flex; gap:6px; align-items:center; justify-content:center; flex-wrap:nowrap; }
+
+/* Compact column widths so Actions column has enough space */
+#quizzesTable th:nth-child(1), #quizzesTable td:nth-child(1) {
+  /* Quiz ID */
+  width: 8%;
+  max-width: 120px;
+  min-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#quizzesTable th:nth-child(2), #quizzesTable td:nth-child(2) {
+  /* Title: smaller */
+  width: 22%;
+  min-width: 120px;
+  max-width: 320px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#quizzesTable th:nth-child(3), #quizzesTable td:nth-child(3) {
+  /* Created By: shrink */
+  width: 8%;
+  min-width: 70px;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#quizzesTable th:nth-child(4), #quizzesTable td:nth-child(4) {
+  /* Week */
+  width: 6%;
+  max-width: 70px;
+  min-width: 50px;
+  text-align: center;
+  white-space: nowrap;
+}
+#quizzesTable th:nth-child(5), #quizzesTable td:nth-child(5) {
+  /* Published */
+  width: 6%;
+  max-width: 70px;
+  min-width: 50px;
+  text-align: center;
+  white-space: nowrap;
+}
+#quizzesTable th:nth-child(6), #quizzesTable td:nth-child(6) {
+  /* Questions count */
+  width: 6%;
+  max-width: 60px;
+  min-width: 48px;
+  text-align: center;
+  white-space: nowrap;
+}
+#quizzesTable th:nth-child(7), #quizzesTable td:nth-child(7) {
+  /* Actions: give more guaranteed room */
+  width: 40%;
+  min-width: 220px;
+  text-align: center;
+}
+
+/* Ensure action buttons container is centered instead of right-aligned */
+.actions { display:flex; gap:6px; align-items:center; justify-content:center; flex-wrap:nowrap; }
+#quizzesTable .actions { display:flex; gap:6px; align-items:center; justify-content:center; flex-wrap:nowrap; }
+
+/* Mobile: when stacked keep actions centered */
+@media (max-width:720px) {
+  .actions { flex-wrap:wrap; justify-content:center; }
+}
+
+/* Ensure title cell truncates cleanly */
+#quizzesTable td:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Make action buttons compact (no color changes) */
+#quizzesTable .actions { display:flex; gap:6px; align-items:center; justify-content:center; flex-wrap:nowrap; }
+#quizzesTable .actions button { padding:6px 6px; font-size:12px; line-height:1; white-space:nowrap; }
+
+/* hover */
+#quizzesTable tbody tr:hover { background:#fbfdff; }
+
+/* Responsive: stack but keep neat and no horizontal scroll on small screens */
+@media (max-width:720px) {
+  .table-wrapper { padding:0 10px; }
+  #quizzesTable thead { display:none; }
+  #quizzesTable tbody tr { display:block; margin-bottom:12px; padding:10px; border-radius:8px; box-shadow:0 6px 20px rgba(2,6,23,0.04); }
+  #quizzesTable tbody td { display:block; width:100%; white-space:normal; text-overflow:clip; padding:8px 10px; }
+  .actions { flex-wrap:wrap; justify-content:flex-start; }
+}
+
+/* mobile: allow wrapping on very small screens */
+@media (max-width:480px) {
+  .actions { flex-wrap:wrap; gap:6px; justify-content:flex-start; }
+  #quizzesTable th:nth-child(2), #quizzesTable td:nth-child(2) { min-width:140px; }
+}
+
+/* ensure wrapper usage: if your HTML has no wrapper, the rules still work */
+#quizzesTable { box-sizing: border-box; }
+
+/* Buttons */
+button {
+  background: #0ea5a3;
+  color: #fff;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+button:hover { opacity: 0.95; }
+button[style*="color:#c00"], .btn-danger {
+  background: transparent;
+  color: #c53030;
+  border: 1px solid rgba(197,48,48,0.08);
+}
+
+/* Modal */
+#quizModal {
+  display: none;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
+  background: #fff;
+  padding: 18px;
+  border-radius: 10px;
+  box-shadow: 0 18px 50px rgba(9,30,66,0.12);
+  z-index: 1000;
+  max-width: 960px;
+  width: 92%;
+  max-height: 80vh;
+  overflow: auto;
+}
+#modalBackdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(2,6,23,0.45);
+  z-index: 900;
+}
+
+/* Modal controls */
+#modalTitle { margin: 0 0 10px 0; font-size: 18px; }
+#modalBody { font-size: 14px; color: #0b1220; }
+#modalBody textarea { font-family: monospace; font-size: 13px; }
+
+/* Responsive */
+@media (max-width: 720px) {
+  #quizzesTable thead { display: none; }
+  #quizzesTable tbody td { display: block; width: 100%; }
+  #quizzesTable tbody tr { margin-bottom: 12px; display: block; border-bottom: none; background: #fff; padding: 12px; }
+}
+
+/* Utility */
+.small { font-size: 12px; color: #6b7280; }
+/* Ensure Actions cell can show all buttons (no clipping) */
+#quizzesTable td.actions {
+  overflow: visible !important;    /* allow buttons to extend */
+  white-space: normal;
+}
+
+/* Allow action buttons to wrap and keep centered */
+#quizzesTable .actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;                 /* wrap so all buttons visible on small widths */
+}
+
+/* Make buttons compact so more fit in a row */
+#quizzesTable .actions button {
+  padding: 6px 8px !important;
+  font-size: 12px !important;
+  min-width: 48px !important;
+  white-space: nowrap !important;
+  box-sizing: border-box;
+}
+
+/* Restore distinct Delete button appearance */
+#quizzesTable .btn-del,
+#quizzesTable button[style*="color:#c00"] {
+  background: #ffffff !important;
+  color: #c53030 !important;
+  border: 1px solid rgba(197,48,48,0.12) !important;
+  min-width: 60px !important;
+  padding: 6px 8px !important;
+}
+
+/* Fix: prevent buttons/text breaking and tidy mobile stacking (append only) */
+
+/* stop forcing word-break for table cells (prevents letters stacking) */
+#quizzesTable td,
+#quizzesTable th {
+  word-break: normal !important;
+  hyphens: none !important;
+}
+
+/* ensure action buttons never wrap and have minimum width */
+#quizzesTable .actions button,
+#quizzesTable button {
+  white-space: nowrap !important;
+  min-width: 72px;               /* wide enough for "Regenerate" etc */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px !important;
+  line-height: 1 !important;
+}
+
+/* reduce maximum button shrink on small screens but allow wrapping row of buttons */
+@media (max-width: 720px) {
+  #quizzesTable .actions { gap:8px; justify-content:center; flex-wrap:wrap; }
+  #quizzesTable .actions button { min-width: 60px; padding:6px 8px; font-size:13px; }
+}
+
+/* mobile stacking: make label column fixed width and values take remaining space */
+@media (max-width: 760px) {
+  #quizzesTable tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    white-space: normal;
+    overflow: visible;
+  }
+  /* keep the visually-injected label area consistent width */
+  #quizzesTable tbody td::before {
+    flex: 0 0 120px;
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* actions row centered and separate from other rows */
+  #quizzesTable tbody td.actions { display:flex; justify-content:center; width:100%; margin-top:6px; }
+}
+
+/* Small polish: tighten title column truncation but avoid shrinking too much */
+#quizzesTable td:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* safety: ensure buttons colours/appearance unchanged by these overrides */
+#quizzesTable .actions button { background: inherit; color: inherit; border-radius: 6px; border: none; }
+/* Tidy search box */
+.search-wrap input#search,
+.controls-inner .search-wrap input,
+.search-wrap input {
+  width: 100%;
+  height: 40px;
+  padding: 8px 12px 8px 40px; /* left space for icon */
+  border-radius: 10px;
+  border: 1px solid #e6e9ef;
+  background-color: #ffffff;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='11' r='7'/><line x1='21' y1='21' x2='16.65' y2='16.65'/></svg>");
+  background-repeat: no-repeat;
+  background-position: 12px center;
+  box-shadow: 0 6px 18px rgba(2,6,23,0.04);
+  font-size: 14px;
+  color: #0b1220;
+  transition: box-shadow .12s ease, border-color .12s ease, transform .08s ease;
+  box-sizing: border-box;
+}
+
+/* placeholder + focus */
+.search-wrap input#search::placeholder,
+.controls-inner .search-wrap input::placeholder {
+  color: #94a3b8;
+  opacity: 1;
+}
+.search-wrap input#search:focus,
+.controls-inner .search-wrap input:focus {
+  outline: none;
+  border-color: #c7e7e0;
+  box-shadow: 0 10px 30px rgba(14,165,163,0.08);
+  transform: translateY(-1px);
+}
+
+/* compact on small screens */
+@media (max-width: 760px) {
+  .search-wrap input#search { height: 38px; padding-left: 38px; font-size: 13px; }
+}

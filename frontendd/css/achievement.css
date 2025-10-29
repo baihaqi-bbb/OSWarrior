@@ -1,0 +1,197 @@
+/* ===== Achievement Page - Migrated from Home Page Style ===== */
+body.achievement-user {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+  background:
+    linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+    url("https://wallpaperbat.com/img/58270849-neon-laser-tag-battle-wallpaper-hd.png")
+    no-repeat center center fixed;
+  background-size: cover;
+  color: white;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* Navbar */
+body.achievement-user .navbar {
+  background: rgba(44, 62, 80, 0.85);
+  padding: 16px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+body.achievement-user .navbar h1 {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Achievements Grid */
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  padding: 40px;
+  box-sizing: border-box;
+  animation: fadeIn 1s ease forwards;
+}
+
+/* Achievement Cards */
+.achievement-card {
+  background: rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  color: white;
+  transform: translateY(40px);
+  opacity: 0;
+  animation: slideUp 0.8s forwards;
+  transition: transform 0.3s, box-shadow 0.3s;
+  cursor: default;
+  overflow-wrap: break-word; /* pastikan text tak keluar */
+}
+
+/* Card Animation Delay */
+.achievement-card:nth-child(1){ animation-delay: 0.2s; }
+.achievement-card:nth-child(2){ animation-delay: 0.4s; }
+.achievement-card:nth-child(3){ animation-delay: 0.6s; }
+.achievement-card:nth-child(4){ animation-delay: 0.8s; }
+
+/* Card Text */
+.achievement-card h3 {
+  margin-bottom: 10px;
+  color: #0ff;
+  text-shadow: 0 0 8px #0ff;
+  word-break: break-word;
+}
+.achievement-card p, .achievement-card small {
+  font-size: 14px;
+  margin: 5px 0;
+  word-break: break-word;
+}
+
+/* Card Hover */
+.achievement-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(0,255,255,0.4);
+}
+
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+
+/* Profile dropdown */
+.profile-container {
+  position: relative;
+}
+
+.profile-img {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #00ffff;
+  box-shadow: 0 0 10px #00ffff;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profile-img:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 18px rgba(0,255,255,1);
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  background: rgba(20, 20, 40, 0.95);
+  border: 1px solid #00ffff;
+  border-radius: 10px;
+  padding: 10px 0;
+  min-width: 180px;
+  box-shadow: 0 0 15px rgba(0,255,255,0.5);
+  display: none;
+  flex-direction: column;
+  z-index: 9999;
+}
+
+.profile-dropdown a, .profile-dropdown button {
+  padding: 10px 15px;
+  color: white;
+  text-decoration: none;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 0.95rem;
+  transition: background 0.2s ease;
+  cursor: pointer;
+  width: 100%;
+}
+
+.profile-dropdown a:hover, .profile-dropdown button:hover {
+  background: rgba(0,255,255,0.15);
+}
+
+.profile-dropdown.show {
+  display: flex;
+  animation: dropdownFade 0.25s ease forwards;
+}
+
+@keyframes dropdownFade {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Responsiveness ===== */
+@media screen and (max-width: 768px) {
+  .achievements-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    padding: 20px;
+    gap: 15px;
+  }
+
+  .achievement-card {
+    padding: 15px;
+  }
+
+  .achievement-card h3 {
+    font-size: 16px;
+  }
+
+  .achievement-card p, .achievement-card small {
+    font-size: 12px;
+  }
+
+  .navbar h1 {
+    font-size: 20px;
+    position: relative;
+  }
+
+  .profile-img {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .achievements-grid {
+    grid-template-columns: 1fr;
+    padding: 15px;
+    gap: 10px;
+  }
+
+  .navbar {
+    padding: 12px 20px;
+  }
+
+  .profile-img {
+    width: 35px;
+    height: 35px;
+  }
+}

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OSwarrior - Login</title>
+  <link rel="stylesheet" href="css/login.css" />
+  <link rel="icon" type="image/png" href="image/icon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="cyber-grid"></div>
+
+  <div class="login-container">
+    <h1>Welcome to <span>OSwarrior</span></h1>
+
+    <input type="email" id="email" placeholder="Enter your email" />
+    <input type="password" id="password" placeholder="Enter your password" />
+    <button id="login-btn">Login</button>
+    <button id="signup-btn" class="signup-btn">Sign Up</button>
+
+    <p class="help-text">
+      Forgot your login details? <a href="#">Get help logging in</a>
+    </p>
+
+    <div class="divider">OR</div>
+
+    <button class="google-btn" id="google-login">
+      <img src="image/Google__G__logo.svg.webp" alt="Google logo" />
+      Login with Google
+    </button>
+
+    <p id="message"></p>
+  </div>
+
+  <!-- Forgot Password Modal -->
+  <div id="forgot-modal" class="modal">
+    <div class="modal-content">
+      <h2>Reset Password</h2>
+      <p>Enter your email to receive a password reset link:</p>
+      <input type="email" id="resetEmail" placeholder="Your email">
+      <button id="resetBtn">Send Reset Link</button>
+      <button id="closeModal" class="close-btn">Cancel</button>
+      <p id="resetMsg"></p>
+    </div>
+  </div>
+
+  <script type="module" src="js/login.js"></script>
+  <script>
+    // Sign Up button navigation and Enter key accessibility
+    document.addEventListener('DOMContentLoaded', function() {
+      const signupBtn = document.getElementById('signup-btn');
+      const loginBtn = document.getElementById('login-btn');
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+
+      if (signupBtn) {
+        signupBtn.addEventListener('click', function() {
+          window.location.href = 'signup.html';
+        });
+      }
+
+      // Allow Enter to trigger Login
+      [emailInput, passwordInput].forEach(input => {
+        input.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            loginBtn.click();
+          }
+        });
+      });
+
+      // Allow Enter to trigger Sign Up when focused
+      signupBtn.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+          signupBtn.click();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

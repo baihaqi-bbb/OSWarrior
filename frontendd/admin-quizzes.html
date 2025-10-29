@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Manage Quizzes</title>
+  <link rel="stylesheet" href="css/home-admin.css" />
+  <link rel="stylesheet" href="css/admin-quizzes.css" />
+  <link rel="stylesheet" href="css/profile-dropdown.css" />
+</head>
+<body class="home-admin admin-quizzes">
+  <div class="navbar">
+    <h1>Manage Quizzes</h1>
+    <div class="navbar-right">
+      <div class="profile-container" id="profile-toggle">
+        <span id="username-navbar">Admin</span>
+        <img id="profile-img" class="profile-img" src="image/default-profile.png" alt="Profile"/>
+        <div id="profile-dropdown" class="profile-dropdown hidden">
+          <a id="view-profile" href="profile.html">👤 View Profile</a>
+          <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
+          <div class="settings-section">
+            <p class="settings-title">⚙️ Quick Settings</p>
+            <button id="toggle-theme">🌗 Dark / Light Mode</button>
+            <button id="change-avatar">🖼️ Change Avatar</button>
+            <button id="edit-name">✏️ Edit Name</button>
+          </div>
+          <button id="logout-btn">🚪 Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main style="padding:20px; max-width:1100px; margin:auto">
+    <div style="display:flex; gap:12px; margin-bottom:12px;">
+      <div class="search-wrap" style="flex:1; max-width:520px;">
+        <input id="search" placeholder="Search quizzes by title or id" />
+      </div>
+      <div style="margin-left:auto; display:flex; gap:8px;">
+        <button id="btn-new" onclick="(window.createNewQuiz || (()=>console.warn('createNewQuiz not ready')))()">Create New Quiz</button>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table id="quizzesTable" class="users-table" style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr>
+            <th>Quiz ID</th><th>Title</th><th>Created By</th><th>Week</th><th>Published</th><th>Questions</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- modal: view / edit -->
+    <div id="quizModal" style="display:none;">
+      <button id="modalClose" style="float:right">Close</button>
+      <h2 id="modalTitle">Quiz</h2>
+      <div id="modalBody" style="margin-top:12px;max-height:60vh;overflow:auto"></div>
+      <div style="margin-top:12px;">
+        <button id="modalSave">Save</button>
+        <button id="modalPublish">Toggle Publish</button>
+        <button id="modalRegenerate">Regenerate</button>
+        <button id="modalDelete" style="color:#c00">Delete</button>
+      </div>
+    </div>
+
+    <div id="modalBackdrop"></div>
+  </main>
+
+  <script type="module" src="js/home-admin.js"></script>
+  <script type="module" src="js/admin-quizzes.js"></script>
+</body>
+</html>

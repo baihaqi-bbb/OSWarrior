@@ -1,0 +1,1955 @@
+[
+  {
+    "ts": "2025-10-23T13:19:09.124Z",
+    "request_id": "1761225549024-9xqa4w",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 100
+    }
+  },
+  {
+    "ts": "2025-10-23T13:19:08.808Z",
+    "request_id": "1761225548718-ouxfn0",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 90
+    }
+  },
+  {
+    "ts": "2025-10-23T13:19:08.475Z",
+    "request_id": "1761225548376-kpqp4a",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 99
+    }
+  },
+  {
+    "ts": "2025-10-23T13:19:08.133Z",
+    "request_id": "1761225548034-743tr7",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 99
+    }
+  },
+  {
+    "ts": "2025-10-23T13:19:07.780Z",
+    "request_id": "1761225547640-9tbqtj",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 140
+    }
+  },
+  {
+    "ts": "2025-10-23T13:18:42.007Z",
+    "request_id": "1761225521907-okvk7b",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 100
+    }
+  },
+  {
+    "ts": "2025-10-23T13:18:41.678Z",
+    "request_id": "1761225521567-jhijux",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 111
+    }
+  },
+  {
+    "ts": "2025-10-23T13:18:41.456Z",
+    "request_id": "1761225521315-64iazo",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 141
+    }
+  },
+  {
+    "ts": "2025-10-23T13:18:41.280Z",
+    "request_id": "1761225519562-f9c1tu",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 1718
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:41.974Z",
+    "request_id": "1761224801971-47p5dm",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 3
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:41.888Z",
+    "request_id": "1761224801792-92jl04",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 96
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:41.572Z",
+    "request_id": "1761224801493-23kqwk",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 79
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:41.311Z",
+    "request_id": "1761224801305-8dzvte",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 5
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:41.296Z",
+    "request_id": "1761224801206-reev90",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 90
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:40.952Z",
+    "request_id": "1761224800877-2hjl2e",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 75
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:40.679Z",
+    "request_id": "1761224800674-tpcg8z",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 5
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:40.621Z",
+    "request_id": "1761224800508-7hdpxo",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 113
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:40.324Z",
+    "request_id": "1761224800230-j1vaos",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 93
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:40.202Z",
+    "request_id": "1761224800195-uhlsbp",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 7
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:40.071Z",
+    "request_id": "1761224799974-p6soc9",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 97
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:39.963Z",
+    "request_id": "1761224799817-5xogul",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 146
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:39.357Z",
+    "request_id": "1761224799353-0rassl",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 4
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:39.346Z",
+    "request_id": "1761224799266-tlo8mr",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 80
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:39.044Z",
+    "request_id": "1761224798961-7cmfjm",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 83
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:38.761Z",
+    "request_id": "1761224798757-53sglh",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 4
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:38.684Z",
+    "request_id": "1761224798604-8j9mr1",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 80
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:38.424Z",
+    "request_id": "1761224798325-qrk7mw",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 99
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:38.117Z",
+    "request_id": "1761224798113-l49pvp",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 4
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:38.063Z",
+    "request_id": "1761224797998-pwscyq",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 65
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:37.764Z",
+    "request_id": "1761224797670-uolyej",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 94
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:37.497Z",
+    "request_id": "1761224797493-6fiod6",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 4
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:37.474Z",
+    "request_id": "1761224797402-pgwmgr",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 72
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:37.127Z",
+    "request_id": "1761224797028-ovrgee",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 99
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:36.829Z",
+    "request_id": "1761224796826-byzbwi",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 3
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:36.815Z",
+    "request_id": "1761224796739-4iutif",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 76
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:36.464Z",
+    "request_id": "1761224796361-eg6v3c",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 103
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:36.208Z",
+    "request_id": "1761224796202-frxfle",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 6
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:36.170Z",
+    "request_id": "1761224796072-uzq4n4",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 98
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:35.904Z",
+    "request_id": "1761224795825-pswm55",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 79
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:35.624Z",
+    "request_id": "1761224795620-87c3tf",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 4
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:35.572Z",
+    "request_id": "1761224795475-k8tc8m",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 96
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:35.310Z",
+    "request_id": "1761224795195-vvck76",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 115
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:35.156Z",
+    "request_id": "1761224795149-xa7u6y",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 7
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:35.030Z",
+    "request_id": "1761224794936-0i4ue9",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 94
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:34.924Z",
+    "request_id": "1761224794850-wce58q",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 74
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:34.301Z",
+    "request_id": "1761224794194-zbop0o",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 107
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:34.226Z",
+    "request_id": "1761224794222-vmegn3",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 4
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:33.954Z",
+    "request_id": "1761224793850-oafqi0",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 104
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:33.657Z",
+    "request_id": "1761224793652-i9llql",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 5
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:33.587Z",
+    "request_id": "1761224793581-myvcn2",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 6
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:33.571Z",
+    "request_id": "1761224793467-vl2s4f",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 104
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:33.276Z",
+    "request_id": "1761224793185-03csuk",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 91
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:32.987Z",
+    "request_id": "1761224792896-8tr4gz",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 91
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:32.654Z",
+    "request_id": "1761224792571-zkdnim",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 83
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:32.558Z",
+    "request_id": "1761224792554-73a0mh",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 4
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:32.252Z",
+    "request_id": "1761224792133-dd7935",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 119
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:31.952Z",
+    "request_id": "1761224791805-l8gg5a",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 147
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:31.934Z",
+    "request_id": "1761224791930-zzy2za",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 4
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:31.619Z",
+    "request_id": "1761224791516-whkyy3",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 103
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:31.455Z",
+    "request_id": "1761224791449-8c6awx",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 5
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:31.206Z",
+    "request_id": "1761224791119-z3cmiw",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 87
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:31.108Z",
+    "request_id": "1761224791017-4j0uh5",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 91
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:30.477Z",
+    "request_id": "1761224790387-tdtubf",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 90
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:30.405Z",
+    "request_id": "1761224790402-12suxn",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 3
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:30.142Z",
+    "request_id": "1761224790046-dzxqwx",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 96
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:29.836Z",
+    "request_id": "1761224789832-vs9gsv",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 3
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:29.763Z",
+    "request_id": "1761224789668-3pvt6c",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 95
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:29.506Z",
+    "request_id": "1761224789410-3jrlmd",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 96
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:29.346Z",
+    "request_id": "1761224789340-5mvrat",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 6
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:29.231Z",
+    "request_id": "1761224789115-vvcunp",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 116
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:29.109Z",
+    "request_id": "1761224788905-cz1rrd",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 204
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:28.262Z",
+    "request_id": "1761224788169-p6vych",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 93
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:28.157Z",
+    "request_id": "1761224788153-m2wbuw",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 4
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:27.842Z",
+    "request_id": "1761224787746-j2481x",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 96
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:27.568Z",
+    "request_id": "1761224787471-lfspny",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 97
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:27.550Z",
+    "request_id": "1761224787545-x2sryp",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 5
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:27.152Z",
+    "request_id": "1761224787072-a5812a",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 80
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:26.905Z",
+    "request_id": "1761224786902-iz8t7z",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 3
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:26.883Z",
+    "request_id": "1761224786790-rnsrhd",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 93
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:26.587Z",
+    "request_id": "1761224786431-eyq4wp",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 156
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:26.234Z",
+    "request_id": "1761224786027-4jtl2x",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 207
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:25.855Z",
+    "request_id": "1761224785756-yqcu1a",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 99
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:25.572Z",
+    "request_id": "1761224785406-wo335y",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 166
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:25.215Z",
+    "request_id": "1761224785099-4r33a4",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 115
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:24.918Z",
+    "request_id": "1761224784832-s2c1s1",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 86
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:24.639Z",
+    "request_id": "1761224784433-lt7wp4",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 206
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:24.259Z",
+    "request_id": "1761224784124-antu7z",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 135
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:23.958Z",
+    "request_id": "1761224783825-a2vbsf",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 133
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:23.660Z",
+    "request_id": "1761224783514-g9m838",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 146
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:23.327Z",
+    "request_id": "1761224783170-rnejhz",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 157
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:22.988Z",
+    "request_id": "1761224782871-e2g4uv",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 116
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:22.696Z",
+    "request_id": "1761224782604-4xx2ii",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 92
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:22.403Z",
+    "request_id": "1761224782259-kg4bqc",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 144
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:22.080Z",
+    "request_id": "1761224781942-3t5m31",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 137
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:21.726Z",
+    "request_id": "1761224781643-x3wfus",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 83
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:21.452Z",
+    "request_id": "1761224781265-m68nig",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 187
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:21.078Z",
+    "request_id": "1761224780904-9ie4d3",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 174
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:20.893Z",
+    "request_id": "1761224780890-aeh7ae",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 3
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:20.608Z",
+    "request_id": "1761224780304-wsww34",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 304
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:20.101Z",
+    "request_id": "1761224779999-lpnyus",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 102
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:19.803Z",
+    "request_id": "1761224779662-uug9oe",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 141
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:19.458Z",
+    "request_id": "1761224779339-m6d6xb",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 119
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:19.155Z",
+    "request_id": "1761224778969-ecpu56",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 186
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:18.789Z",
+    "request_id": "1761224778681-oyzvwp",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 107
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:18.498Z",
+    "request_id": "1761224778356-lxu7s5",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 142
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:18.302Z",
+    "request_id": "1761224778298-uly1fx",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 4
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:18.100Z",
+    "request_id": "1761224777971-nsmkv3",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 129
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:17.948Z",
+    "request_id": "1761224776420-c9uhcx",
+    "method": "GET",
+    "path": "/api/top3",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "Not Modified",
+    "status_code": 304,
+    "meta": {
+      "durationMs": 1528
+    }
+  },
+  {
+    "ts": "2025-10-23T13:06:16.453Z",
+    "request_id": "1761224776435-0kwhmr",
+    "method": "GET",
+    "path": "/api/logs",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+    "actor": "anon",
+    "source": "backend",
+    "level": "info",
+    "action": "http.get",
+    "target": null,
+    "outcome": "OK",
+    "status_code": 200,
+    "meta": {
+      "durationMs": 18
+    }
+  }
+]

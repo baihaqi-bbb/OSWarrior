@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Admin — Upload Notes</title>
+  <link rel="stylesheet" href="css/home-admin.css" />
+  <link rel="stylesheet" href="css/admin-upload.css" />
+  <link rel="stylesheet" href="css/profile-dropdown.css" />
+</head>
+<body class="home-admin">
+  <div class="navbar">
+    <h1>Upload Notes & Generate Questions</h1>
+
+    <!-- profile container (sama sebijik seperti yang digunakan di home-admin.js) -->
+    <div class="profile-container">
+      <span class="profile-name" id="username-navbar">Admin</span>
+      <img id="profile-img" class="profile-img" src="image/default-profile.png" alt="Profile"/>
+      <div id="profile-dropdown" class="profile-dropdown" role="menu" aria-hidden="true">
+        <a id="view-profile" href="profile.html">👤 View Profile</a>
+        <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
+        <div class="sep"></div>
+        <button id="toggle-theme">🌗 Toggle theme</button>
+        <button id="change-avatar">🖼️ Change avatar</button>
+        <button id="edit-name">✏️ Edit name</button>
+        <div class="sep"></div>
+        <button id="logout-btn">🚪 Logout</button>
+      </div>
+    </div>
+    <!-- end profile container -->
+  </div>
+
+  <main style="padding:20px; max-width:1000px; margin:auto">
+    <section class="card upload-card" style="padding:18px; border-radius:12px;">
+      <label class="label-muted">Select weeks (choose one or more)</label>
+
+      <div style="display:flex;gap:12px;align-items:center;margin-top:8px;">
+        <div class="dropdown" id="week-dropdown">
+          <button id="week-dropdown-btn" class="dropdown-btn">Select weeks <span id="selected-count">(0)</span></button>
+          <div id="week-dropdown-panel" class="dropdown-panel hidden" role="listbox" aria-multiselectable="true">
+            <div class="panel-actions">
+              <button id="select-all" class="btn">All</button>
+              <button id="clear-all" class="btn ghost">Clear</button>
+            </div>
+            <div id="week-list" class="week-list" aria-live="polite"></div>
+            <div style="display:flex;justify-content:flex-end;margin-top:10px">
+              <button id="done-weeks" class="btn primary">Done</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="selected-chips" class="weeks-selected" aria-live="polite"></div>
+      </div>
+
+      <div style="display:flex;gap:12px;align-items:center;margin:18px 0;">
+        <button id="choose-file" class="btn">Choose file</button>
+        <span id="file-name" class="muted">No file chosen</span>
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:18px;">
+        <button id="upload-btn" class="btn primary" disabled>Upload & Generate (GPT-4)</button>
+        <span id="upload-status" class="muted" style="margin-left:10px"></span>
+      </div>
+
+      <!-- Generated quizzes table -->
+      <div class="upload-table-card">
+        <h3 class="muted" style="margin:0 0 12px 0">Generated quizzes</h3>
+        <div class="table-responsive">
+          <table class="upload-table" id="uploadTable" aria-live="polite">
+            <thead>
+              <tr>
+                <th style="width:130px">Weeks</th>
+                <th>Title</th>
+                <th style="width:160px">Source file</th>
+                <th style="width:140px">Created</th>
+                <th style="width:90px">Q</th>
+                <th style="width:110px">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="empty-row"><td colspan="6" class="muted" style="text-align:center;padding:18px">No generated quizzes yet</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/home-admin.js"></script>
+  <script type="module" src="js/admin-upload.js"></script>
+</body>
+</html>

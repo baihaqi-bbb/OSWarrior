@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OSwarrior Admin Dashboard</title>
+  <link rel="stylesheet" href="css/home-admin.css">
+  <link rel="stylesheet" href="css/profile-dropdown.css" />
+</head>
+<body class="home-admin">
+  <!-- Navbar -->
+  <div class="navbar">
+    <h1>OSwarrior Admin Dashboard</h1>
+    <div class="navbar-right">
+      <div class="profile-container" id="profile-toggle">
+        <span id="username-navbar">Admin</span>
+        <img id="profile-img" class="profile-img" src="image/default-profile.png" alt="Profile"/>
+        <div id="profile-dropdown" class="profile-dropdown hidden">
+          <a id="view-profile" href="profile.html">👤 View Profile</a>
+          <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
+          <div class="settings-section">
+            <p class="settings-title">⚙️ Quick Settings</p>
+            <button id="toggle-theme">🌗 Dark / Light Mode</button>
+            <button id="change-avatar">🖼️ Change Avatar</button>
+            <button id="edit-name">✏️ Edit Name</button>
+          </div>
+          <button id="logout-btn">🚪 Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Edit Name -->
+  <div id="modal-edit-name" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>Edit Name</h3>
+      <input type="text" id="input-new-name" placeholder="Enter new name">
+      <div class="modal-actions">
+        <button id="save-name-btn" class="btn-action">Save</button>
+        <button id="cancel-name-btn" class="btn-action btn-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Change Avatar -->
+  <div id="modal-change-avatar" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>Change Avatar</h3>
+      <input type="text" id="input-avatar-url" placeholder="Paste image URL">
+      <div class="modal-actions">
+        <button id="save-avatar-btn" class="btn-action">Save</button>
+        <button id="cancel-avatar-btn" class="btn-action btn-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Control Panel -->
+  <div class="content admin-control-panel" style="padding:28px;">
+    <div class="card" id="manage-users">
+      <span class="icon">👥</span>
+      <h2>Manage Users</h2>
+      <p>View, edit roles, suspend or delete users.</p>
+      <a href="admin-users.html" class="card-action">Open</a>
+    </div>
+
+    <div class="card" id="manage-quizzes">
+      <span class="icon">🧩</span>
+      <h2>Manage Quizzes</h2>
+      <p>Create, edit or remove generated quizzes.</p>
+      <a href="admin-quizzes.html" class="card-action">Open</a>
+    </div>
+
+    <div class="card" id="upload-notes">
+      <span class="icon">📤</span>
+      <h2>Upload Notes</h2>
+      <p>Upload lecture notes to generate quizzes (OpenAI).</p>
+      <a href="admin-quizzes.html" class="card-action">Upload</a>
+    </div>
+
+    <div class="card" id="admin-leaderboard">
+      <span class="icon">🏆</span>
+      <h2>Leaderboard</h2>
+      <p>Admin view: export / reset leaderboard data.</p>
+      <a href="admin-leaderboard.html" class="card-action">Open</a>
+    </div>
+
+    <div class="card" id="admin-reports">
+      <span class="icon">📊</span>
+      <h2>Reports</h2>
+      <p>View usage, quiz stats and export reports.</p>
+      <a href="admin-reports.html" class="card-action">Open</a>
+    </div>
+
+    <div class="card" id="admin-logs">
+      <span class="icon">🧾</span>
+      <h2>Audit Logs</h2>
+      <p>See recent admin actions and system logs.</p>
+      <a href="admin-logs.html" class="card-action">Open</a>
+    </div>
+  </div>
+
+  <!-- Link ke JS luaran -->
+  <script type="module" src="js/home-admin.js"></script>
+</body>
+</html>

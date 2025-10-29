@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Admin — Manage Users</title>
+  <link rel="stylesheet" href="css/home-admin.css" />
+  <link rel="stylesheet" href="css/admin-users.css" />
+  <link rel="stylesheet" href="css/profile-dropdown.css" />
+</head>
+<body class="home-admin">
+  <div class="navbar">
+    <h1>Manage Users</h1>
+    <div class="navbar-right">
+      <div class="profile-container" id="profile-toggle">
+        <span id="username-navbar">Admin</span>
+        <img id="profile-img" class="profile-img" src="image/default-profile.png" alt="Profile"/>
+        <div id="profile-dropdown" class="profile-dropdown hidden">
+          <a id="view-profile" href="profile.html">👤 View Profile</a>
+          <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
+          <div class="settings-section">
+            <p class="settings-title">⚙️ Quick Settings</p>
+            <button id="toggle-theme">🌗 Dark / Light Mode</button>
+            <button id="change-avatar">🖼️ Change Avatar</button>
+            <button id="edit-name">✏️ Edit Name</button>
+          </div>
+          <button id="logout-btn">🚪 Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main style="padding:20px; max-width:1000px; margin:auto">
+    <div style="display:flex; gap:12px; margin-bottom:12px;">
+      <input id="search" placeholder="Search by email or name" style="flex:1;padding:8px" />
+      <button id="exportCsv">Export CSV</button>
+    </div>
+
+    <!-- wrapped and classed so CSS applies -->
+    <div class="table-responsive">
+      <table id="usersTable" class="users-table" style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr><th>Email</th><th>Name</th><th>Role</th><th>Disabled</th><th>Actions</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="pager" style="margin-top:12px"></div>
+  </main>
+
+  <!-- shared admin dashboard behaviour (init Firebase, profile, dropdown, logout) -->
+  <script type="module" src="js/home-admin.js"></script>
+  <!-- page-specific logic (must NOT call initializeApp again) -->
+  <script type="module" src="js/admin-users.js"></script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Admin — Audit Logs</title>
+  <link rel="stylesheet" href="css/home-admin.css" />
+  <link rel="stylesheet" href="css/profile-dropdown.css" />
+</head>
+<body class="home-admin">
+  <div class="navbar">
+    <h1>Audit Logs</h1>
+    <div class="navbar-right">
+      <div class="profile-container" id="profile-toggle">
+        <span id="username-navbar">Admin</span>
+        <img id="profile-img" class="profile-img" src="image/default-profile.png" alt="Profile"/>
+        <div id="profile-dropdown" class="profile-dropdown hidden">
+          <a id="view-profile" href="profile.html">👤 View Profile</a>
+          <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
+          <div class="settings-section">
+            <p class="settings-title">⚙️ Quick Settings</p>
+            <button id="toggle-theme">🌗 Dark / Light Mode</button>
+            <button id="change-avatar">🖼️ Change Avatar</button>
+            <button id="edit-name">✏️ Edit Name</button>
+          </div>
+          <button id="logout-btn">🚪 Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main style="padding:20px; max-width:1000px; margin:auto">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+      <h2 style="margin:0">Audit Logs</h2>
+      <div style="margin-left:auto"><a href="home-admin.html">← Back to Admin Dashboard</a></div>
+    </div>
+    <div style="margin-bottom:12px">
+      <button id="logs-refresh" class="btn">Refresh</button>
+      <span id="logs-status" style="margin-left:12px;color:#94a3b8;font-size:13px"></span>
+    </div>
+    <div style="overflow:auto;background:rgba(255,255,255,0.02);padding:8px;border-radius:8px">
+      <table id="adminLogsTable" style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr><th style="padding:8px">Time</th><th style="padding:8px">Level</th><th style="padding:8px">User</th><th style="padding:8px">Action</th><th style="padding:8px">Details</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p style="margin-top:12px;color:#94a3b8">Tip: backend must provide /api/logs or set window.BACKEND_BASE to fetch real logs.</p>
+  </main>
+ 
+   <!-- use same admin dashboard script so dropdown/profile/auth behave identical -->
+   <script type="module" src="js/home-admin.js"></script>
+   <script src="js/admin-logs.js"></script>
+ </body>
+ </html>

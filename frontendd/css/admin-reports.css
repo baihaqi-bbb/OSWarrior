@@ -1,0 +1,39 @@
+/* Profile / dropdown */
+.profile-container{position:relative;display:flex;align-items:center;gap:8px;cursor:pointer;}
+.profile-img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #8a2be2;}
+.profile-dropdown{position:absolute;top:48px;right:0;background:rgba(18,12,30,.96);border:1px solid #8a2be2;border-radius:10px;padding:8px 0;min-width:200px;display:none;z-index:999;}
+.profile-dropdown a, .profile-dropdown button{display:block;padding:10px 14px;color:#fff;text-align:left;background:none;border:0;}
+.profile-dropdown.show{display:flex;flex-direction:column;}
+
+/* Reports page */
+body.home-admin{font-family:'Poppins',sans-serif;background:#0a0720;color:#fff;}
+.navbar{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:rgba(0,0,0,.45);}
+main{background:rgba(255,255,255,0.02);padding:18px;border-radius:10px;}
+.reports-main { box-sizing: border-box; }
+.reports-controls {
+  display:flex; justify-content:space-between; gap:12px; align-items:center;
+  margin-bottom:14px; padding:10px 12px; background:rgba(255,255,255,0.02); border-radius:8px;
+}
+.controls-left { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.controls-left label { font-size:13px; color:var(--muted,#cbd5e1); }
+.controls-left input[type="date"], .controls-left select { padding:6px 8px; border-radius:6px; border:1px solid rgba(0,0,0,0.06); background: #fff; }
+.controls-right { display:flex; gap:8px; align-items:center; }
+
+.btn { background:#0ea5a3; color:#fff; border:0; padding:8px 10px; border-radius:8px; cursor:pointer; }
+.btn.outline { background:transparent; border:1px solid #0ea5a3; color:#0ea5a3; }
+
+.reports-chart { margin-bottom:16px; padding:12px; background:rgba(255,255,255,0.02); border-radius:8px; }
+#reportsCanvas { width:100% !important; height:320px !important; }
+
+.reports-table { margin-top:8px; background:rgba(255,255,255,0.02); border-radius:8px; overflow:auto; padding:8px; }
+#reportsTable { width:100%; border-collapse:collapse; min-width:600px; }
+#reportsTable th, #reportsTable td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); text-align:left; color:inherit; }
+#reportsTable thead th { background:rgba(0,255,255,0.06); color:#00ffff; font-weight:600; }
+
+.status { margin-top:10px; color:#94a3b8; font-size:13px; }
+
+/* responsive */
+@media (max-width:760px){
+  .reports-controls { flex-direction:column; align-items:stretch; }
+  .controls-right { justify-content:flex-end; }
+}

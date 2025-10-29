@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Admin — Leaderboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="css/admin-leaderboard.css" />
+  <link rel="stylesheet" href="css/profile-dropdown.css" />
+</head>
+<body class="home-admin">
+  <div class="navbar">
+    <h1>Admin Leaderboard</h1>
+    <div class="navbar-right">
+      <div class="profile-container" id="profile-toggle">
+        <span id="username-navbar">Admin</span>
+        <img id="profile-img" class="profile-img" src="image/default-profile.png" alt="Profile"/>
+        <div id="profile-dropdown" class="profile-dropdown hidden">
+          <a id="view-profile" href="profile.html">👤 View Profile</a>
+          <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
+          <div class="settings-section">
+            <p class="settings-title">⚙️ Quick Settings</p>
+            <button id="toggle-theme">🌗 Dark / Light Mode</button>
+          </div>
+          <button id="logout-btn">🚪 Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <div class="leaderboard-header" style="max-width:1100px;margin:0 auto;padding:0 16px;">
+      <h2 style="margin:0">Leaderboard (admin)</h2>
+      <div style="margin-left:auto;">
+        <a href="home-admin.html" style="color:inherit;text-decoration:underline;">← Back to Admin Dashboard</a>
+      </div>
+    </div>
+
+    <!-- reuse same leaderboard DOM structure (styles are in admin-leaderboard.css) -->
+    <div class="leaderboard-container" style="max-width:1100px;margin:18px auto;">
+      <div class="sidebar">
+        <h6>Leaderboard</h6>
+        <button id="totalBtn">Total</button>
+        <div id="weekButtons"></div>
+      </div>
+
+      <div class="board" id="board">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+          <h2 style="margin:0">Total Ranking</h2>
+          <div style="margin-left:auto;">
+            <button id="lb-refresh" class="btn">Refresh (fetch)</button>
+          </div>
+        </div>
+
+        <table id="rankingTable" aria-label="Admin Leaderboard">
+          <thead>
+            <tr><th>Rank</th><th>User</th><th>Score</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <div id="lb-status"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- shared admin behaviour (module) -->
+  <script type="module" src="js/home-admin.js"></script>
+  <!-- leaderboard page script (non-module) - loaded after DOM so it can query elements -->
+  <script src="js/leaderboard.js"></script>
+</body>
+</html>
