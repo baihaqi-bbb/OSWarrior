@@ -49,14 +49,20 @@ const upload = multer({
 // try initialize Firestore using service account (env GOOGLE_APPLICATION_CREDENTIALS or known filenames)
 let useFirestore = false;
 let db = null;
-try {
-  const envPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-  const candidatePaths = [
-    envPath,
-    path.join(process.cwd(), "firebase-service-account.json"),
-    path.join(process.cwd(), "serviceAccountKey.json"),
-    path.join(process.cwd(), "service-account.json")
-  ].filter(Boolean);
+
+// Skip Firebase initialization if explicitly disabled
+if (process.env.DISABLE_FIREBASE === "true") {
+  console.log("Firebase disabled via DISABLE_FIREBASE environment variable");
+  useFirestore = false;
+} else {
+  try {
+    const envPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    const candidatePaths = [
+      envPath,
+      path.join(process.cwd(), "firebase-service-account.json"),
+      path.join(process.cwd(), "serviceAccountKey.json"),
+      path.join(process.cwd(), "service-account.json")
+    ].filter(Boolean);
   let found = null;
   for (const p of candidatePaths) {
     if (p && fs.existsSync(p)) { found = p; break; }
@@ -81,6 +87,7 @@ try {
 } catch (e) {
   console.warn("⚠️ Firebase init failed — falling back to local DB:", e?.message || e);
   useFirestore = false;
+}
 }
 
 // ensure local data folder
