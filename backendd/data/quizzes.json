@@ -1,1 +1,70 @@
-[]
+[
+  {
+    "id": "quiz_week1",
+    "title": "Week 1: Operating System Basics",
+    "week": "1",
+    "published": true,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "questions": [
+      {
+        "question": "What is an Operating System?",
+        "options": ["System software that manages hardware and software resources", "A programming language", "A web browser", "A database"],
+        "answerIndex": 0
+      },
+      {
+        "question": "Which company developed Windows?",
+        "options": ["Apple", "Microsoft", "Google", "IBM"],
+        "answerIndex": 1
+      },
+      {
+        "question": "What does GUI stand for?",
+        "options": ["General User Interface", "Graphical User Interface", "Global User Interface", "Generic User Interface"],
+        "answerIndex": 1
+      },
+      {
+        "question": "Which of these is NOT an operating system?",
+        "options": ["Windows", "macOS", "Linux", "Microsoft Word"],
+        "answerIndex": 3
+      },
+      {
+        "question": "What is the kernel in an operating system?",
+        "options": ["The user interface", "The core component that manages system resources", "A type of software application", "A hardware component"],
+        "answerIndex": 1
+      }
+    ]
+  },
+  {
+    "id": "quiz_week2", 
+    "title": "Week 2: File Systems",
+    "week": "2",
+    "published": true,
+    "createdAt": "2024-01-08T00:00:00.000Z",
+    "questions": [
+      {
+        "question": "What is a file system?",
+        "options": ["A way to organize and store files", "A type of hardware", "A programming language", "A network protocol"],
+        "answerIndex": 0
+      },
+      {
+        "question": "Which file system is commonly used in Windows?",
+        "options": ["ext4", "NTFS", "HFS+", "ZFS"],
+        "answerIndex": 1
+      },
+      {
+        "question": "What does FAT stand for in FAT32?",
+        "options": ["File Allocation Table", "Fast Access Technology", "File Association Type", "Formatted Access Table"],
+        "answerIndex": 0
+      },
+      {
+        "question": "What is the maximum file size in FAT32?",
+        "options": ["2GB", "4GB", "8GB", "16GB"],
+        "answerIndex": 1
+      },
+      {
+        "question": "Which command is used to list files in Linux?",
+        "options": ["dir", "ls", "list", "show"],
+        "answerIndex": 1
+      }
+    ]
+  }
+]
