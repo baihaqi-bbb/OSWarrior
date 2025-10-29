@@ -1,5 +1,5 @@
 // Simple admin manage quizzes UI (uses /api/quizzes endpoints)
-const API_BASE = "http://localhost:4000";
+const API_BASE = "https://oswarrior-backend.onrender.com";
 
 // global modal state
 let currentEditingId = null;

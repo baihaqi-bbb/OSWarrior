@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:4000";
+const API_BASE = "https://oswarrior-backend.onrender.com";
 
 const totalBtn = document.getElementById("totalBtn");
 const weekButtonsDiv = document.getElementById("weekButtons");

@@ -2,7 +2,7 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 
 const auth = getAuth();
 const WEEKS_COUNT = 14;
-const API_BASE = "http://localhost:4000"; // adjust jika backend di host/port lain
+const API_BASE = "https://oswarrior-backend.onrender.com"; // Production backend URL
 
 document.addEventListener("DOMContentLoaded", () => {
   const fileEl = document.getElementById("file");

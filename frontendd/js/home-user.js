@@ -15,7 +15,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const API_BASE = "http://localhost:4000";
+const API_BASE = "https://oswarrior-backend.onrender.com";
 
 // use existing image file as default avatar (restore previous behaviour)
 const DEFAULT_AVATAR = "image/default-profile.png";

@@ -31,8 +31,7 @@ async function fetchReportsAPI(from, to, type) {
 
   const ABS_HOSTS = [
     window.BACKEND_BASE || null,
-    "http://localhost:4000",
-    "http://127.0.0.1:4000"
+    "https://oswarrior-backend.onrender.com"
   ].filter(Boolean);
 
   const CANDIDATES = [

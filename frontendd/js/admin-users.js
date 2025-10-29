@@ -1,5 +1,5 @@
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-const API_BASE = "http://localhost:4000";
+const API_BASE = "https://oswarrior-backend.onrender.com";
 import {
   getFirestore, collection, getDocs, query, orderBy,
   updateDoc, doc, getDoc

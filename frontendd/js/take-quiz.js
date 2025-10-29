@@ -11,7 +11,7 @@ initializeApp(firebaseConfig);
 const auth = getAuth();
 
 // backend base
-const API_BASE = "http://localhost:4000";
+const API_BASE = "https://oswarrior-backend.onrender.com";
 
 function qs(sel){ return document.querySelector(sel); }
 

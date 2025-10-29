@@ -2,7 +2,7 @@
 
 (function(){
   const REL = ['/api/logs','/api/admin/logs','/api/v1/logs'];
-  const ABS = [window.BACKEND_BASE || null, 'http://localhost:4000','http://127.0.0.1:4000'].filter(Boolean);
+  const ABS = [window.BACKEND_BASE || null, 'https://oswarrior-backend.onrender.com'].filter(Boolean);
   const CANDIDATES = [...ABS.flatMap(h=>REL.map(p=>`${h}${p}`)), ...REL];
 
   async function tryFetch(url){
