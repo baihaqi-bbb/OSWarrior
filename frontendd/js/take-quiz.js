@@ -157,12 +157,134 @@ async function submitQuiz() {
     }
     
     const out = await r.json();
-    alert(`🎉 Quiz Complete! Score: ${out.score} / ${out.total} 🏆`);
-    window.location.href = "home-user.html";
+    
+    // Show quiz results and review instead of immediate redirect
+    showQuizReview(out);
+    
   } catch (e) {
     console.error(e);
     alert("❌ Submit failed: " + (e.message || e));
   }
+}
+
+function showQuizReview(results) {
+  clearInterval(questionTimer); // Make sure timer is stopped
+  
+  const container = document.querySelector("#quizzes-list");
+  const metaEl = document.querySelector("#quiz-meta");
+  
+  // Update header
+  const weekInfo = document.querySelector('.week-info');
+  if (weekInfo) {
+    weekInfo.textContent = `Week ${week} - Quiz Results`;
+  }
+  
+  // Update stats
+  const statBadges = document.querySelectorAll('.stat-badge');
+  if (statBadges.length >= 3) {
+    statBadges[0].innerHTML = `📊 Final Score: ${results.score}/${results.total}`;
+    statBadges[1].innerHTML = `� ${Math.round((results.score/results.total)*100)}% Accuracy`;
+    statBadges[2].innerHTML = `💎 ${results.score * 10} XP Earned`;
+  }
+  
+  container.innerHTML = "";
+  
+  // Results header
+  const resultsHeader = createEl("div", { className: "results-header" });
+  resultsHeader.innerHTML = `
+    <h2>�🎉 Quiz Complete!</h2>
+    <div class="score-display">
+      <div class="score-big">${results.score} / ${results.total}</div>
+      <div class="score-percentage">${Math.round((results.score/results.total)*100)}% Correct</div>
+    </div>
+  `;
+  container.appendChild(resultsHeader);
+  
+  // Review each question using results.details
+  if (results.details && Array.isArray(results.details)) {
+    results.details.forEach((detail, idx) => {
+      const q = questions[idx];
+      if (!q) return;
+      
+      const userAnswer = detail.userAnswer;
+      const correctAnswer = detail.correctAnswer;
+      const isCorrect = detail.correct;
+    
+    const reviewCard = createEl("div", { 
+      className: `review-card ${isCorrect ? 'correct' : 'incorrect'}` 
+    });
+    
+    // Question header
+    const questionHeader = createEl("div", { className: "review-question" });
+    const badge = createEl("div", { 
+      className: `review-badge ${isCorrect ? 'correct' : 'incorrect'}` 
+    }, [isCorrect ? "✅" : "❌"]);
+    const title = createEl("div", { className: "review-title" }, [`Q${idx+1}: ${q.question}`]);
+    questionHeader.appendChild(badge);
+    questionHeader.appendChild(title);
+    reviewCard.appendChild(questionHeader);
+    
+    // Answers section
+    const answersSection = createEl("div", { className: "review-answers" });
+    
+    // User's answer
+    const userAnswerDiv = createEl("div", { className: "user-answer" });
+    userAnswerDiv.innerHTML = `
+      <div class="answer-label">Your Answer:</div>
+      <div class="answer-text ${isCorrect ? 'correct' : 'incorrect'}">${userAnswer || "No answer"}</div>
+    `;
+    answersSection.appendChild(userAnswerDiv);
+    
+    // Correct answer (only show if user was wrong)
+    if (!isCorrect) {
+      const correctAnswerDiv = createEl("div", { className: "correct-answer" });
+      correctAnswerDiv.innerHTML = `
+        <div class="answer-label">Correct Answer:</div>
+        <div class="answer-text correct">${correctAnswer}</div>
+      `;
+      answersSection.appendChild(correctAnswerDiv);
+    }
+    
+    // Show all options for MCQ
+    if (q.type === "mcq" && Array.isArray(q.options)) {
+      const optionsDiv = createEl("div", { className: "review-options" });
+      optionsDiv.innerHTML = '<div class="answer-label">All Options:</div>';
+      
+      q.options.forEach(opt => {
+        const isUserChoice = String(opt) === String(userAnswer);
+        const isCorrectChoice = String(opt) === String(correctAnswer);
+        
+        let optionClass = "option-item";
+        if (isCorrectChoice) optionClass += " correct-option";
+        if (isUserChoice && !isCorrectChoice) optionClass += " wrong-choice";
+        if (isUserChoice && isCorrectChoice) optionClass += " correct-choice";
+        
+        const optionEl = createEl("div", { className: optionClass }, [
+          `${isCorrectChoice ? "✅" : isUserChoice ? "❌" : "○"} ${opt}`
+        ]);
+        optionsDiv.appendChild(optionEl);
+      });
+      
+      answersSection.appendChild(optionsDiv);
+    }
+    
+      reviewCard.appendChild(answersSection);
+      container.appendChild(reviewCard);
+    });
+  }  // Navigation buttons
+  const navSection = createEl("div", { className: "review-navigation" });
+  
+  const homeBtn = createEl("button", { 
+    type: "button", 
+    className: "btn primary" 
+  }, ["🏠 Back to Home"]);
+  
+  homeBtn.addEventListener("click", () => {
+    window.location.href = "home-user.html";
+  });
+  
+  navSection.appendChild(homeBtn);
+  container.appendChild(navSection);
 }
 
 function renderQuestion(idx, container, metaEl) {
@@ -229,57 +351,51 @@ function renderQuestion(idx, container, metaEl) {
       placeholder: "Enter your answer here..."
     });
     ta.value = answers[idx] || "";
-    ta.addEventListener("input", () => { answers[idx] = ta.value.trim(); });
+    ta.addEventListener("input", () => { 
+      answers[idx] = ta.value.trim();
+    });
+    
+    // Add submit button for textarea questions
+    const submitContainer = createEl("div", { 
+      style: "margin-top: 15px; text-align: center;" 
+    });
+    
+    const submitBtn = createEl("button", { 
+      type: "button", 
+      className: "btn primary",
+      style: "padding: 12px 24px; font-size: 1.1em;"
+    }, [idx === questions.length - 1 ? "🚀 Submit Quiz" : "✅ Submit Answer"]);
+    
+    submitBtn.addEventListener("click", () => {
+      const ans = answers[idx];
+      if (!ans || ans.trim() === "") { 
+        alert("⚠️ Please enter your answer before continuing."); 
+        return; 
+      }
+      
+      if (idx === questions.length - 1) {
+        submitQuiz();
+      } else {
+        autoAdvanceQuestion("✅ Answer submitted! Moving to next question...");
+      }
+    });
+    
+    submitContainer.appendChild(submitBtn);
     body.appendChild(ta);
+    body.appendChild(submitContainer);
   }
 
   card.appendChild(body);
 
+  // Only show progress info, no navigation buttons
   const nav = createEl("div", { className: "quiz-nav" });
   
-  // Progress info
+  // Progress info only
   const navLeft = createEl("div", { className: "nav-left" }, [
     `Progress: ${idx+1} of ${questions.length}`
   ]);
   
-  const navButtons = createEl("div", { style: "display: flex; gap: 10px;" });
-  
-  const prevBtn = createEl("button", { type: "button", className: "btn" }, ["⬅️ Previous"]);
-  const nextBtn = createEl("button", { 
-    type: "button", 
-    className: "btn primary" 
-  }, [idx === questions.length - 1 ? "🚀 Submit" : "Next ➡️"]);
-
-  prevBtn.disabled = idx === 0;
-  prevBtn.addEventListener("click", () => {
-    clearInterval(questionTimer); // Stop timer when going back
-    current = Math.max(0, current - 1);
-    renderQuestion(current, container, metaEl);
-  });
-
-  nextBtn.addEventListener("click", async () => {
-    const ans = answers[idx];
-    if (ans == null || ans === "") { 
-      alert("⚠️ Please answer the question before continuing."); 
-      return; 
-    }
-
-    if (idx === questions.length - 1) {
-      // submit
-      submitQuiz();
-      return;
-    }
-
-    clearInterval(questionTimer); // Stop timer when manually advancing
-    current = Math.min(questions.length - 1, current + 1);
-    renderQuestion(current, container, metaEl);
-  });
-
-  navButtons.appendChild(prevBtn);
-  navButtons.appendChild(nextBtn);
-  
   nav.appendChild(navLeft);
-  nav.appendChild(navButtons);
   card.appendChild(nav);
 
   container.appendChild(card);

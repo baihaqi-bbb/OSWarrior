@@ -220,6 +220,203 @@ body.quiz-page {
 }
 
 /* ===================================
+   QUIZ REVIEW STYLES
+   =================================== */
+.results-header {
+  text-align: center;
+  background: linear-gradient(145deg, rgba(0, 255, 255, 0.1), rgba(0, 128, 255, 0.05));
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 30px;
+  margin-bottom: 30px;
+  backdrop-filter: blur(15px);
+}
+
+.results-header h2 {
+  color: #00FFFF;
+  font-family: 'Orbitron', monospace;
+  font-size: 2.5rem;
+  margin: 0 0 20px 0;
+  text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+}
+
+.score-display {
+  margin-top: 20px;
+}
+
+.score-big {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #00FF00;
+  font-family: 'Orbitron', monospace;
+  text-shadow: 0 0 25px rgba(0, 255, 0, 0.6);
+  margin-bottom: 10px;
+}
+
+.score-percentage {
+  font-size: 1.5rem;
+  color: #00FFFF;
+  font-family: 'Orbitron', monospace;
+  font-weight: 600;
+}
+
+.review-card {
+  background: linear-gradient(145deg, rgba(5, 15, 25, 0.9), rgba(10, 25, 40, 0.8));
+  border-radius: 15px;
+  padding: 25px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(15px);
+  border: 2px solid rgba(0, 255, 255, 0.2);
+}
+
+.review-card.correct {
+  border-color: rgba(0, 255, 0, 0.4);
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
+}
+
+.review-card.incorrect {
+  border-color: rgba(255, 0, 0, 0.4);
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.1);
+}
+
+.review-question {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.review-badge {
+  font-size: 1.5rem;
+  min-width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.review-badge.correct {
+  background: rgba(0, 255, 0, 0.2);
+  border: 2px solid rgba(0, 255, 0, 0.5);
+  color: #00FF00;
+}
+
+.review-badge.incorrect {
+  background: rgba(255, 0, 0, 0.2);
+  border: 2px solid rgba(255, 0, 0, 0.5);
+  color: #FF0000;
+}
+
+.review-title {
+  flex: 1;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #FFFFFF;
+  font-family: 'Orbitron', monospace;
+  line-height: 1.4;
+}
+
+.review-answers {
+  margin-top: 20px;
+}
+
+.user-answer, .correct-answer {
+  margin-bottom: 15px;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-answer {
+  background: rgba(0, 100, 200, 0.1);
+}
+
+.correct-answer {
+  background: rgba(0, 150, 0, 0.1);
+}
+
+.answer-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #00FFFF;
+  margin-bottom: 8px;
+  font-family: 'Orbitron', monospace;
+}
+
+.answer-text {
+  font-size: 1.1rem;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-family: 'Orbitron', monospace;
+}
+
+.answer-text.correct {
+  background: rgba(0, 255, 0, 0.2);
+  color: #00FF00;
+  border: 1px solid rgba(0, 255, 0, 0.3);
+}
+
+.answer-text.incorrect {
+  background: rgba(255, 0, 0, 0.2);
+  color: #FF6B6B;
+  border: 1px solid rgba(255, 0, 0, 0.3);
+}
+
+.review-options {
+  margin-top: 15px;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.option-item {
+  padding: 8px 12px;
+  margin: 5px 0;
+  border-radius: 8px;
+  font-family: 'Orbitron', monospace;
+  border: 1px solid transparent;
+}
+
+.correct-option {
+  background: rgba(0, 255, 0, 0.2);
+  color: #00FF00;
+  border-color: rgba(0, 255, 0, 0.3);
+}
+
+.wrong-choice {
+  background: rgba(255, 0, 0, 0.2);
+  color: #FF6B6B;
+  border-color: rgba(255, 0, 0, 0.3);
+}
+
+.correct-choice {
+  background: rgba(0, 255, 0, 0.3);
+  color: #00FF00;
+  border-color: rgba(0, 255, 0, 0.5);
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+}
+
+.review-navigation {
+  text-align: center;
+  margin-top: 40px;
+  padding: 30px;
+  background: linear-gradient(145deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3));
+  border-radius: 15px;
+  border: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.review-navigation .btn {
+  margin: 0 10px;
+  padding: 15px 30px;
+  font-size: 1.1rem;
+  min-width: 150px;
+}
+
+/* ===================================
    QUIZ CARDS CONTAINER
    =================================== */
 #quizzes-list {

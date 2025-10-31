@@ -330,7 +330,7 @@ Short labels: ${JSON.stringify(shortOptions)}
 });
 
 // session store + quiz handlers (unchanged)
-const QUESTIONS_PER_QUIZ = 5;
+const QUESTIONS_PER_QUIZ = 10;
 const activeQuizzes = {};
 
 function shuffle(array) {
