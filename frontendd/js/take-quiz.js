@@ -29,6 +29,9 @@ let questions = [];
 let quizId = null;
 let answers = [];
 let current = 0;
+let questionTimer = null;
+let timeLeft = 30; // 30 seconds per question
+let isAnswered = false;
 
 function createEl(tag, props = {}, children = []) {
   const el = document.createElement(tag);
@@ -39,6 +42,127 @@ function createEl(tag, props = {}, children = []) {
     else el.appendChild(c);
   });
   return el;
+}
+
+function startTimer() {
+  // Clear any existing timer
+  if (questionTimer) {
+    clearInterval(questionTimer);
+  }
+  
+  timeLeft = 30; // Reset to 30 seconds
+  isAnswered = false;
+  updateTimerDisplay();
+  
+  questionTimer = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    
+    if (timeLeft <= 0) {
+      clearInterval(questionTimer);
+      if (!isAnswered) {
+        autoAdvanceQuestion("⏰ Time's up! Moving to next question...");
+      }
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const timerDisplay = document.getElementById('timer-display');
+  const timerBadge = document.querySelector('.timer-badge');
+  
+  if (timerDisplay) {
+    timerDisplay.textContent = `${timeLeft}s`;
+  }
+  
+  if (timerBadge) {
+    // Remove previous classes
+    timerBadge.classList.remove('warning', 'danger');
+    
+    // Add warning/danger classes based on time left
+    if (timeLeft <= 5) {
+      timerBadge.classList.add('danger');
+    } else if (timeLeft <= 10) {
+      timerBadge.classList.add('warning');
+    }
+  }
+}
+
+function showNotification(message) {
+  // Remove any existing notification
+  const existing = document.querySelector('.auto-next-notification');
+  if (existing) {
+    existing.remove();
+  }
+  
+  const notification = createEl('div', { 
+    className: 'auto-next-notification' 
+  }, [message]);
+  
+  document.body.appendChild(notification);
+  
+  // Remove notification after animation completes
+  setTimeout(() => {
+    if (notification.parentNode) {
+      notification.remove();
+    }
+  }, 2000);
+}
+
+function autoAdvanceQuestion(message = "✅ Answer selected! Moving to next question...") {
+  isAnswered = true;
+  clearInterval(questionTimer);
+  
+  showNotification(message);
+  
+  setTimeout(() => {
+    if (current === questions.length - 1) {
+      // Last question - submit the quiz
+      submitQuiz();
+    } else {
+      // Move to next question
+      current = Math.min(questions.length - 1, current + 1);
+      const container = document.querySelector("#quizzes-list");
+      const metaEl = document.querySelector("#quiz-meta");
+      renderQuestion(current, container, metaEl);
+    }
+  }, 1500); // Wait 1.5 seconds before advancing
+}
+
+async function submitQuiz() {
+  clearInterval(questionTimer); // Stop any running timer
+  
+  try {
+    const user = auth.currentUser;
+    const payload = {
+      userId: user ? user.uid : `anon_${Math.random().toString(36).slice(2,8)}`,
+      username: user ? (user.displayName || user.email) : null,
+      answers,
+      quizId,
+      questionIndexes: questions.map(q => q.index)
+    };
+    
+    showNotification("🚀 Submitting quiz...");
+    
+    const r = await fetch(`${API_BASE}/api/week/${encodeURIComponent(week)}/submit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    
+    if (!r.ok) {
+      const txt = await r.text().catch(()=>null);
+      alert("Submit error: " + (txt || r.status));
+      return;
+    }
+    
+    const out = await r.json();
+    alert(`🎉 Quiz Complete! Score: ${out.score} / ${out.total} 🏆`);
+    window.location.href = "home-user.html";
+  } catch (e) {
+    console.error(e);
+    alert("❌ Submit failed: " + (e.message || e));
+  }
 }
 
 function renderQuestion(idx, container, metaEl) {
@@ -55,7 +179,7 @@ function renderQuestion(idx, container, metaEl) {
   const statBadges = document.querySelectorAll('.stat-badge');
   if (statBadges.length >= 3) {
     statBadges[0].innerHTML = `📊 Question ${idx+1}/${questions.length}`;
-    statBadges[1].innerHTML = `⏱️ No Time Limit`;
+    statBadges[1].innerHTML = `⏱️ <span id="timer-display">30s</span>`;
     statBadges[2].innerHTML = `💎 ${questions.length * 10} XP Max`;
   }
 
@@ -78,7 +202,19 @@ function renderQuestion(idx, container, metaEl) {
       const label = createEl("label", { className: "opt-label" });
       const input = createEl("input", { type: "radio", name: `q${idx}`, value: opt, id });
       if (answers[idx] !== undefined && String(answers[idx]) === String(opt)) input.checked = true;
-      input.addEventListener("change", () => { answers[idx] = input.value; });
+      
+      // Add auto-next functionality for MCQ
+      input.addEventListener("change", () => { 
+        answers[idx] = input.value;
+        
+        // Add visual feedback
+        label.classList.add('option-selected');
+        
+        // Auto advance to next question after short delay
+        setTimeout(() => {
+          autoAdvanceQuestion();
+        }, 800);
+      });
       
       const optText = createEl("span", { className: "opt-text" }, [opt]);
       label.appendChild(input);
@@ -116,6 +252,7 @@ function renderQuestion(idx, container, metaEl) {
 
   prevBtn.disabled = idx === 0;
   prevBtn.addEventListener("click", () => {
+    clearInterval(questionTimer); // Stop timer when going back
     current = Math.max(0, current - 1);
     renderQuestion(current, container, metaEl);
   });
@@ -129,35 +266,11 @@ function renderQuestion(idx, container, metaEl) {
 
     if (idx === questions.length - 1) {
       // submit
-      try {
-        const user = auth.currentUser;
-        const payload = {
-          userId: user ? user.uid : `anon_${Math.random().toString(36).slice(2,8)}`,
-          username: user ? (user.displayName || user.email) : null,
-          answers,
-          quizId,
-          questionIndexes: questions.map(q => q.index)
-        };
-        const r = await fetch(`${API_BASE}/api/week/${encodeURIComponent(week)}/submit`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        if (!r.ok) {
-          const txt = await r.text().catch(()=>null);
-          alert("Submit error: " + (txt || r.status));
-          return;
-        }
-        const out = await r.json();
-        alert(`🎉 Quiz Complete! Score: ${out.score} / ${out.total} 🏆`);
-        window.location.href = "home-user.html";
-      } catch (e) {
-        console.error(e);
-        alert("❌ Submit failed: " + (e.message || e));
-      }
+      submitQuiz();
       return;
     }
 
+    clearInterval(questionTimer); // Stop timer when manually advancing
     current = Math.min(questions.length - 1, current + 1);
     renderQuestion(current, container, metaEl);
   });
@@ -170,6 +283,9 @@ function renderQuestion(idx, container, metaEl) {
   card.appendChild(nav);
 
   container.appendChild(card);
+  
+  // Start timer for this question
+  startTimer();
 }
 
 document.addEventListener("DOMContentLoaded", () => {

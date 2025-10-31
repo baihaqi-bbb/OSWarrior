@@ -124,6 +124,102 @@ body.quiz-page {
 }
 
 /* ===================================
+   TIMER STYLES
+   =================================== */
+.timer-badge {
+  position: relative;
+  overflow: hidden;
+}
+
+.timer-badge.warning {
+  background: linear-gradient(145deg, rgba(255, 165, 0, 0.2), rgba(255, 69, 0, 0.2)) !important;
+  border-color: rgba(255, 165, 0, 0.6) !important;
+  animation: pulse-warning 1s infinite;
+}
+
+.timer-badge.danger {
+  background: linear-gradient(145deg, rgba(255, 0, 0, 0.3), rgba(139, 0, 0, 0.2)) !important;
+  border-color: rgba(255, 0, 0, 0.8) !important;
+  animation: pulse-danger 0.5s infinite;
+}
+
+@keyframes pulse-warning {
+  0%, 100% { box-shadow: 0 0 15px rgba(255, 165, 0, 0.5); }
+  50% { box-shadow: 0 0 25px rgba(255, 165, 0, 0.8); }
+}
+
+@keyframes pulse-danger {
+  0%, 100% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.6); }
+  50% { box-shadow: 0 0 35px rgba(255, 0, 0, 0.9); }
+}
+
+#timer-display {
+  font-weight: 700;
+  font-size: 1.1em;
+}
+
+/* ===================================
+   AUTO-NEXT FEEDBACK STYLES
+   =================================== */
+.option-selected {
+  background: linear-gradient(145deg, rgba(0, 255, 0, 0.2), rgba(0, 128, 0, 0.1)) !important;
+  border-color: rgba(0, 255, 0, 0.8) !important;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.4) !important;
+  animation: selected-glow 0.5s ease-out;
+}
+
+@keyframes selected-glow {
+  0% { 
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+  }
+  50% { 
+    transform: scale(1.02);
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.8);
+  }
+  100% { 
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+  }
+}
+
+.auto-next-notification {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(145deg, rgba(0, 255, 255, 0.9), rgba(0, 128, 255, 0.8));
+  color: #000;
+  padding: 20px 30px;
+  border-radius: 15px;
+  font-weight: 700;
+  font-size: 1.2em;
+  z-index: 1000;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  animation: notification-appear 2s ease-out forwards;
+}
+
+@keyframes notification-appear {
+  0% { 
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  10% { 
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+  90% { 
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% { 
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+}
+
+/* ===================================
    QUIZ CARDS CONTAINER
    =================================== */
 #quizzes-list {
