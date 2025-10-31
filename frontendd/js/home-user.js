@@ -1,6 +1,6 @@
 // Complete cleaned home-user script (replace file)
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { initializeUserDisplay } from "./user-utils.js";
@@ -13,7 +13,14 @@ const firebaseConfig = {
   messagingSenderId: "346273796107",
   appId: "1:346273796107:web:f6fcc32860025bf406770e",
 };
-const app = initializeApp(firebaseConfig);
+
+// Initialize Firebase only if not already initialized
+let app;
+if (getApps().length === 0) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApps()[0];
+}
 const auth = getAuth(app);
 const db = getFirestore(app);
 const API_BASE = "https://oswarrior-backend.onrender.com";

@@ -1,5 +1,5 @@
 // modular, fetches quizzes for given week from backend and renders simple UI
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
 const firebaseConfig = {
@@ -7,8 +7,15 @@ const firebaseConfig = {
   authDomain: "test-4fdf4.firebaseapp.com",
   projectId: "test-4fdf4",
 };
-initializeApp(firebaseConfig);
-const auth = getAuth();
+
+// Initialize Firebase only if not already initialized
+let app;
+if (getApps().length === 0) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApps()[0];
+}
+const auth = getAuth(app);
 
 // backend base
 const API_BASE = "https://oswarrior-backend.onrender.com";
