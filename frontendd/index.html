@@ -74,6 +74,39 @@
     </div>
   </div>
 
+  <!-- Forgot Password Modal -->
+  <div id="forgot-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>🔄 SYSTEM RECOVERY</h2>
+        <div class="modal-subtitle">Password Reset Protocol</div>
+      </div>
+      
+      <div class="modal-body">
+        <p class="recovery-text">
+          Enter your registered email for security verification
+        </p>
+        
+        <div class="form-group">
+          <label for="resetEmail">📧 EMAIL ADDRESS</label>
+          <input type="email" id="resetEmail" placeholder="your.email@domain.com" required />
+          <div class="input-icon">📧</div>
+        </div>
+        
+        <div class="modal-buttons">
+          <button id="resetBtn" class="btn-cyber">
+            🚀 SEND RESET LINK
+          </button>
+          <button id="closeModal" class="btn-cyber secondary">
+            ❌ CANCEL
+          </button>
+        </div>
+        
+        <div id="resetMsg" class="status-message"></div>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="js/login.js"></script>
 </body>
 </html>

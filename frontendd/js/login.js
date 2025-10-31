@@ -38,9 +38,9 @@ const googleBtn = document.getElementById("google-login");
 const emailBtn = document.getElementById("login-btn");
 const signupBtn = document.getElementById("signup-btn");
 const msg = document.getElementById("message");
-const forgotLink = document.querySelector(".neon-link");
+const forgotLink = document.getElementById("forgot-password");
 const loginContainer = document.querySelector(".login-container");
-const statusText = document.querySelector(".status-text");
+const statusText = document.querySelector(".system-online");
 const statusDot = document.querySelector(".status-dot");
 
 // Modal elements
