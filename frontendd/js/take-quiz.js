@@ -18,6 +18,7 @@ if (getApps().length === 0) {
 const auth = getAuth(app);
 
 // backend base
+// backend base
 const API_BASE = "https://oswarrior-backend.onrender.com";
 
 function qs(sel){ return document.querySelector(sel); }
