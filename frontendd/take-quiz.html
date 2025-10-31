@@ -4,12 +4,11 @@
   <meta charset="utf-8" />
   <title>Take Quiz - OSwarrior</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <!-- gantikan dengan CSS sendiri -->
   <link rel="stylesheet" href="css/navbar-shared.css">
-  <link rel="stylesheet" href="css/navbar-logo.css">
+  <link rel="stylesheet" href="css/take-quiz.css" />
   <link rel="stylesheet" href="css/profile-navbar.css">
-  <link rel="stylesheet" href="css/my-quiz.css" />
   <link rel="stylesheet" href="css/profile-dropdown.css" />
+  <link rel="stylesheet" href="css/responsive-utilities.css" />
 </head>
 <body class="quiz-page">
 
@@ -38,10 +37,38 @@
     </div>
   </div>
 
-  <!-- kontainer diperlukan oleh take-quiz.js -->
-  <div id="quiz-meta"></div>
-  <div id="quizzes-list"></div>
-  <div id="no-quizzes" style="display:none"></div>
+  <!-- Main Container -->
+  <div class="main-container">
+    <!-- Cyber Quiz Header Banner -->
+    <div class="quiz-header">
+      <h1>⚔️ Cyber Quiz Arena</h1>
+      <p class="week-info">Test your OS knowledge in the digital battlefield</p>
+      <div class="quiz-progress">
+        <div class="progress-indicator">🎯 Battle Mode</div>
+        <div class="progress-indicator">⚡ Active Challenge</div>
+        <div class="progress-indicator">🏆 Earn XP</div>
+      </div>
+    </div>
+
+    <!-- Quiz Meta Information -->
+    <div id="quiz-meta">
+      <div class="quiz-stats">
+        <div class="stat-badge">📊 Questions Loaded</div>
+        <div class="stat-badge">⏱️ No Time Limit</div>
+        <div class="stat-badge">💎 Max XP Available</div>
+      </div>
+    </div>
+
+    <!-- Quiz Questions Container -->
+    <div id="quizzes-list"></div>
+    
+    <!-- No Quizzes Message -->
+    <div id="no-quizzes" style="display:none">
+      <div class="no-quiz-icon">🎯</div>
+      <div class="no-quiz-title">No Active Missions</div>
+      <div class="no-quiz-message">No quiz questions are currently available for this week.</div>
+    </div>
+  </div>
 
   <!-- Modal Edit Name -->
   <div id="modal-edit-name" class="modal" style="display:none;">

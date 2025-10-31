@@ -37,11 +37,30 @@ function createEl(tag, props = {}, children = []) {
 function renderQuestion(idx, container, metaEl) {
   container.innerHTML = "";
   const q = questions[idx];
-  metaEl.textContent = `Week ${week} — Question ${idx+1} of ${questions.length}`;
+  
+  // Update header info
+  const weekInfo = document.querySelector('.week-info');
+  if (weekInfo) {
+    weekInfo.textContent = `Week ${week} - Question ${idx+1} of ${questions.length}`;
+  }
+  
+  // Update quiz stats
+  const statBadges = document.querySelectorAll('.stat-badge');
+  if (statBadges.length >= 3) {
+    statBadges[0].innerHTML = `📊 Question ${idx+1}/${questions.length}`;
+    statBadges[1].innerHTML = `⏱️ No Time Limit`;
+    statBadges[2].innerHTML = `💎 ${questions.length * 10} XP Max`;
+  }
 
   const card = createEl("div", { className: "quiz-card" });
-  const title = createEl("div", { className: "quiz-question" }, [`${idx+1}. ${q.question}`]);
-  card.appendChild(title);
+  
+  // Question header with badge and title
+  const questionHeader = createEl("div", { className: "quiz-question" });
+  const badge = createEl("div", { className: "q-badge" }, [`Q${idx+1}`]);
+  const title = createEl("div", { className: "q-title" }, [q.question]);
+  questionHeader.appendChild(badge);
+  questionHeader.appendChild(title);
+  card.appendChild(questionHeader);
 
   const body = createEl("div", { className: "quiz-body" });
 
@@ -53,13 +72,19 @@ function renderQuestion(idx, container, metaEl) {
       const input = createEl("input", { type: "radio", name: `q${idx}`, value: opt, id });
       if (answers[idx] !== undefined && String(answers[idx]) === String(opt)) input.checked = true;
       input.addEventListener("change", () => { answers[idx] = input.value; });
+      
+      const optText = createEl("span", { className: "opt-text" }, [opt]);
       label.appendChild(input);
-      label.appendChild(document.createTextNode(" " + opt));
+      label.appendChild(optText);
       opts.appendChild(label);
     });
     body.appendChild(opts);
   } else {
-    const ta = createEl("textarea", { className: "quiz-textarea", rows: 5 });
+    const ta = createEl("textarea", { 
+      className: "quiz-textarea", 
+      rows: 5,
+      placeholder: "Enter your answer here..."
+    });
     ta.value = answers[idx] || "";
     ta.addEventListener("input", () => { answers[idx] = ta.value.trim(); });
     body.appendChild(ta);
@@ -68,8 +93,19 @@ function renderQuestion(idx, container, metaEl) {
   card.appendChild(body);
 
   const nav = createEl("div", { className: "quiz-nav" });
-  const prevBtn = createEl("button", { type: "button", className: "btn" }, ["Prev"]);
-  const nextBtn = createEl("button", { type: "button", className: "btn primary" }, [ idx === questions.length - 1 ? "Submit" : "Next" ]);
+  
+  // Progress info
+  const navLeft = createEl("div", { className: "nav-left" }, [
+    `Progress: ${idx+1} of ${questions.length}`
+  ]);
+  
+  const navButtons = createEl("div", { style: "display: flex; gap: 10px;" });
+  
+  const prevBtn = createEl("button", { type: "button", className: "btn" }, ["⬅️ Previous"]);
+  const nextBtn = createEl("button", { 
+    type: "button", 
+    className: "btn primary" 
+  }, [idx === questions.length - 1 ? "🚀 Submit" : "Next ➡️"]);
 
   prevBtn.disabled = idx === 0;
   prevBtn.addEventListener("click", () => {
@@ -79,7 +115,10 @@ function renderQuestion(idx, container, metaEl) {
 
   nextBtn.addEventListener("click", async () => {
     const ans = answers[idx];
-    if (ans == null || ans === "") { alert("Sila jawab soalan sebelum teruskan."); return; }
+    if (ans == null || ans === "") { 
+      alert("⚠️ Please answer the question before continuing."); 
+      return; 
+    }
 
     if (idx === questions.length - 1) {
       // submit
@@ -103,11 +142,11 @@ function renderQuestion(idx, container, metaEl) {
           return;
         }
         const out = await r.json();
-        alert(`Score: ${out.score} / ${out.total}`);
+        alert(`🎉 Quiz Complete! Score: ${out.score} / ${out.total} 🏆`);
         window.location.href = "home-user.html";
       } catch (e) {
         console.error(e);
-        alert("Submit failed: " + (e.message || e));
+        alert("❌ Submit failed: " + (e.message || e));
       }
       return;
     }
@@ -116,23 +155,38 @@ function renderQuestion(idx, container, metaEl) {
     renderQuestion(current, container, metaEl);
   });
 
-  nav.appendChild(prevBtn);
-  nav.appendChild(nextBtn);
+  navButtons.appendChild(prevBtn);
+  navButtons.appendChild(nextBtn);
+  
+  nav.appendChild(navLeft);
+  nav.appendChild(navButtons);
   card.appendChild(nav);
-
-  const prog = createEl("div", { className: "quiz-progress" }, [`${idx+1} / ${questions.length}`]);
-  card.appendChild(prog);
 
   container.appendChild(card);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const meta = qs("#quiz-meta") || (() => { const d = document.createElement("div"); d.id = "quiz-meta"; document.body.prepend(d); return d; })();
-  const container = qs("#quizzes-list") || (() => { const d = document.createElement("div"); d.id = "quizzes-list"; document.body.appendChild(d); return d; })();
-  const noEl = qs("#no-quizzes") || (() => { const d = document.createElement("div"); d.id = "no-quizzes"; d.style.display="none"; d.textContent="No quizzes for this week yet."; document.body.appendChild(d); return d; })();
+  const meta = qs("#quiz-meta");
+  const container = qs("#quizzes-list");
+  const noEl = qs("#no-quizzes");
 
-  if (!week) { meta.textContent = "No week selected."; noEl.style.display = "block"; return; }
-  meta.textContent = `Week ${week} — Loading quiz…`;
+  if (!week) { 
+    const weekInfo = document.querySelector('.week-info');
+    if (weekInfo) weekInfo.textContent = "No week selected";
+    if (noEl) {
+      noEl.innerHTML = `
+        <div class="no-quiz-icon">⚠️</div>
+        <div class="no-quiz-title">No Week Selected</div>
+        <div class="no-quiz-message">Please select a week from the quiz menu.</div>
+      `;
+      noEl.style.display = "block";
+    }
+    return; 
+  }
+  
+  // Update header with loading state
+  const weekInfo = document.querySelector('.week-info');
+  if (weekInfo) weekInfo.textContent = `Week ${week} - Loading quiz...`;
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) { window.location.href = "index.html"; return; }
@@ -141,12 +195,22 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetch(`${API_BASE}/api/week/${encodeURIComponent(week)}/take?userId=${encodeURIComponent(user.uid)}`);
       if (!res.ok) {
         const txt = await res.text().catch(()=>null);
-        meta.textContent = "Error: " + (txt || res.status);
+        const weekInfo = document.querySelector('.week-info');
+        if (weekInfo) weekInfo.textContent = "Error: " + (txt || res.status);
         return;
       }
       const data = await res.json();
       if (!data || !Array.isArray(data.questions) || !data.questions.length) {
-        meta.textContent = "No quiz available for this week.";
+        const weekInfo = document.querySelector('.week-info');
+        if (weekInfo) weekInfo.textContent = "No quiz available for this week";
+        if (noEl) {
+          noEl.innerHTML = `
+            <div class="no-quiz-icon">🎯</div>
+            <div class="no-quiz-title">No Active Missions</div>
+            <div class="no-quiz-message">No quiz questions are currently available for Week ${week}.</div>
+          `;
+          noEl.style.display = "block";
+        }
         return;
       }
 
@@ -155,12 +219,30 @@ document.addEventListener("DOMContentLoaded", () => {
       answers = Array(questions.length).fill(null);
       current = 0;
 
-      meta.textContent = `Week ${week} — Take Quiz`;
-      container.innerHTML = "";
-      renderQuestion(current, container, meta);
+      // Update header with quiz info
+      const weekInfo = document.querySelector('.week-info');
+      if (weekInfo) weekInfo.textContent = `Week ${week} - ${questions.length} Questions Available`;
+      
+      // Hide no-quiz message if visible
+      if (noEl) noEl.style.display = "none";
+      
+      // Start the quiz
+      if (container) {
+        container.innerHTML = "";
+        renderQuestion(current, container, meta);
+      }
     } catch (err) {
       console.error("Fetch quiz failed:", err);
-      meta.textContent = "Error loading quiz.";
+      const weekInfo = document.querySelector('.week-info');
+      if (weekInfo) weekInfo.textContent = "Error loading quiz";
+      if (noEl) {
+        noEl.innerHTML = `
+          <div class="no-quiz-icon">❌</div>
+          <div class="no-quiz-title">Connection Error</div>
+          <div class="no-quiz-message">Failed to load quiz data. Please check your connection and try again.</div>
+        `;
+        noEl.style.display = "block";
+      }
     }
   });
 });
