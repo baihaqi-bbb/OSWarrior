@@ -1,7 +1,9 @@
-/* SIMPLE DROPDOWN - NO BULLSHIT */
+/* PROFILE DROPDOWN - IMPROVED POSITIONING */
 .profile-dropdown {
   display: none;
-  position: fixed;
+  position: absolute;
+  top: 100%;
+  right: 0;
   z-index: 999999;
   background: rgba(5, 15, 25, 0.95);
   border: 2px solid #00ffff;
@@ -9,6 +11,9 @@
   padding: 0;
   min-width: 240px;
   max-width: 260px;
+  margin-top: 8px;
+  box-shadow: 0 8px 32px rgba(0, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
 }
 
 .profile-dropdown.show {
@@ -17,7 +22,7 @@
 }
 
 .profile-dropdown.hidden {
-  display: none;
+  display: none !important;
 }
 
 .profile-dropdown a,

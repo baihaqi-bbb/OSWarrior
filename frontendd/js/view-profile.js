@@ -1,7 +1,7 @@
 // ===== View Profile Script =====
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getAuth, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 // ===== Firebase Config =====
 const firebaseConfig = {
@@ -14,7 +14,12 @@ const firebaseConfig = {
 };
 
 // ===== Initialize Firebase =====
-const app = initializeApp(firebaseConfig);
+let app;
+if (getApps().length === 0) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApps()[0];
+}
 const auth = getAuth(app);
 const db = getFirestore(app);
 
@@ -51,13 +56,43 @@ onAuthStateChanged(auth, async (user) => {
   if (!user) return window.location.href = 'index.html';
 
   currentUser = user;
+  console.log("Loading profile for user:", user.uid, user.displayName, user.email);
 
-  // Update UI dari Firebase Auth
-  profileName.textContent = user.displayName || user.email?.split('@')[0] || "Aqi Mi";
-  profileEmail.textContent = user.email || "Tiada Email";
-  profilePicture.src = user.photoURL || "image/default-profile.png";
+  // Initialize with Firebase Auth data first
+  let displayName = user.displayName || user.email?.split('@')[0] || "Warrior";
+  let photoURL = user.photoURL || "image/default-profile.png";
+  
+  // Try to get more complete data from Firestore
+  try {
+    const userDocRef = doc(db, "users", user.uid);
+    const userDocSnap = await getDoc(userDocRef);
+    
+    if (userDocSnap.exists()) {
+      const userData = userDocSnap.data();
+      console.log("Firestore user data:", userData);
+      
+      // Use Firestore data if available, fallback to Firebase Auth
+      displayName = userData.name || userData.displayName || displayName;
+      photoURL = userData.photoURL || userData.avatar || photoURL;
+    } else {
+      console.log("No Firestore document found for user");
+    }
+  } catch (firestoreError) {
+    console.warn("Failed to fetch Firestore data:", firestoreError);
+  }
 
-  // Get data dari backend API instead of Firestore
+  // Update UI with the best available data
+  profileName.textContent = displayName;
+  profileEmail.textContent = user.email || "No Email";
+  profilePicture.src = photoURL;
+
+  // Also update navbar elements if they exist
+  const usernameNavbar = document.getElementById("username-navbar");
+  const profileImgNavbar = document.getElementById("profile-img-navbar");
+  if (usernameNavbar) usernameNavbar.textContent = displayName;
+  if (profileImgNavbar) profileImgNavbar.src = photoURL;
+
+  // Get additional data from backend API
   try {
     const res = await fetch(`${API_BASE}/api/user/${encodeURIComponent(user.uid)}`, {
       credentials: 'include'
@@ -65,15 +100,17 @@ onAuthStateChanged(auth, async (user) => {
     
     if (res.ok) {
       const userData = await res.json();
-      console.log("User data from backend:", userData);
+      console.log("Backend user data:", userData);
       
       profileLevel.textContent = userData.level || 1;
       profileXP.textContent = userData.xp || 0;
       profileAchievements.textContent = userData.achievements?.length || 0;
       
-      // Update name if available from backend
-      if (userData.name) {
-        profileName.textContent = userData.name;
+      // Update name if available from backend and not already set from Firestore
+      if (userData.name && !userDocSnap?.exists()) {
+        displayName = userData.name;
+        profileName.textContent = displayName;
+        if (usernameNavbar) usernameNavbar.textContent = displayName;
       }
     } else {
       console.log("User not found in backend, using defaults");

@@ -1,0 +1,104 @@
+/* ==========================================================
+   SHARED NAVBAR STYLES - OSwarrior
+   ========================================================== */
+
+/* Consistent Navbar across all pages */
+.navbar {
+  background: rgba(5, 15, 25, 0.95) !important;
+  padding: 15px 30px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  border-bottom: 2px solid rgba(0, 255, 255, 0.6) !important;
+  backdrop-filter: blur(25px) !important;
+  position: relative !important;
+  z-index: 1000 !important;
+  box-shadow: 0 2px 15px rgba(0, 255, 255, 0.3) !important;
+  height: 70px !important;
+  min-height: 70px !important;
+  max-height: 70px !important;
+  --navbar-height: 70px !important;
+}
+
+.navbar-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 20px !important;
+}
+
+.navbar-right {
+  display: flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+  overflow: visible !important;
+  position: relative !important;
+}
+
+/* Consistent Navbar Title Styling */
+.navbar h1 {
+  color: #00FFFF !important;
+  font-size: 1.8rem !important;
+  font-weight: 700 !important;
+  margin: 0 !important;
+  text-shadow: 0 0 15px rgba(0, 255, 255, 0.6) !important;
+  font-family: 'Orbitron', monospace !important;
+  letter-spacing: 1px !important;
+  transition: all 0.3s ease !important;
+}
+
+.navbar h1:hover {
+  text-shadow: 0 0 20px rgba(0, 255, 255, 0.8) !important;
+  color: #FFFFFF !important;
+}
+
+/* Logo styling */
+.navbar-logo {
+  height: 55px !important;
+  width: auto !important;
+  filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.7)) !important;
+  transition: all 0.3s ease !important;
+}
+
+.navbar-logo:hover {
+  filter: drop-shadow(0 0 25px rgba(0, 255, 255, 1)) !important;
+  transform: scale(1.05) !important;
+}
+
+/* Responsive navbar adjustments */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 12px 20px !important;
+    height: 60px !important;
+    min-height: 60px !important;
+    max-height: 60px !important;
+  }
+  
+  .navbar h1 {
+    font-size: 1.4rem !important;
+  }
+  
+  .navbar-logo {
+    height: 45px !important;
+  }
+  
+  .navbar-left {
+    gap: 15px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 10px 15px !important;
+    height: 55px !important;
+    min-height: 55px !important;
+    max-height: 55px !important;
+  }
+  
+  .navbar h1 {
+    font-size: 1.2rem !important;
+  }
+  
+  .navbar-logo {
+    height: 40px !important;
+  }
+}

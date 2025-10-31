@@ -17,59 +17,29 @@ body.home-user {
   align-items: unset !important;
 }
 
-/* Warrior Navbar */
+/* Warrior Navbar - Basic structure only (detailed styling in navbar-shared.css) */
 body.home-user .navbar {
-  background: rgba(5, 15, 25, 0.95);
-  padding: 15px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 2px solid rgba(0, 255, 255, 0.6);
-  backdrop-filter: blur(25px);
-  position: relative;
-  z-index: 1000;
-  box-shadow: 0 2px 15px rgba(0, 255, 255, 0.3);
-  height: 70px;
-  min-height: 70px;
-  max-height: 70px;
-  overflow: visible;
-  --navbar-height: 70px;
+  /* Shared navbar styling will override this */
 }
 
 body.home-user .navbar-left {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  flex: 1;
+  /* Shared navbar styling will override this */
 }
 
 body.home-user .navbar-right {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  overflow: visible;
-  position: relative;
+  /* Shared navbar styling will override this */
 }
 
 body.home-user .navbar-logo {
-  height: 55px;
-  width: auto;
-  filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.7));
+  /* Shared navbar styling will override this */
 }
 
 body.home-user .navbar-logo:hover {
-  filter: drop-shadow(0 0 25px rgba(0, 255, 255, 1));
+  /* Shared navbar styling will override this */
 }
 
 body.home-user .navbar h1 {
-  font-size: 24px;
-  font-weight: 600;
-  color: #00FFFF;
-  text-shadow: 
-    0 0 15px rgba(0, 255, 255, 0.8),
-    0 0 30px rgba(0, 255, 255, 0.4);
-  font-family: 'Orbitron', serif;
-  letter-spacing: 1px;
+  /* Shared navbar styling will override this */
 }
 
 /* Content cards */

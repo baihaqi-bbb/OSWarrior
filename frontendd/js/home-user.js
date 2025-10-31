@@ -3,6 +3,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { initializeUserDisplay } from "./user-utils.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDofTjaWk5M8m_hyrDRqxOGofzOV7Qlitw",
@@ -308,18 +309,52 @@ onAuthStateChanged(auth, async (user) => {
     // } catch (e) { console.warn("ensure user doc failed:", e); }
 
     const displayName = user.displayName || user.email?.split('@')[0] || "Warrior";
-    const usernameWelcome = document.getElementById("username");
-    if (usernameWelcome) usernameWelcome.textContent = displayName;
     
-    // Update navbar username
-    const usernameNavbar = document.getElementById("username-navbar");
-    if (usernameNavbar) usernameNavbar.textContent = displayName;
-    
-    const playerName = document.getElementById("player-name");
-    if (playerName) playerName.textContent = displayName + " 👑";
-
-    // Load user data from backend (will auto-create if needed)
-    loadUserXP(user.uid, displayName);
+    // Try to get updated name from Firestore first
+    try {
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+      
+      let finalDisplayName = displayName;
+      if (userDocSnap.exists()) {
+        const userData = userDocSnap.data();
+        finalDisplayName = userData.displayName || userData.name || displayName;
+        
+        // Update profile image if available in Firestore
+        if (userData.photoURL && profileImg) {
+          profileImg.src = userData.photoURL;
+        }
+      }
+      
+      // Update UI with final name
+      const usernameWelcome = document.getElementById("username");
+      if (usernameWelcome) usernameWelcome.textContent = finalDisplayName;
+      
+      // Update navbar username
+      const usernameNavbar = document.getElementById("username-navbar");
+      if (usernameNavbar) usernameNavbar.textContent = finalDisplayName;
+      
+      const playerName = document.getElementById("player-name");
+      if (playerName) playerName.textContent = finalDisplayName + " 👑";
+      
+      // Load user data with final name
+      loadUserXP(user.uid, finalDisplayName);
+      
+    } catch (firestoreError) {
+      console.warn("Firestore name fetch failed, using fallback:", firestoreError);
+      
+      // Fallback to original logic
+      const usernameWelcome = document.getElementById("username");
+      if (usernameWelcome) usernameWelcome.textContent = displayName;
+      
+      const usernameNavbar = document.getElementById("username-navbar");
+      if (usernameNavbar) usernameNavbar.textContent = displayName;
+      
+      const playerName = document.getElementById("player-name");
+      if (playerName) playerName.textContent = displayName + " 👑";
+      
+      loadUserXP(user.uid, displayName);
+    }
     await loadTop3();
     retriggerCardAnimations(80);
   } catch (err) {

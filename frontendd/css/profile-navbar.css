@@ -1,0 +1,116 @@
+/* ==========================================================
+   SHARED PROFILE NAVBAR STYLES - OSwarrior
+   ========================================================== */
+
+/* Profile Container - Consistent across all pages */
+.profile-container {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  cursor: pointer !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  transition: all 0.3s ease !important;
+  flex-shrink: 0 !important;
+  height: auto !important;
+  width: auto !important;
+}
+
+.profile-container:hover {
+  background: transparent !important;
+  transform: none !important;
+}
+
+/* Profile Image - Cyber styling with glow effect */
+.profile-img {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  border: 2px solid #00ffff !important;
+  box-shadow: 
+    0 0 15px rgba(0, 255, 255, 0.5),
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    inset 0 0 10px rgba(0, 255, 255, 0.1) !important;
+  position: relative !important;
+  animation: profileGlowShared 3s ease-in-out infinite alternate !important;
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
+  transition: all 0.3s ease !important;
+}
+
+.profile-img:hover {
+  transform: scale(1.1) !important;
+  box-shadow: 
+    0 0 25px rgba(0, 255, 255, 0.7),
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    inset 0 0 15px rgba(0, 255, 255, 0.2) !important;
+}
+
+@keyframes profileGlowShared {
+  0% { 
+    box-shadow: 
+      0 0 15px rgba(0, 255, 255, 0.5), 
+      0 4px 20px rgba(0, 0, 0, 0.4), 
+      inset 0 0 10px rgba(0, 255, 255, 0.1); 
+  }
+  100% { 
+    box-shadow: 
+      0 0 25px rgba(0, 255, 255, 0.7), 
+      0 4px 20px rgba(0, 0, 0, 0.4), 
+      inset 0 0 15px rgba(0, 255, 255, 0.2); 
+  }
+}
+
+/* Username Styling - Cyber theme */
+#username-navbar {
+  color: #00ffff !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5) !important;
+  font-family: 'Orbitron', monospace !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
+  max-width: 120px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  transition: all 0.3s ease !important;
+}
+
+#username-navbar:hover {
+  color: #ffffff !important;
+  text-shadow: 0 0 15px rgba(0, 255, 255, 0.8) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .profile-container {
+    gap: 8px !important;
+  }
+  
+  .profile-img {
+    width: 35px !important;
+    height: 35px !important;
+  }
+  
+  #username-navbar {
+    font-size: 13px !important;
+    max-width: 100px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-img {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  
+  #username-navbar {
+    font-size: 12px !important;
+    max-width: 80px !important;
+  }
+}

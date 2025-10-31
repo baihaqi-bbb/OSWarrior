@@ -876,28 +876,62 @@ app.get("/api/user/:userId", async (req, res) => {
       }
     } else {
       const usersPath = path.join(process.cwd(), "data", "users.json");
+      let usersObj = {};
+      
+      // Read existing users
       if (fs.existsSync(usersPath)) {
         try {
-          const usersObj = JSON.parse(fs.readFileSync(usersPath, "utf8") || "{}");
-          const userData = usersObj[userId];
-          if (userData) {
-            user = {
-              userId,
-              name: userData.displayName || userData.name || userData.username || `User-${String(userId).slice(0,6)}`,
-              email: userData.email || null,
-              photoURL: userData.photoURL || userData.avatar || null,
-              xp: Number(userData.xp || 0),
-              level: Number(userData.level || Math.floor((userData.xp || 0) / 100) + 1)
-            };
-          }
+          usersObj = JSON.parse(fs.readFileSync(usersPath, "utf8") || "{}");
         } catch (err) {
           console.error("Error reading users.json:", err);
+          usersObj = {};
         }
+      }
+      
+      const userData = usersObj[userId];
+      if (userData) {
+        user = {
+          userId,
+          name: userData.displayName || userData.name || userData.username || `User-${String(userId).slice(0,6)}`,
+          email: userData.email || null,
+          photoURL: userData.photoURL || userData.avatar || null,
+          xp: Number(userData.xp || 0),
+          level: Number(userData.level || Math.floor((userData.xp || 0) / 100) + 1)
+        };
+      } else {
+        // Auto-create user if not exists
+        console.log(`Auto-creating user for ID: ${userId}`);
+        const newUser = {
+          displayName: `Warrior-${String(userId).slice(0,6)}`,
+          email: null,
+          xp: 0,
+          level: 1,
+          photoURL: null,
+          createdAt: new Date().toISOString()
+        };
+        
+        // Save to users.json
+        usersObj[userId] = newUser;
+        try {
+          fs.writeFileSync(usersPath, JSON.stringify(usersObj, null, 2));
+          console.log(`User ${userId} created successfully`);
+        } catch (writeErr) {
+          console.error("Error writing users.json:", writeErr);
+        }
+        
+        user = {
+          userId,
+          name: newUser.displayName,
+          email: newUser.email,
+          photoURL: newUser.photoURL,
+          xp: newUser.xp,
+          level: newUser.level
+        };
       }
     }
 
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "User not found and could not be created" });
     }
 
     return res.json(user);

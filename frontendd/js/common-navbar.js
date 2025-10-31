@@ -1,9 +1,9 @@
 // Common navbar functionality for all user pages
 // This handles profile dropdown, theme toggle, and modals
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { getFirestore, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getFirestore, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDofTjaWk5M8m_hyrDRqxOGofzOV7Qlitw",
@@ -14,7 +14,14 @@ const firebaseConfig = {
   appId: "1:346273796107:web:f6fcc32860025bf406770e",
 };
 
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase only if not already initialized
+let app;
+if (getApps().length === 0) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApps()[0];
+}
+
 const auth = getAuth(app);
 const db = getFirestore(app);
 
@@ -27,44 +34,66 @@ const DEFAULT_AVATAR = "image/default-profile.png";
 function setupProfileDropdown() {
   const profileContainer = document.querySelector('.profile-container');
   const profileDropdown = document.getElementById('profile-dropdown');
-  if (!profileContainer || !profileDropdown) return;
+  
+  if (!profileContainer || !profileDropdown) {
+    console.warn("Profile dropdown elements not found:", { profileContainer: !!profileContainer, profileDropdown: !!profileDropdown });
+    return;
+  }
 
-  // ensure initial state
+  console.log("Setting up profile dropdown...");
+
+  // Ensure initial state
   profileDropdown.classList.add('hidden');
   profileDropdown.classList.remove('show');
 
   let open = false;
+
+  // Profile container click handler
   profileContainer.addEventListener('click', (ev) => {
     ev.stopPropagation();
+    ev.preventDefault();
+    
+    console.log("Profile container clicked, current state:", open);
+    
     open = !open;
     if (open) {
       profileDropdown.classList.remove('hidden');
-      // small delay to allow CSS transition if any
-      setTimeout(() => profileDropdown.classList.add('show'), 10);
+      // Small delay to allow CSS transition if any
+      setTimeout(() => {
+        profileDropdown.classList.add('show');
+        console.log("Dropdown should now be visible");
+      }, 10);
     } else {
       profileDropdown.classList.remove('show');
-      setTimeout(() => profileDropdown.classList.add('hidden'), 200);
+      setTimeout(() => {
+        profileDropdown.classList.add('hidden');
+        console.log("Dropdown hidden");
+      }, 200);
     }
   });
 
-  // click outside closes dropdown
+  // Click outside closes dropdown
   document.addEventListener('click', (ev) => {
     if (!open) return;
     if (!profileContainer.contains(ev.target)) {
+      console.log("Clicked outside, closing dropdown");
       open = false;
       profileDropdown.classList.remove('show');
       setTimeout(() => profileDropdown.classList.add('hidden'), 200);
     }
   });
 
-  // keyboard: Esc closes
+  // Keyboard: Esc closes
   document.addEventListener('keydown', (ev) => {
     if (ev.key === 'Escape' && open) {
+      console.log("Escape pressed, closing dropdown");
       open = false;
       profileDropdown.classList.remove('show');
       setTimeout(() => profileDropdown.classList.add('hidden'), 200);
     }
   });
+
+  console.log("Profile dropdown setup complete");
 }
 
 // Setup dropdown button functions
@@ -254,16 +283,39 @@ onAuthStateChanged(auth, async (user) => {
     
     console.log("User authenticated:", user.uid, user.displayName || user.email);
     
+    let displayName = user.displayName || user.email?.split('@')[0] || "Warrior";
+    let photoURL = user.photoURL || DEFAULT_AVATAR;
+    
+    // Try to get additional user data from Firestore
+    try {
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+      
+      if (userDocSnap.exists()) {
+        const userData = userDocSnap.data();
+        console.log("Firestore user data found:", userData);
+        
+        // Use Firestore data if available
+        displayName = userData.name || userData.displayName || displayName;
+        photoURL = userData.photoURL || userData.avatar || photoURL;
+      }
+    } catch (firestoreError) {
+      console.warn("Failed to fetch Firestore user data:", firestoreError);
+    }
+    
     // Update UI with user info
     const usernameNavbar = document.getElementById("username-navbar");
     const profileImgs = document.querySelectorAll("#profile-img, #profile-img-navbar");
     
-    const displayName = user.displayName || user.email?.split('@')[0] || "Warrior";
-    if (usernameNavbar) usernameNavbar.textContent = displayName;
+    if (usernameNavbar) {
+      usernameNavbar.textContent = displayName;
+      console.log("Updated username display to:", displayName);
+    }
     
-    profileImgs.forEach(img => {
-      if (user.photoURL) {
-        img.src = user.photoURL;
+    profileImgs.forEach((img, index) => {
+      if (img) {
+        img.src = photoURL;
+        console.log(`Updated profile image ${index + 1} to:`, photoURL);
       }
     });
     

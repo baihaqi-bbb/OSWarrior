@@ -3,68 +3,261 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quiz - OSwarrior</title>
+  <title>Quiz Arena - OSwarrior</title>
+  <link rel="stylesheet" href="css/navbar-shared.css">
   <link rel="stylesheet" href="css/navbar-logo.css">
+  <link rel="stylesheet" href="css/profile-navbar.css">
   <link rel="stylesheet" href="css/quiz.css">
   <link rel="stylesheet" href="css/profile-dropdown.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body class="quiz-page">
 
-  <!-- Navbar -->
+  <!-- Cyber Navbar -->
   <div class="navbar">
     <div class="navbar-left">
       <img src="image/os-warrior-logo.png" alt="OS Warrior" class="navbar-logo">
-      <h1>Quiz - OSwarrior</h1>
+      <h1>⚔️ Quiz Arena - OSwarrior 🛡️</h1>
     </div>
     <div class="navbar-right">
       <div class="profile-container" id="profile-toggle">
         <span id="username-navbar">Warrior</span>
         <img id="profile-img" class="profile-img" src="image/default-profile.png" alt="Profile"/>
-        <div id="profile-dropdown" class="profile-dropdown hidden">
-          <a id="view-profile" href="profile.html">👤 View Profile</a>
-          <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
-          <div class="settings-section">
-            <p class="settings-title">⚙️ Quick Settings</p>
-            <button id="toggle-theme">🌗 Dark / Light Mode</button>
-            <button id="change-avatar">🖼️ Change Avatar</button>
-            <button id="edit-name">✏️ Edit Name</button>
-          </div>
-          <button id="logout-btn">🚪 Logout</button>
-        </div>
       </div>
     </div>
   </div>
 
-  <!-- Quiz Weeks -->
-  <div class="quiz-container">
-    <h2>Select a Week</h2>
-    <div class="weeks">
-      <!-- Week 1–14 -->
-      <div class="week-card" data-week="1"><h2>Week 1</h2></div>
-      <div class="week-card" data-week="2"><h2>Week 2</h2></div>
-      <div class="week-card" data-week="3"><h2>Week 3</h2></div>
-      <div class="week-card" data-week="4"><h2>Week 4</h2></div>
-      <div class="week-card" data-week="5"><h2>Week 5</h2></div>
-      <div class="week-card" data-week="6"><h2>Week 6</h2></div>
-      <div class="week-card" data-week="7"><h2>Week 7</h2></div>
-      <div class="week-card" data-week="8"><h2>Week 8</h2></div>
-      <div class="week-card" data-week="9"><h2>Week 9</h2></div>
-      <div class="week-card" data-week="10"><h2>Week 10</h2></div>
-      <div class="week-card" data-week="11"><h2>Week 11</h2></div>
-      <div class="week-card" data-week="12"><h2>Week 12</h2></div>
-      <div class="week-card" data-week="13"><h2>Week 13</h2></div>
-      <div class="week-card" data-week="14"><h2>Week 14</h2></div>
+  <!-- Profile Dropdown - Outside navbar -->
+  <div id="profile-dropdown" class="profile-dropdown hidden">
+    <a id="view-profile" href="profile.html">👤 View Profile</a>
+    <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
+    <div class="settings-section">
+      <p class="settings-title">⚙️ Quick Settings</p>
+      <button id="toggle-theme">🌗 Dark / Light Mode</button>
+      <button id="change-avatar">🖼️ Change Avatar</button>
+      <button id="edit-name">✏️ Edit Name</button>
+    </div>
+    <button id="logout-btn">🚪 Logout</button>
+  </div>
+
+  <!-- Main Quiz Arena Container -->
+  <div class="main-container">
+    <!-- Cyber Header Banner -->
+    <div class="quiz-header">
+      <div class="banner-decoration">
+        <div class="cyber-lines"></div>
+        <div class="electric-particles"></div>
+        <div class="floating-icons">
+          <span class="float-icon">⚔️</span>
+          <span class="float-icon">🧠</span>
+          <span class="float-icon">💻</span>
+          <span class="float-icon">⚡</span>
+        </div>
+      </div>
+      
+      <div class="header-content">
+        <h1>🎯 CYBER QUIZ ARENA 🎯</h1>
+        <p>⚡ Test your OS knowledge and climb the warrior rankings! Choose your battle week ⚡</p>
+        <div class="battle-status">
+          <div class="status-indicator">🔥 READY TO BATTLE</div>
+          <div class="mission-counter">📚 14 Missions Available</div>
+        </div>
+      </div>
+      
+      <div class="banner-effects">
+        <div class="scan-line"></div>
+        <div class="pulse-ring"></div>
+      </div>
+    </div>
+
+    <!-- Quiz Weeks Grid -->
+    <div class="quiz-container">
+      <div class="container-header">
+        <h2>🗓️ Select Your Mission Week</h2>
+        <p>Each week contains unique challenges to test your OS mastery</p>
+      </div>
+      
+      <div class="weeks-grid">
+        <!-- Week 1–14 with enhanced cards -->
+        <div class="week-card" data-week="1">
+          <div class="card-header">
+            <span class="week-number">01</span>
+            <span class="week-difficulty">⭐</span>
+          </div>
+          <h3>Week 1</h3>
+          <p>Introduction to OS</p>
+          <div class="card-footer">
+            <span class="questions-count">📝 10 Questions</span>
+          </div>
+        </div>
+        
+        <div class="week-card" data-week="2">
+          <div class="card-header">
+            <span class="week-number">02</span>
+            <span class="week-difficulty">⭐</span>
+          </div>
+          <h3>Week 2</h3>
+          <p>Process Management</p>
+          <div class="card-footer">
+            <span class="questions-count">📝 10 Questions</span>
+          </div>
+        </div>
+        
+        <div class="week-card" data-week="3">
+          <div class="card-header">
+            <span class="week-number">03</span>
+            <span class="week-difficulty">⭐⭐</span>
+          </div>
+          <h3>Week 3</h3>
+          <p>CPU Scheduling</p>
+          <div class="card-footer">
+            <span class="questions-count">📝 10 Questions</span>
+          </div>
+        </div>
+        
+        <div class="week-card" data-week="4">
+          <div class="card-header">
+            <span class="week-number">04</span>
+            <span class="week-difficulty">⭐⭐</span>
+          </div>
+          <h3>Week 4</h3>
+          <p>Threading</p>
+          <div class="card-footer">
+            <span class="questions-count">📝 10 Questions</span>
+          </div>
+        </div>
+        
+        <div class="week-card" data-week="5">
+          <div class="card-header">
+            <span class="week-number">05</span>
+            <span class="week-difficulty">⭐⭐</span>
+          </div>
+          <h3>Week 5</h3>
+          <p>Synchronization</p>
+          <div class="card-footer">
+            <span class="questions-count">📝 10 Questions</span>
+          </div>
+        </div>
+        
+        <div class="week-card" data-week="6">
+          <div class="card-header">
+            <span class="week-number">06</span>
+            <span class="week-difficulty">⭐⭐⭐</span>
+          </div>
+          <h3>Week 6</h3>
+          <p>Deadlocks</p>
+          <div class="card-footer">
+            <span class="questions-count">📝 10 Questions</span>
+          </div>
+        </div>
+        
+        <div class="week-card" data-week="7">
+          <div class="card-header">
+            <span class="week-number">07</span>
+            <span class="week-difficulty">⭐⭐⭐</span>
+          </div>
+          <h3>Week 7</h3>
+          <p>Memory Management</p>
+          <div class="card-footer">
+            <span class="questions-count">📝 10 Questions</span>
+          </div>
+        </div>
+        
+        <div class="week-card" data-week="8">
+          <div class="card-header">
+            <span class="week-number">08</span>
+            <span class="week-difficulty">⭐⭐⭐</span>
+          </div>
+          <h3>Week 8</h3>
+          <p>Virtual Memory</p>
+          <div class="card-footer">
+            <span class="questions-count">📝 10 Questions</span>
+          </div>
+        </div>
+        
+        <div class="week-card" data-week="9">
+          <div class="card-header">
+            <span class="week-number">09</span>
+            <span class="week-difficulty">⭐⭐⭐</span>
+          </div>
+          <h3>Week 9</h3>
+          <p>File Systems</p>
+          <div class="card-footer">
+            <span class="questions-count">📝 10 Questions</span>
+          </div>
+        </div>
+        
+        <div class="week-card" data-week="10">
+          <div class="card-header">
+            <span class="week-number">10</span>
+            <span class="week-difficulty">⭐⭐⭐⭐</span>
+          </div>
+          <h3>Week 10</h3>
+          <p>I/O Systems</p>
+          <div class="card-footer">
+            <span class="questions-count">📝 10 Questions</span>
+          </div>
+        </div>
+        
+        <div class="week-card" data-week="11">
+          <div class="card-header">
+            <span class="week-number">11</span>
+            <span class="week-difficulty">⭐⭐⭐⭐</span>
+          </div>
+          <h3>Week 11</h3>
+          <p>Mass Storage</p>
+          <div class="card-footer">
+            <span class="questions-count">📝 10 Questions</span>
+          </div>
+        </div>
+        
+        <div class="week-card" data-week="12">
+          <div class="card-header">
+            <span class="week-number">12</span>
+            <span class="week-difficulty">⭐⭐⭐⭐</span>
+          </div>
+          <h3>Week 12</h3>
+          <p>Network & Security</p>
+          <div class="card-footer">
+            <span class="questions-count">📝 10 Questions</span>
+          </div>
+        </div>
+        
+        <div class="week-card" data-week="13">
+          <div class="card-header">
+            <span class="week-number">13</span>
+            <span class="week-difficulty">⭐⭐⭐⭐⭐</span>
+          </div>
+          <h3>Week 13</h3>
+          <p>Distributed Systems</p>
+          <div class="card-footer">
+            <span class="questions-count">📝 10 Questions</span>
+          </div>
+        </div>
+        
+        <div class="week-card" data-week="14">
+          <div class="card-header">
+            <span class="week-number">14</span>
+            <span class="week-difficulty">⭐⭐⭐⭐⭐</span>
+          </div>
+          <h3>Week 14</h3>
+          <p>Advanced Topics</p>
+          <div class="card-footer">
+            <span class="questions-count">📝 10 Questions</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Modal Edit Name -->
   <div id="modal-edit-name" class="modal" style="display:none;">
     <div class="modal-content">
-      <h3>Edit Name</h3>
-      <input type="text" id="input-new-name" placeholder="Enter new name">
+      <h3>✏️ Edit Warrior Name</h3>
+      <input type="text" id="input-new-name" placeholder="Enter your warrior name" maxlength="20">
       <div class="modal-actions">
-        <button id="save-name-btn" class="btn-action">Save</button>
-        <button id="cancel-name-btn" class="btn-action btn-cancel">Cancel</button>
+        <button id="save-name-btn" class="btn-action">💾 Save</button>
+        <button id="cancel-name-btn" class="btn-action btn-cancel">❌ Cancel</button>
       </div>
     </div>
   </div>
@@ -72,11 +265,11 @@
   <!-- Modal Change Avatar -->
   <div id="modal-change-avatar" class="modal" style="display:none;">
     <div class="modal-content">
-      <h3>Change Avatar</h3>
-      <input type="text" id="input-avatar-url" placeholder="Paste image URL">
+      <h3>🖼️ Change Avatar</h3>
+      <input type="text" id="input-avatar-url" placeholder="Paste image URL or leave empty for default">
       <div class="modal-actions">
-        <button id="save-avatar-btn" class="btn-action">Save</button>
-        <button id="cancel-avatar-btn" class="btn-action btn-cancel">Cancel</button>
+        <button id="save-avatar-btn" class="btn-action">💾 Save</button>
+        <button id="cancel-avatar-btn" class="btn-action btn-cancel">❌ Cancel</button>
       </div>
     </div>
   </div>
