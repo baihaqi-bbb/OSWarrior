@@ -42,156 +42,209 @@
 
   <!-- Main Container -->
   <div class="main-container">
-    <div class="content-area">
-      <!-- Welcome Banner -->
-      <div class="welcome-banner">
-  <div class="banner-decoration">
-    <div class="cyber-lines"></div>
-    <div class="electric-particles"></div>
-    <div class="floating-icons">
-      <span class="float-icon">⚔️</span>
-      <span class="float-icon">🛡️</span>
-      <span class="float-icon">💎</span>
-      <span class="float-icon">⚡</span>
+    <!-- Cyber Header Banner -->
+    <div class="home-header">
+      <div class="banner-decoration">
+        <div class="cyber-lines"></div>
+        <div class="electric-particles"></div>
+        <div class="floating-icons">
+          <span class="float-icon">⚔️</span>
+          <span class="float-icon">🛡️</span>
+          <span class="float-icon">💎</span>
+          <span class="float-icon">⚡</span>
+        </div>
+      </div>
+      
+      <div class="header-content">
+        <h1>⚡ Welcome Back, <span id="username" class="warrior-name">Warrior</span>! 🛡️</h1>
+        <p>🚀 Ready to dominate the digital battlefield and master the cyber realm? Your next victory awaits! ⚔️</p>
+        <div class="battle-status">
+          <div class="status-indicator">🔥 CYBER READY</div>
+          <div class="status-indicator">⚡ MAXIMUM POWER</div>
+          <div class="status-indicator">🎯 ACTIVE MISSION</div>
+        </div>
+      </div>
+      
+      <div class="banner-effects">
+        <div class="scan-line"></div>
+        <div class="pulse-ring"></div>
+      </div>
     </div>
-  </div>
-  
-  <div class="welcome-content">
-    <div class="welcome-text">
-      <h2>
-        ⚡ Welcome Back, <span id="username">Warrior</span>! 🛡️
-      </h2>
-      <p>
-        🚀 Ready to dominate the digital battlefield and master the cyber realm? Your next victory awaits! ⚔️
-      </p>
-    </div>
-    
-    <div class="warrior-status">
-      <div class="status-indicator">🔥 CYBER READY</div>
-      <div class="battle-ready">⚡ MAXIMUM POWER</div>
-      <div class="status-indicator">🎯 ACTIVE MISSION</div>
-    </div>
-  </div>
-  
-  <div class="banner-effects">
-    <div class="pulse-ring"></div>
-    <div class="scan-line"></div>
-  </div>
-    </div>
-  </div>
-</div><!-- XP Bar Section -->
-<div class="xp-section">
-  <div class="xp-header">
-    <span id="player-name">⚡ Cyber Warrior 👑</span>
-    <span id="player-level">Level 1</span>
-  </div>
-  <div class="xp-bar">
-    <div id="xp-progress"></div>
-    <div class="xp-spark"></div>
-  </div>
-  <div class="xp-footer">
-    <span id="xp-current">0 XP</span>
-    <span id="xp-max">/ 100 XP</span>
-  </div>
-  <div class="power-meter">
-    <span class="power-text">⚡ POWER LEVEL</span>
-    <div class="power-bars">
-      <div class="power-bar active"></div>
-      <div class="power-bar active"></div>
-      <div class="power-bar"></div>
-      <div class="power-bar"></div>
-      <div class="power-bar"></div>
-    </div>
-  </div>
-</div>
 
-<!-- 🔔 Mission / Notification Alert -->
-<div id="mission-alert" class="mission-alert hidden">
-  <span id="mission-icon">🎯</span>
-  <span id="mission-text">New mission available!</span>
-  <button id="mission-close">✖</button>
-</div>
+    <!-- Dashboard Grid -->
+    <div class="dashboard-container">
+      <div class="dashboard-header">
+        <h2>🎯 Warrior Dashboard</h2>
+        <p>Monitor your progress and access your missions</p>
+      </div>
+      
+      <div class="dashboard-grid">
+        <!-- XP Progress Card -->
+        <div class="dashboard-card xp-card">
+          <div class="card-header">
+            <span class="card-icon">⚡</span>
+            <div class="level-indicator">
+              <span id="player-level">Level 1</span>
+            </div>
+          </div>
+          <h3>Power Level Progress</h3>
+          <div class="xp-display">
+            <div class="xp-info">
+              <span id="player-name">⚡ Cyber Warrior 👑</span>
+              <span class="xp-text"><span id="xp-current">0</span> / <span id="xp-max">100</span> XP</span>
+            </div>
+            <div class="xp-bar">
+              <div id="xp-progress" class="xp-fill"></div>
+              <div class="xp-spark"></div>
+            </div>
+          </div>
+          <div class="power-meter">
+            <span class="power-text">🔋 POWER CORES</span>
+            <div class="power-bars">
+              <div class="power-bar active"></div>
+              <div class="power-bar active"></div>
+              <div class="power-bar"></div>
+              <div class="power-bar"></div>
+              <div class="power-bar"></div>
+            </div>
+          </div>
+        </div>
 
-<!-- 🏆 Leaderboard Mini Panel -->
-<section class="leaderboard-mini">
-  <div class="section-header">
-    <h2>🏆 Elite Warriors</h2>
-    <div class="live-indicator">
-      <span class="live-dot"></span>
-      <span class="live-text">LIVE</span>
+        <!-- Elite Warriors Leaderboard Card -->
+        <div class="dashboard-card leaderboard-card">
+          <div class="card-header">
+            <span class="card-icon">�</span>
+            <div class="live-indicator">
+              <span class="live-dot"></span>
+              <span class="live-text">LIVE</span>
+            </div>
+          </div>
+          <h3>Elite Warriors Arena</h3>
+          <div id="top3-container" class="top3-container" aria-live="polite">
+            <!-- populated dynamically by js/home-user.js -->
+          </div>
+          <div class="arena-footer">
+            <span class="arena-text">⚔️ Digital Arena • Battle for Glory</span>
+            <a href="leaderboard.html" class="view-all-btn">View Full Rankings →</a>
+          </div>
+        </div>
+
+        <!-- Mission Status Card -->
+        <div class="dashboard-card mission-status-card">
+          <div class="card-header">
+            <span class="card-icon">�</span>
+            <div class="mission-counter">
+              <span class="counter">3/14</span>
+            </div>
+          </div>
+          <h3>Mission Progress</h3>
+          <div class="mission-stats">
+            <div class="stat-item">
+              <span class="stat-label">Completed</span>
+              <span class="stat-value">3 Missions</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Total XP</span>
+              <span class="stat-value">1,250 XP</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Success Rate</span>
+              <span class="stat-value">85%</span>
+            </div>
+          </div>
+          <div class="mission-progress-bar">
+            <div class="progress-fill" style="width: 21%"></div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-  <div id="top3-container" class="top3-container" aria-live="polite">
-    <!-- populated dynamically by js/home-user.js -->
-  </div>
-  <div class="arena-footer">
-    <span class="arena-text">⚔️ Digital Arena • Battle for Glory</span>
-  </div>
-</section>
 
   <!-- Content -->
   <div class="content">
-    <div class="card quiz cyber-card">
-      <div class="card-glow"></div>
-      <span class="badge">New</span>
-      <div class="card-header">
-        <span class="icon">🎯</span>
-        <div class="card-signal">
-          <div class="signal-bar"></div>
-          <div class="signal-bar"></div>
-          <div class="signal-bar"></div>
-        </div>
-      </div>
-      <h2>Cyber Quiz</h2>
-      <p>Test your knowledge in the digital battlefield with interactive challenges.</p>
-      <div class="card-stats">
-        <span class="stat">📊 15 Challenges</span>
-        <span class="stat">🏆 Max 500 XP</span>
-      </div>
-      <a href="quiz.html" onclick="markQuizAsVisited()" class="cyber-btn">
-        <span>ENGAGE</span>
-        <div class="btn-glow"></div>
-      </a>
+    <div class="content-header">
+      <h2>🎯 Mission Control Center</h2>
+      <p>Choose your path and embark on your cyber journey</p>
     </div>
     
-    <div class="card leaderboard cyber-card">
-      <div class="card-glow"></div>
-      <div class="card-header">
-        <span class="icon">👑</span>
-        <div class="rank-indicator">
-          <span class="rank-text">#1</span>
+    <div class="missions-grid">
+      <div class="mission-card quiz cyber-card">
+        <div class="card-glow"></div>
+        <span class="badge-new">New</span>
+        <div class="card-header">
+          <span class="mission-icon">🎯</span>
+          <div class="card-signal">
+            <div class="signal-bar"></div>
+            <div class="signal-bar"></div>
+            <div class="signal-bar"></div>
+          </div>
         </div>
-      </div>
-      <h2>Arena Rankings</h2>
-      <p>Battle for supremacy and claim your place among the elite warriors.</p>
-      <div class="card-stats">
-        <span class="stat">⚔️ 142 Warriors</span>
-        <span class="stat">🔥 Live Battle</span>
-      </div>
-      <a href="leaderboard.html" class="cyber-btn">
-        <span>ENTER ARENA</span>
-        <div class="btn-glow"></div>
-      </a>
-    </div>
-    
-    <div class="card achievement cyber-card">
-      <div class="card-glow"></div>
-      <div class="card-header">
-        <span class="icon">�</span>
-        <div class="achievement-counter">
-          <span class="counter">7/20</span>
+        <h3>Cyber Quiz Arena</h3>
+        <p>Test your OS knowledge in the digital battlefield with interactive challenges and climb the warrior rankings.</p>
+        <div class="card-stats">
+          <span class="stat">📊 14 Mission Weeks</span>
+          <span class="stat">🏆 Max 500 XP</span>
         </div>
+        <div class="mission-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 25%"></div>
+          </div>
+          <span class="progress-text">3/14 Completed</span>
+        </div>
+        <a href="quiz.html" onclick="markQuizAsVisited()" class="cyber-btn">
+          <span>🚀 ENGAGE MISSION</span>
+          <div class="btn-glow"></div>
+        </a>
       </div>
-      <h2>Battle Honors</h2>
-      <p>Unlock legendary achievements and showcase your warrior prowess.</p>
-      <div class="card-stats">
-        <span class="stat">🎖️ 7 Unlocked</span>
-        <span class="stat">⭐ Rare Badges</span>
+      
+      <div class="mission-card leaderboard cyber-card">
+        <div class="card-glow"></div>
+        <div class="card-header">
+          <span class="mission-icon">👑</span>
+          <div class="rank-indicator">
+            <span class="rank-text">#1</span>
+          </div>
+        </div>
+        <h3>Arena Rankings</h3>
+        <p>Battle for supremacy and claim your place among the elite warriors in the global cyber arena.</p>
+        <div class="card-stats">
+          <span class="stat">⚔️ 142 Active Warriors</span>
+          <span class="stat">🔥 Live Battle Mode</span>
+        </div>
+        <div class="live-status">
+          <div class="live-dot"></div>
+          <span class="live-text">ARENA IS LIVE</span>
+        </div>
+        <a href="leaderboard.html" class="cyber-btn">
+          <span>⚔️ ENTER ARENA</span>
+          <div class="btn-glow"></div>
+        </a>
       </div>
-      <a href="achievement.html" class="cyber-btn">
-        <span>VIEW HONORS</span>
-        <div class="btn-glow"></div>
-      </a>
+      
+      <div class="mission-card achievement cyber-card">
+        <div class="card-glow"></div>
+        <div class="card-header">
+          <span class="mission-icon">🏆</span>
+          <div class="achievement-counter">
+            <span class="counter">7/20</span>
+          </div>
+        </div>
+        <h3>Battle Honors</h3>
+        <p>Unlock legendary achievements and showcase your warrior prowess. Collect rare badges and titles.</p>
+        <div class="card-stats">
+          <span class="stat">🎖️ 7 Achievements</span>
+          <span class="stat">⭐ 3 Rare Badges</span>
+        </div>
+        <div class="achievement-preview">
+          <div class="mini-badge">🥇</div>
+          <div class="mini-badge">🏅</div>
+          <div class="mini-badge">⭐</div>
+          <span class="more-indicator">+4</span>
+        </div>
+        <a href="achievement.html" class="cyber-btn">
+          <span>🏆 VIEW HONORS</span>
+          <div class="btn-glow"></div>
+        </a>
+      </div>
     </div>
     </div>
     </div>

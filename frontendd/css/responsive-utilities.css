@@ -1,0 +1,388 @@
+/* ==========================================================
+   RESPONSIVE UTILITIES - OSwarrior
+   Common responsive utilities for all pages
+   ========================================================== */
+
+/* Common responsive breakpoints */
+:root {
+  --mobile-sm: 360px;
+  --mobile: 480px;
+  --mobile-lg: 767px;
+  --tablet: 768px;
+  --tablet-lg: 991px;
+  --desktop: 992px;
+  --desktop-lg: 1200px;
+}
+
+/* Touch-friendly interactions */
+@media (hover: none) and (pointer: coarse) {
+  /* Ensure touch targets are at least 44px */
+  button, .btn, a.btn, input[type="button"], input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+  
+  /* Remove hover effects on touch devices */
+  .hover-only {
+    display: none !important;
+  }
+  
+  /* Enhanced focus styles for touch */
+  button:focus, .btn:focus, input:focus, select:focus, textarea:focus {
+    outline: 3px solid rgba(0, 255, 255, 0.6);
+    outline-offset: 2px;
+  }
+}
+
+/* Common responsive text sizing */
+.responsive-text-xxl {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+}
+
+.responsive-text-xl {
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.responsive-text-lg {
+  font-size: clamp(1.2rem, 2.5vw, 2rem);
+}
+
+.responsive-text-md {
+  font-size: clamp(1rem, 2vw, 1.5rem);
+}
+
+.responsive-text-sm {
+  font-size: clamp(0.8rem, 1.5vw, 1.2rem);
+}
+
+/* Common responsive spacing */
+.responsive-padding-xl {
+  padding: clamp(20px, 5vw, 50px);
+}
+
+.responsive-padding-lg {
+  padding: clamp(15px, 4vw, 40px);
+}
+
+.responsive-padding-md {
+  padding: clamp(10px, 3vw, 30px);
+}
+
+.responsive-padding-sm {
+  padding: clamp(8px, 2vw, 20px);
+}
+
+.responsive-margin-xl {
+  margin: clamp(20px, 5vw, 50px);
+}
+
+.responsive-margin-lg {
+  margin: clamp(15px, 4vw, 40px);
+}
+
+.responsive-margin-md {
+  margin: clamp(10px, 3vw, 30px);
+}
+
+.responsive-margin-sm {
+  margin: clamp(8px, 2vw, 20px);
+}
+
+/* Responsive grid utilities */
+.responsive-grid-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(15px, 3vw, 30px);
+}
+
+.responsive-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: clamp(15px, 3vw, 30px);
+}
+
+.responsive-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: clamp(15px, 3vw, 25px);
+}
+
+/* Responsive flex utilities */
+.responsive-flex-stack {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 2vw, 20px);
+}
+
+@media (min-width: 768px) {
+  .responsive-flex-stack {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+/* Responsive visibility utilities */
+.hide-mobile {
+  display: block;
+}
+
+.show-mobile {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .hide-mobile {
+    display: none !important;
+  }
+  
+  .show-mobile {
+    display: block !important;
+  }
+}
+
+.hide-tablet {
+  display: block;
+}
+
+.show-tablet {
+  display: none;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .hide-tablet {
+    display: none !important;
+  }
+  
+  .show-tablet {
+    display: block !important;
+  }
+}
+
+.hide-desktop {
+  display: block;
+}
+
+.show-desktop {
+  display: none;
+}
+
+@media (min-width: 992px) {
+  .hide-desktop {
+    display: none !important;
+  }
+  
+  .show-desktop {
+    display: block !important;
+  }
+}
+
+/* Responsive container utilities */
+.responsive-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: clamp(10px, 3vw, 30px);
+}
+
+.responsive-container-fluid {
+  width: 100%;
+  padding: clamp(10px, 3vw, 30px);
+}
+
+/* Safe area utilities for mobile devices with notches */
+@supports (padding: max(0px)) {
+  .safe-area-top {
+    padding-top: max(env(safe-area-inset-top), 20px);
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 20px);
+  }
+  
+  .safe-area-left {
+    padding-left: max(env(safe-area-inset-left), 10px);
+  }
+  
+  .safe-area-right {
+    padding-right: max(env(safe-area-inset-right), 10px);
+  }
+  
+  .safe-area-all {
+    padding-top: max(env(safe-area-inset-top), 20px);
+    padding-bottom: max(env(safe-area-inset-bottom), 20px);
+    padding-left: max(env(safe-area-inset-left), 10px);
+    padding-right: max(env(safe-area-inset-right), 10px);
+  }
+}
+
+/* Responsive scrolling utilities */
+.responsive-scroll-x {
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 255, 255, 0.3) rgba(0, 255, 255, 0.1);
+}
+
+.responsive-scroll-x::-webkit-scrollbar {
+  height: 6px;
+}
+
+.responsive-scroll-x::-webkit-scrollbar-track {
+  background: rgba(0, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.responsive-scroll-x::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.responsive-scroll-x::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 255, 0.5);
+}
+
+.responsive-scroll-y {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 255, 255, 0.3) rgba(0, 255, 255, 0.1);
+}
+
+.responsive-scroll-y::-webkit-scrollbar {
+  width: 6px;
+}
+
+.responsive-scroll-y::-webkit-scrollbar-track {
+  background: rgba(0, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.responsive-scroll-y::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.responsive-scroll-y::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 255, 0.5);
+}
+
+/* Responsive image utilities */
+.responsive-img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.responsive-img-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.responsive-img-contain {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+/* Responsive aspect ratio utilities */
+.aspect-ratio-16-9 {
+  aspect-ratio: 16 / 9;
+}
+
+.aspect-ratio-4-3 {
+  aspect-ratio: 4 / 3;
+}
+
+.aspect-ratio-1-1 {
+  aspect-ratio: 1 / 1;
+}
+
+@supports not (aspect-ratio: 1 / 1) {
+  .aspect-ratio-16-9 {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+  }
+  
+  .aspect-ratio-4-3 {
+    position: relative;
+    padding-bottom: 75%;
+    height: 0;
+  }
+  
+  .aspect-ratio-1-1 {
+    position: relative;
+    padding-bottom: 100%;
+    height: 0;
+  }
+  
+  .aspect-ratio-16-9 > *,
+  .aspect-ratio-4-3 > *,
+  .aspect-ratio-1-1 > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+/* Responsive typography utilities */
+.responsive-line-height-tight {
+  line-height: clamp(1.1, 1.2, 1.3);
+}
+
+.responsive-line-height-normal {
+  line-height: clamp(1.3, 1.5, 1.6);
+}
+
+.responsive-line-height-loose {
+  line-height: clamp(1.5, 1.7, 1.8);
+}
+
+/* Responsive border radius utilities */
+.responsive-border-radius {
+  border-radius: clamp(8px, 2vw, 20px);
+}
+
+.responsive-border-radius-sm {
+  border-radius: clamp(4px, 1vw, 12px);
+}
+
+.responsive-border-radius-lg {
+  border-radius: clamp(12px, 3vw, 30px);
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .responsive-container,
+  .responsive-container-fluid {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  .responsive-grid-auto,
+  .responsive-grid-2,
+  .responsive-grid-3 {
+    display: block !important;
+  }
+  
+  .responsive-grid-auto > *,
+  .responsive-grid-2 > *,
+  .responsive-grid-3 > * {
+    page-break-inside: avoid;
+    margin-bottom: 20px;
+  }
+}

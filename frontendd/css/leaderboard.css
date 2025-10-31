@@ -289,29 +289,143 @@ body {
 }
 
 /* ==========================================================
-   RESPONSIVE DESIGN
+   COMPREHENSIVE RESPONSIVE DESIGN
    ========================================================== */
-@media (max-width: 1024px) {
+
+/* Large Desktop (1200px and up) */
+@media (min-width: 1200px) {
+  .leaderboard-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 30px;
+  }
+  
+  .sidebar {
+    min-width: 200px;
+    max-width: 220px;
+    padding: 30px 25px;
+  }
+  
+  .sidebar h6 {
+    font-size: 1.2rem;
+    margin-bottom: 25px;
+  }
+  
+  .sidebar button {
+    padding: 12px 18px;
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+  
+  .board {
+    padding: 30px 25px;
+  }
+  
+  .board h2 {
+    font-size: 2.2rem;
+    margin-bottom: 30px;
+  }
+  
+  #rankingTable {
+    font-size: 1rem;
+  }
+  
+  #rankingTable th,
+  #rankingTable td {
+    padding: 15px 12px;
+    font-size: 1rem;
+  }
+}
+
+/* Desktop (992px to 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
   .leaderboard-container {
     max-width: 95vw;
-    margin: 20px auto;
+    margin: 30px auto;
+    padding: 25px;
+  }
+  
+  .sidebar {
+    min-width: 180px;
+    max-width: 200px;
+    padding: 25px 20px;
+  }
+  
+  .sidebar h6 {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+  }
+  
+  .sidebar button {
+    padding: 10px 15px;
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+  }
+  
+  .board {
+    padding: 25px 20px;
+  }
+  
+  .board h2 {
+    font-size: 2rem;
+    margin-bottom: 25px;
+  }
+}
+
+/* Tablet Large (769px to 991px) */
+@media (min-width: 769px) and (max-width: 991px) {
+  .leaderboard-container {
+    max-width: 95vw;
+    margin: 25px auto;
+    padding: 20px;
   }
   
   .sidebar {
     min-width: 160px;
     max-width: 180px;
+    padding: 20px 15px;
+  }
+  
+  .sidebar h6 {
+    font-size: 1rem;
+    margin-bottom: 18px;
+  }
+  
+  .sidebar button {
+    padding: 9px 12px;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+  }
+  
+  .board {
+    padding: 20px 15px;
+  }
+  
+  .board h2 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
   }
   
   #rankingTable {
     min-width: 350px;
+    font-size: 0.95rem;
+  }
+  
+  #rankingTable th,
+  #rankingTable td {
+    padding: 12px 10px;
+    font-size: 0.95rem;
   }
 }
 
+/* Tablet (768px and below) */
 @media (max-width: 768px) {
   .leaderboard-container {
     flex-direction: column;
     max-width: 98vw;
-    margin: 10px auto;
+    margin: 20px auto;
+    padding: 15px;
+    border-radius: 15px;
   }
   
   .sidebar {
@@ -326,12 +440,14 @@ body {
     justify-content: flex-start;
     gap: 10px;
     overflow-x: auto;
+    white-space: nowrap;
   }
   
   .sidebar::before {
     height: 100%;
     width: 3px;
     background: linear-gradient(180deg, transparent, #00ffff, transparent);
+    margin-right: 10px;
   }
   
   .sidebar h6 {
@@ -339,6 +455,7 @@ body {
     margin-right: 15px;
     font-size: 1rem;
     flex-shrink: 0;
+    white-space: nowrap;
   }
   
   .sidebar button {
@@ -348,6 +465,7 @@ body {
     font-size: 0.9rem;
     flex-shrink: 0;
     min-width: 80px;
+    white-space: nowrap;
   }
   
   .board {
@@ -356,6 +474,7 @@ body {
   
   .board h2 {
     font-size: 1.6rem;
+    margin-bottom: 15px;
   }
   
   #rankingTable {
@@ -370,27 +489,75 @@ body {
   }
 }
 
+/* Mobile Large (481px to 767px) */
+@media (min-width: 481px) and (max-width: 767px) {
+  .leaderboard-container {
+    margin: 15px auto;
+    padding: 12px;
+  }
+  
+  .sidebar {
+    padding: 12px 8px;
+    gap: 8px;
+  }
+  
+  .sidebar h6 {
+    font-size: 0.95rem;
+    margin-right: 12px;
+  }
+  
+  .sidebar button {
+    padding: 7px 10px;
+    font-size: 0.85rem;
+    min-width: 75px;
+  }
+  
+  .board {
+    padding: 18px 8px;
+  }
+  
+  .board h2 {
+    font-size: 1.5rem;
+    margin-bottom: 12px;
+  }
+  
+  #rankingTable {
+    min-width: 290px;
+  }
+  
+  #rankingTable th,
+  #rankingTable td {
+    padding: 9px 7px;
+    font-size: 0.85rem;
+  }
+}
+
+/* Mobile Small (480px and below) */
 @media (max-width: 480px) {
   .leaderboard-container {
-    margin: 0;
-    border-radius: 0;
-    border-left: none;
-    border-right: none;
+    margin: 10px 5px;
+    border-radius: 12px;
+    border-left: 1px solid rgba(0, 255, 255, 0.3);
+    border-right: 1px solid rgba(0, 255, 255, 0.3);
+    padding: 10px;
   }
   
   .sidebar {
     padding: 10px 5px;
     font-size: 0.85rem;
+    gap: 6px;
   }
   
   .sidebar h6 {
     font-size: 0.9rem;
+    margin-right: 10px;
   }
   
   .sidebar button {
     padding: 6px 8px;
     font-size: 0.8rem;
     min-width: 70px;
+    border-radius: 8px;
   }
   
   .board {
@@ -399,11 +566,12 @@ body {
   
   .board h2 {
     font-size: 1.4rem;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
   }
   
   #rankingTable {
     min-width: 280px;
+    border-radius: 8px;
   }
   
   #rankingTable th,
@@ -414,6 +582,151 @@ body {
   
   #rankingTable th {
     font-size: 0.85rem;
+  }
+  
+  /* Stack table columns on very small screens */
+  #rankingTable .player-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+  
+  .player-name {
+    font-size: 0.85rem;
+  }
+  
+  .player-level {
+    font-size: 0.7rem;
+  }
+}
+
+/* Ultra Small Mobile (360px and below) */
+@media (max-width: 360px) {
+  .leaderboard-container {
+    margin: 5px 2px;
+    padding: 8px;
+  }
+  
+  .sidebar {
+    padding: 8px 4px;
+    overflow-x: scroll;
+    scrollbar-width: thin;
+  }
+  
+  .sidebar::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  .sidebar::-webkit-scrollbar-track {
+    background: rgba(0, 255, 255, 0.1);
+  }
+  
+  .sidebar::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 255, 0.3);
+    border-radius: 2px;
+  }
+  
+  .sidebar h6 {
+    font-size: 0.8rem;
+    margin-right: 8px;
+  }
+  
+  .sidebar button {
+    padding: 5px 6px;
+    font-size: 0.75rem;
+    min-width: 60px;
+  }
+  
+  .board {
+    padding: 12px 4px;
+  }
+  
+  .board h2 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+  }
+  
+  #rankingTable {
+    min-width: 260px;
+  }
+  
+  #rankingTable th,
+  #rankingTable td {
+    padding: 6px 4px;
+    font-size: 0.75rem;
+  }
+  
+  #rankingTable th {
+    font-size: 0.8rem;
+  }
+  
+  .player-name {
+    font-size: 0.8rem;
+  }
+  
+  .player-level {
+    font-size: 0.65rem;
+  }
+}
+
+/* Landscape Mobile Orientation */
+@media (max-height: 500px) and (orientation: landscape) {
+  .leaderboard-container {
+    margin: 5px auto;
+    padding: 10px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .sidebar {
+    padding: 8px 10px;
+  }
+  
+  .sidebar h6 {
+    font-size: 0.9rem;
+    margin-right: 10px;
+  }
+  
+  .sidebar button {
+    padding: 5px 8px;
+    font-size: 0.8rem;
+    margin-right: 6px;
+  }
+  
+  .board {
+    padding: 10px;
+  }
+  
+  .board h2 {
+    font-size: 1.3rem;
+    margin-bottom: 8px;
+  }
+  
+  #rankingTable {
+    font-size: 0.8rem;
+  }
+  
+  #rankingTable th,
+  #rankingTable td {
+    padding: 6px 8px;
+    font-size: 0.8rem;
+  }
+}
+
+/* Touch-friendly enhancements for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .sidebar button {
+    min-height: 44px; /* iOS/Android touch target minimum */
+    touch-action: manipulation;
+  }
+  
+  #rankingTable th,
+  #rankingTable td {
+    min-height: 44px;
+  }
+  
+  .sidebar {
+    -webkit-overflow-scrolling: touch;
   }
 }
 
