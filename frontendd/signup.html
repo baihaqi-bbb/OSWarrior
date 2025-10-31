@@ -1,103 +1,84 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sign up — OSwarrior</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🚀 OSwarrior - Cyber Registration Portal</title>
   <link rel="stylesheet" href="css/login.css" />
   <link rel="icon" type="image/png" href="image/icon.png">
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="cyber-grid"></div>
+  <!-- Floating Cyber Elements -->
+  <div class="cyber-element">NEW_USER_PROTOCOL</div>
+  <div class="cyber-element">0xREG1ST3R</div>
+  <div class="cyber-element">{register}</div>
+  <div class="cyber-element">#!/signup</div>
+  <div class="cyber-element">&lt;/warrior&gt;</div>
 
   <div class="login-container">
-    <h1>OSwarrior</h1>
+    <!-- System Access Header -->
+    <div class="system-access">
+      <div class="access-granted">USER REGISTRATION</div>
+      <h1 class="welcome-title">⚡ Join the <span class="app-name">OSwarrior</span> ⚡</h1>
+      <div class="auth-required">🛡️ CREATE NEW WARRIOR ACCOUNT 🛡️</div>
+    </div>
 
-    <input id="su-email" type="email" placeholder="Email" />
-    <input id="su-password" type="password" placeholder="Password (≥6 chars)" />
-    <input id="su-confirm" type="password" placeholder="Confirm password" />
-    <button id="su-submit">Sign up</button>
+    <!-- Registration Form -->
+    <form id="signupForm">
+      <div class="form-group">
+        <label for="su-email">📧 ENTER EMAIL ADDRESS</label>
+        <input type="email" id="su-email" placeholder="your.email@domain.com" required />
+        <div class="input-icon">📧</div>
+      </div>
+      
+      <div class="form-group">
+        <label for="su-password">🔒 CREATE PASSWORD</label>
+        <input type="password" id="su-password" placeholder="Password (≥6 chars)" required />
+        <div class="input-icon">🔒</div>
+      </div>
 
-    <div class="divider">OR</div>
-    <button id="su-google" class="google-btn">Sign up with Google</button>
+      <div class="form-group">
+        <label for="su-confirm">🔐 CONFIRM PASSWORD</label>
+        <input type="password" id="su-confirm" placeholder="Confirm your password" required />
+        <div class="input-icon">🔐</div>
+      </div>
 
-    <p id="su-msg" class="msg"></p>
-    <p class="small">Already have an account? <a href="index.html">Log in</a></p>
+      <button type="submit" id="su-submit" class="btn-cyber">
+        ⚡ CREATE WARRIOR ACCOUNT
+      </button>
+    </form>
+
+    <div class="divider">◇ OR REGISTER VIA ◇</div>
+
+    <!-- Google Registration -->
+    <button class="google-login" id="su-google">
+      <img src="image/Google__G__logo.svg.webp" alt="Google logo" width="20" height="20" />
+      🔗 GOOGLE PROTOCOL
+    </button>
+
+    <!-- Utility Links -->
+    <div class="utility-links">
+      <p class="help-text" style="margin-top: 20px; color: #E0E6ED; text-align: center;">
+        Already have an account? 
+        <a href="index.html" class="recovery-link" style="display: inline; padding: 4px 8px; margin-left: 5px;">
+          🔄 Log in
+        </a>
+      </p>
+    </div>
+
+    <!-- Status Message -->
+    <div id="su-msg" class="status-message"></div>
+    
+    <!-- System Status -->
+    <div class="status-indicator">
+      <div class="system-online">
+        <div class="status-dot"></div>
+        REGISTRATION SYSTEM ONLINE
+      </div>
+    </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import {
-      getAuth,
-      createUserWithEmailAndPassword,
-      GoogleAuthProvider,
-      signInWithPopup,
-      onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDofTjaWk5M8m_hyrDRqxOGofzOV7Qlitw",
-      authDomain: "test-4fdf4.firebaseapp.com",
-      projectId: "test-4fdf4",
-      storageBucket: "test-4fdf4.appspot.com",
-      messagingSenderId: "346273796107",
-      appId: "1:346273796107:web:f6fcc32860025bf406770e"
-    };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
-
-    const emailEl = document.getElementById('su-email');
-    const passEl = document.getElementById('su-password');
-    const confEl = document.getElementById('su-confirm');
-    const msgEl = document.getElementById('su-msg');
-    const btn = document.getElementById('su-submit');
-
-    function showMsg(text, color='red'){ msgEl.style.color = color; msgEl.textContent = text; }
-
-    // If already signed in, go to index
-    onAuthStateChanged(auth, user => {
-      if (user) location.href = 'index.html';
-    });
-
-    btn.addEventListener('click', async (e) => {
-      e.preventDefault(); showMsg('');
-      const email = (emailEl.value||'').trim();
-      const pass = (passEl.value||'').trim();
-      const conf = (confEl.value||'').trim();
-      if (!email || !pass || !conf) return showMsg('Fill all fields.');
-      if (pass !== conf) return showMsg('Passwords do not match.');
-      if (pass.length < 6) return showMsg('Password too short (>=6).');
-      btn.disabled = true;
-      try {
-        await createUserWithEmailAndPassword(auth, email, pass);
-        showMsg('Signup successful — redirecting...', 'green');
-        setTimeout(()=> location.href = 'index.html', 700);
-      } catch (err) {
-        console.error('signup error', err);
-        if (err.code === 'auth/email-already-in-use') showMsg('Email already in use.');
-        else if (err.code === 'auth/invalid-email') showMsg('Invalid email.');
-        else showMsg(err.message || 'Signup failed.');
-      } finally { btn.disabled = false; }
-    });
-
-    // Optional: Google signup
-    document.getElementById('su-google').addEventListener('click', async () => {
-      try {
-        await signInWithPopup(auth, provider);
-        showMsg('Signed in with Google — redirecting...', 'green');
-        setTimeout(()=> location.href = 'index.html', 700);
-      } catch (err) {
-        console.error('google signup error', err);
-        showMsg(err.message || 'Google sign-in failed.');
-      }
-    });
-
-    // Enter key support
-    [emailEl, passEl, confEl].forEach(i => i.addEventListener('keydown', (ev) => {
-      if (ev.key === 'Enter') btn.click();
-    }));
-  </script>
+  <script type="module" src="js/signup.js"></script>
 </body>
 </html>

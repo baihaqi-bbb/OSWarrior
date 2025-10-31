@@ -3,79 +3,77 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OSwarrior - Login</title>
+  <title>🚀 OSwarrior - Cyber Login Portal</title>
   <link rel="stylesheet" href="css/login.css" />
   <link rel="icon" type="image/png" href="image/icon.png">
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="cyber-grid"></div>
+  <!-- Floating Cyber Elements -->
+  <div class="cyber-element">SYSTEM_ACCESS</div>
+  <div class="cyber-element">0x1A2B3C</div>
+  <div class="cyber-element">{secure}</div>
+  <div class="cyber-element">#!/bin/bash</div>
+  <div class="cyber-element">&lt;/warrior&gt;</div>
 
   <div class="login-container">
-    <h1>Welcome to <span>OSwarrior</span></h1>
+    <!-- System Access Header -->
+    <div class="system-access">
+      <div class="access-granted">SYSTEM ACCESS</div>
+      <h1 class="welcome-title">🎯 Welcome to <span class="app-name">OSwarrior</span> 🎯</h1>
+      <div class="auth-required">⚡ AUTHORIZATION REQUIRED ⚡</div>
+    </div>
 
-    <input type="email" id="email" placeholder="Enter your email" />
-    <input type="password" id="password" placeholder="Enter your password" />
-    <button id="login-btn">Login</button>
-    <button id="signup-btn" class="signup-btn">Sign Up</button>
+    <!-- Login Form -->
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email">📧 ENTER EMAIL ADDRESS</label>
+        <input type="email" id="email" placeholder="your.email@domain.com" required />
+        <div class="input-icon">📧</div>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">🔒 ENTER PASSWORD</label>
+        <input type="password" id="password" placeholder="Enter your password" required />
+        <div class="input-icon">🔒</div>
+      </div>
 
-    <p class="help-text">
-      Forgot your login details? <a href="#">Get help logging in</a>
-    </p>
+      <button type="submit" id="login-btn" class="btn-cyber">
+        🚀 INITIALIZE LOGIN
+      </button>
+      
+      <button type="button" id="signup-btn" class="btn-cyber secondary">
+        ⚡ CREATE ACCOUNT
+      </button>
+    </form>
 
-    <div class="divider">OR</div>
+    <!-- Utility Links -->
+    <div class="utility-links">
+      <a href="#" id="forgot-password" class="recovery-link">
+        [ System Error? 🔧 Recovery Protocol ]
+      </a>
+    </div>
 
-    <button class="google-btn" id="google-login">
-      <img src="image/Google__G__logo.svg.webp" alt="Google logo" />
-      Login with Google
+    <div class="divider">◇ OR CONNECT VIA ◇</div>
+
+    <!-- Google Login -->
+    <button class="google-login" id="google-login">
+      <img src="image/Google__G__logo.svg.webp" alt="Google logo" width="20" height="20" />
+      🔗 GOOGLE PROTOCOL
     </button>
 
-    <p id="message"></p>
-  </div>
-
-  <!-- Forgot Password Modal -->
-  <div id="forgot-modal" class="modal">
-    <div class="modal-content">
-      <h2>Reset Password</h2>
-      <p>Enter your email to receive a password reset link:</p>
-      <input type="email" id="resetEmail" placeholder="Your email">
-      <button id="resetBtn">Send Reset Link</button>
-      <button id="closeModal" class="close-btn">Cancel</button>
-      <p id="resetMsg"></p>
+    <!-- Status Message -->
+    <div id="message" class="status-message"></div>
+    
+    <!-- System Status -->
+    <div class="status-indicator">
+      <div class="system-online">
+        <div class="status-dot"></div>
+        SYSTEM ONLINE
+      </div>
     </div>
   </div>
 
   <script type="module" src="js/login.js"></script>
-  <script>
-    // Sign Up button navigation and Enter key accessibility
-    document.addEventListener('DOMContentLoaded', function() {
-      const signupBtn = document.getElementById('signup-btn');
-      const loginBtn = document.getElementById('login-btn');
-      const emailInput = document.getElementById('email');
-      const passwordInput = document.getElementById('password');
-
-      if (signupBtn) {
-        signupBtn.addEventListener('click', function() {
-          window.location.href = 'signup.html';
-        });
-      }
-
-      // Allow Enter to trigger Login
-      [emailInput, passwordInput].forEach(input => {
-        input.addEventListener('keydown', function(e) {
-          if (e.key === 'Enter') {
-            loginBtn.click();
-          }
-        });
-      });
-
-      // Allow Enter to trigger Sign Up when focused
-      signupBtn.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' || e.keyCode === 13) {
-          signupBtn.click();
-        }
-      });
-    });
-  </script>
 </body>
 </html>

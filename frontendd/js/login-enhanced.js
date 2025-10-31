@@ -64,6 +64,8 @@ const adminEmails = [
 // 🎮 Enhanced UI Effects
 class CyberEffects {
   static showMessage(element, text, type = 'info') {
+    if (!element) return;
+    
     element.textContent = text;
     element.className = `status-message text-${type}`;
     
@@ -84,6 +86,8 @@ class CyberEffects {
   }
 
   static setContainerState(state) {
+    if (!loginContainer) return;
+    
     loginContainer.classList.remove('success-state', 'error-state');
     if (state === 'success') {
       loginContainer.classList.add('success-state');
@@ -107,6 +111,8 @@ class CyberEffects {
   }
 
   static animateButton(button, type = 'click') {
+    if (!button) return;
+    
     button.style.transform = 'scale(0.95)';
     setTimeout(() => {
       button.style.transform = '';
@@ -187,7 +193,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'Enter') {
           e.preventDefault();
           CyberEffects.animateButton(emailBtn);
-          emailBtn.click();
+          if (emailBtn) emailBtn.click();
         }
       });
 
@@ -201,35 +207,61 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
   });
+
+  // Add typing effect to matrix text
+  const matrixText = document.querySelector('.matrix-text');
+  if (matrixText) {
+    const originalText = matrixText.textContent;
+    matrixText.textContent = '';
+    let i = 0;
+    
+    const typeWriter = () => {
+      if (i < originalText.length) {
+        matrixText.textContent += originalText.charAt(i);
+        i++;
+        setTimeout(typeWriter, 100);
+      }
+    };
+    
+    setTimeout(typeWriter, 1000);
+  }
 });
 
 // 🔧 Modal Management
 if (forgotLink) {
   forgotLink.addEventListener("click", (e) => {
     e.preventDefault();
-    modal.style.display = "flex";
-    CyberEffects.updateSystemStatus('warning', 'RECOVERY MODE');
-    setTimeout(() => resetEmail.focus(), 300);
+    if (modal) {
+      modal.style.display = "flex";
+      CyberEffects.updateSystemStatus('warning', 'RECOVERY MODE');
+      setTimeout(() => {
+        if (resetEmail) resetEmail.focus();
+      }, 300);
+    }
   });
 }
 
 if (closeModal) {
   closeModal.addEventListener("click", () => {
-    modal.style.display = "none";
-    resetMsg.textContent = "";
-    resetEmail.value = "";
-    CyberEffects.updateSystemStatus('online', 'SYSTEM ONLINE');
+    if (modal) {
+      modal.style.display = "none";
+      if (resetMsg) resetMsg.textContent = "";
+      if (resetEmail) resetEmail.value = "";
+      CyberEffects.updateSystemStatus('online', 'SYSTEM ONLINE');
+    }
   });
 }
 
-// � Enhanced Password Reset
+// 🔄 Enhanced Password Reset
 if (resetBtn) {
   resetBtn.addEventListener("click", async () => {
-    const email = resetEmail.value.trim();
+    const email = resetEmail?.value.trim();
     
     if (!email) {
-      resetMsg.className = "reset-message text-warning";
-      resetMsg.textContent = "⚠️ Please enter your email address.";
+      if (resetMsg) {
+        resetMsg.className = "reset-message text-warning";
+        resetMsg.textContent = "⚠️ Please enter your email address.";
+      }
       CyberEffects.animateButton(resetBtn);
       return;
     }
@@ -237,8 +269,10 @@ if (resetBtn) {
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      resetMsg.className = "reset-message text-danger";
-      resetMsg.textContent = "❌ Please enter a valid email address.";
+      if (resetMsg) {
+        resetMsg.className = "reset-message text-danger";
+        resetMsg.textContent = "❌ Please enter a valid email address.";
+      }
       CyberEffects.animateButton(resetBtn);
       return;
     }
@@ -249,24 +283,28 @@ if (resetBtn) {
       
       await sendPasswordResetEmail(auth, email);
       
-      resetMsg.className = "reset-message text-success";
-      resetMsg.textContent = "✅ Recovery link sent! Check your inbox.";
+      if (resetMsg) {
+        resetMsg.className = "reset-message text-success";
+        resetMsg.textContent = "✅ Recovery link sent! Check your inbox.";
+      }
       
       setTimeout(() => {
-        modal.style.display = "none";
-        resetMsg.textContent = "";
-        resetEmail.value = "";
+        if (modal) modal.style.display = "none";
+        if (resetMsg) resetMsg.textContent = "";
+        if (resetEmail) resetEmail.value = "";
         CyberEffects.updateSystemStatus('online', 'SYSTEM ONLINE');
       }, 3000);
       
     } catch (error) {
-      resetMsg.className = "reset-message text-danger";
-      if (error.code === "auth/user-not-found") {
-        resetMsg.textContent = "❌ No account found with this email.";
-      } else if (error.code === "auth/too-many-requests") {
-        resetMsg.textContent = "⚠️ Too many requests. Please try again later.";
-      } else {
-        resetMsg.textContent = `❌ ${error.message}`;
+      if (resetMsg) {
+        resetMsg.className = "reset-message text-danger";
+        if (error.code === "auth/user-not-found") {
+          resetMsg.textContent = "❌ No account found with this email.";
+        } else if (error.code === "auth/too-many-requests") {
+          resetMsg.textContent = "⚠️ Too many requests. Please try again later.";
+        } else {
+          resetMsg.textContent = `❌ ${error.message}`;
+        }
       }
     } finally {
       resetBtn.disabled = false;
@@ -275,85 +313,137 @@ if (resetBtn) {
   });
 }
 
-// 🔹 Email Login
-emailBtn.addEventListener("click", async () => {
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
+// 🚀 Enhanced Email/Password Login
+if (emailBtn) {
+  emailBtn.addEventListener("click", async () => {
+    const email = emailInput?.value.trim();
+    const password = passwordInput?.value.trim();
 
-  if (!email || !password) {
-    CyberEffects.showMessage(msg, "⚠️ Please enter both email and password.", 'warning');
-    CyberEffects.animateButton(emailBtn);
-    return;
-  }
-
-  try {
-    emailBtn.disabled = true;
-    emailBtn.innerHTML = '🔄 AUTHENTICATING...';
-    CyberEffects.updateSystemStatus('warning', 'AUTHENTICATING...');
-    
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    
-    CyberEffects.setContainerState('success');
-    CyberEffects.showMessage(msg, `✅ Welcome back, ${userCredential.user.email}`, 'success');
-
-    // Store basic info and redirect
-    const uid = userCredential.user.uid; 
-    const name = userCredential.user.displayName || userCredential.user.email || "User";
-    localStorage.setItem("userId", uid);
-    localStorage.setItem("username", name);
-
-    // Redirect based on role
-    await redirectBasedOnRole(userCredential.user);
-
-  } catch (error) {
-    CyberEffects.setContainerState('error');
-    CyberEffects.updateSystemStatus('error', 'AUTH FAILED');
-    
-    if (
-      error.code === "auth/invalid-credential" ||
-      error.code === "auth/user-not-found" ||
-      error.code === "auth/wrong-password"
-    ) {
-      CyberEffects.showMessage(msg, "❌ Email or password incorrect.", 'danger');
-    } else if (error.code === "auth/too-many-requests") {
-      CyberEffects.showMessage(msg, "⚠️ Too many failed attempts. Try again later.", 'warning');
-    } else {
-      CyberEffects.showMessage(msg, `❌ ${error.message}`, 'danger');
+    // Input validation
+    if (!email || !password) {
+      CyberEffects.showMessage(msg, "⚠️ Please enter both email and password.", 'warning');
+      CyberEffects.animateButton(emailBtn);
+      return;
     }
-  } finally {
-    emailBtn.disabled = false;
-    emailBtn.innerHTML = '🚀 INITIALIZE LOGIN';
-  }
-});
 
-// 🔹 Google Login
-googleBtn.addEventListener("click", async () => {
-  try {
-    googleBtn.disabled = true;
-    googleBtn.innerHTML = '🔄 CONNECTING...';
-    CyberEffects.updateSystemStatus('warning', 'GOOGLE AUTH...');
-    
-    const result = await signInWithPopup(auth, provider);
-    
-    CyberEffects.setContainerState('success');
-    CyberEffects.showMessage(msg, `✅ Logged in as ${result.user.displayName}`, 'success');
-    
-    // Store basic info and redirect
-    const uid = result.user.uid; 
-    const name = result.user.displayName || result.user.email || "User";
-    localStorage.setItem("userId", uid);
-    localStorage.setItem("username", name);
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      CyberEffects.showMessage(msg, "❌ Please enter a valid email address.", 'danger');
+      CyberEffects.setContainerState('error');
+      return;
+    }
 
-    // Redirect based on role
-    await redirectBasedOnRole(result.user);
+    try {
+      // Update UI for loading state
+      emailBtn.disabled = true;
+      emailBtn.innerHTML = '<span class="btn-text">🔄 AUTHENTICATING...</span>';
+      CyberEffects.updateSystemStatus('warning', 'VERIFYING...');
+      
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      CyberEffects.showMessage(msg, `✅ Welcome back, ${userCredential.user.email}!`, 'success');
+      CyberEffects.setContainerState('success');
+      
+      // Redirect based on role
+      await redirectBasedOnRole(userCredential.user);
 
-  } catch (error) {
-    CyberEffects.setContainerState('error');
-    CyberEffects.updateSystemStatus('error', 'GOOGLE AUTH FAILED');
-    CyberEffects.showMessage(msg, `❌ ${error.message}`, 'danger');
-    console.error("Google login error:", error);
-  } finally {
-    googleBtn.disabled = false;
-    googleBtn.innerHTML = '🔗 GOOGLE PROTOCOL';
-  }
+    } catch (error) {
+      console.error("Login error:", error);
+      
+      CyberEffects.setContainerState('error');
+      CyberEffects.updateSystemStatus('error', 'ACCESS DENIED');
+      
+      // Enhanced error handling
+      let errorMessage = "❌ Login failed.";
+      switch (error.code) {
+        case "auth/invalid-credential":
+        case "auth/user-not-found":
+        case "auth/wrong-password":
+          errorMessage = "❌ Invalid email or password.";
+          break;
+        case "auth/too-many-requests":
+          errorMessage = "⚠️ Too many failed attempts. Please try again later.";
+          break;
+        case "auth/user-disabled":
+          errorMessage = "❌ This account has been disabled.";
+          break;
+        case "auth/network-request-failed":
+          errorMessage = "🌐 Network error. Please check your connection.";
+          break;
+        default:
+          errorMessage = `❌ ${error.message}`;
+      }
+      
+      CyberEffects.showMessage(msg, errorMessage, 'danger');
+      
+      // Reset system status after error display
+      setTimeout(() => {
+        CyberEffects.updateSystemStatus('online', 'SYSTEM ONLINE');
+      }, 3000);
+      
+    } finally {
+      emailBtn.disabled = false;
+      emailBtn.innerHTML = '<span class="btn-text">🚀 INITIALIZE LOGIN</span>';
+    }
+  });
+}
+
+// 🔗 Enhanced Google Authentication
+if (googleBtn) {
+  googleBtn.addEventListener("click", async () => {
+    try {
+      googleBtn.disabled = true;
+      googleBtn.innerHTML = '<img src="image/Google__G__logo.svg.webp" alt="Google logo" /><span class="btn-text">🔄 CONNECTING...</span>';
+      CyberEffects.updateSystemStatus('warning', 'GOOGLE AUTH...');
+      
+      const result = await signInWithPopup(auth, provider);
+      
+      CyberEffects.showMessage(msg, `✅ Connected via Google: ${result.user.displayName}`, 'success');
+      CyberEffects.setContainerState('success');
+      
+      // Redirect based on role
+      await redirectBasedOnRole(result.user);
+      
+    } catch (error) {
+      console.error("Google login error:", error);
+      
+      CyberEffects.setContainerState('error');
+      CyberEffects.updateSystemStatus('error', 'GOOGLE AUTH FAILED');
+      
+      let errorMessage = "❌ Google authentication failed.";
+      switch (error.code) {
+        case "auth/popup-closed-by-user":
+          errorMessage = "⚠️ Authentication cancelled by user.";
+          break;
+        case "auth/popup-blocked":
+          errorMessage = "🚫 Popup blocked. Please allow popups and try again.";
+          break;
+        case "auth/network-request-failed":
+          errorMessage = "🌐 Network error. Please check your connection.";
+          break;
+        default:
+          errorMessage = `❌ ${error.message}`;
+      }
+      
+      CyberEffects.showMessage(msg, errorMessage, 'danger');
+      
+      setTimeout(() => {
+        CyberEffects.updateSystemStatus('online', 'SYSTEM ONLINE');
+      }, 3000);
+      
+    } finally {
+      googleBtn.disabled = false;
+      googleBtn.innerHTML = '<img src="image/Google__G__logo.svg.webp" alt="Google logo" /><span class="btn-text">🔗 GOOGLE PROTOCOL</span>';
+    }
+  });
+}
+
+// 🌐 Global Error Handler
+window.addEventListener('error', function(e) {
+  console.error('Global error:', e);
+  CyberEffects.updateSystemStatus('error', 'SYSTEM ERROR');
+  setTimeout(() => {
+    CyberEffects.updateSystemStatus('online', 'SYSTEM RECOVERED');
+  }, 5000);
 });
