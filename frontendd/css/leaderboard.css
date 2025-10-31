@@ -1,259 +1,629 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@400;600&display=swap');
+/* ==========================================================
+   CYBER LEADERBOARD STYLES - OSwarrior
+   ========================================================== */
 
 body {
-  margin: 0;
-  padding: 0;
-  font-family: 'Poppins', 'Segoe UI', sans-serif;
-  background:
-    linear-gradient(rgba(5, 1, 10, 0.8), rgba(20, 0, 42, 0.9)),
-    url("https://wallpaperbat.com/img/12107870-cyberpunk-city-street-sci-fi-wallpaper.jpg")
-    no-repeat center center fixed;
-  background-size: cover;
-  color: #fff;
-  min-height: 100vh;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-family: 'Orbitron', 'Segoe UI', monospace !important;
+  background: url("../image/background.png") no-repeat center center fixed !important;
+  background-size: cover !important;
+  color: white !important;
+  min-height: 100vh !important;
+  overflow-x: hidden !important;
 }
 
+/* ==========================================================
+   MAIN LEADERBOARD CONTAINER
+   ========================================================== */
 .leaderboard-container {
   display: flex;
   flex-direction: row;
-  max-width: 700px;      /* Naikkan dari 500px ke 700px */
-  margin: 40px auto;
-  background: rgba(0,0,0,0.7);
-  border-radius: 12px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.25);
-  overflow-x: auto;
-  gap: 8px;
+  max-width: 1200px;
+  margin: 30px auto;
+  background: linear-gradient(145deg, rgba(5, 15, 25, 0.95), rgba(10, 25, 40, 0.9));
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  border-radius: 20px;
+  box-shadow: 
+    0 8px 30px rgba(0, 0, 0, 0.6),
+    0 0 25px rgba(0, 255, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  backdrop-filter: blur(15px);
 }
 
+/* ==========================================================
+   SIDEBAR NAVIGATION
+   ========================================================== */
 .sidebar {
-  background: rgba(44, 62, 80, 0.95);
-  padding: 18px 10px;
-  min-width: 90px;      /* Kecilkan sidebar */
-  max-width: 120px;
+  background: linear-gradient(180deg, rgba(5, 15, 25, 0.98), rgba(10, 20, 35, 0.95));
+  padding: 25px 15px;
+  min-width: 180px;
+  max-width: 200px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  border-right: 1px solid #00ffff44;
+  align-items: stretch;
+  border-right: 2px solid rgba(0, 255, 255, 0.3);
+  position: relative;
+}
+
+.sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #00ffff, transparent);
+  animation: scanLine 3s linear infinite;
 }
 
 .sidebar h6 {
-  font-size: 1rem;
-  font-family: 'Orbitron', sans-serif;
-  margin-bottom: 14px;
-  color: #00ffff;
-  letter-spacing: 1px;
+  font-size: 1.2rem;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #00FFFF;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
 }
 
 .sidebar button {
   width: 100%;
-  margin-bottom: 8px;
-  padding: 8px 0;
-  border: none;
-  border-radius: 5px;
-  background: #222b3a;
-  color: #fff;
-  font-weight: 500;
-  font-size: 1rem;
+  margin-bottom: 10px;
+  padding: 12px 15px;
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  border-radius: 8px;
+  background: linear-gradient(45deg, rgba(0, 255, 255, 0.1), rgba(0, 200, 255, 0.05));
+  color: #E0E6ED;
+  font-weight: 600;
+  font-size: 0.95rem;
+  font-family: 'Orbitron', monospace;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+  transition: left 0.3s ease;
+}
+
+.sidebar button:hover::before {
+  left: 100%;
 }
 
 .sidebar button:hover {
-  background: #2c3e50;
+  border-color: rgba(0, 255, 255, 0.6);
+  background: linear-gradient(45deg, rgba(0, 255, 255, 0.2), rgba(0, 200, 255, 0.1));
+  color: #00FFFF;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+  transform: translateY(-2px);
 }
 
 .sidebar button.active {
-  background: #00ffff;
-  color: #222;
-  font-weight: bold;
+  background: linear-gradient(45deg, rgba(0, 255, 255, 0.3), rgba(0, 200, 255, 0.2));
+  border-color: rgba(0, 255, 255, 0.8);
+  color: #FFFFFF;
+  font-weight: 700;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
 }
 
+/* ==========================================================
+   MAIN BOARD AREA
+   ========================================================== */
 .board {
   flex: 1;
-  padding: 18px 8px;
+  padding: 30px 25px;
   min-width: 0;
-  overflow-x: auto;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
+  position: relative;
+}
+
+.board::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    linear-gradient(45deg, transparent 48%, rgba(0, 255, 255, 0.02) 50%, transparent 52%);
+  background-size: 20px 20px;
+  animation: movePattern 20s linear infinite;
+  pointer-events: none;
 }
 
 .board h2 {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 1.5rem;
-  color: #fff;
-  margin-bottom: 24px;
-  letter-spacing: 1px;
+  font-family: 'Orbitron', monospace;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #00FFFF;
+  margin-bottom: 30px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-shadow: 
+    0 0 10px rgba(0, 255, 255, 0.8),
+    0 0 20px rgba(0, 255, 255, 0.4);
+  position: relative;
+  z-index: 2;
 }
 
+/* ==========================================================
+   LEADERBOARD TABLE
+   ========================================================== */
 #rankingTable {
   width: 100%;
-  min-width: 280px;      /* Table sentiasa ada ruang */
-  max-width: 100%;
+  min-width: 400px;
+  max-width: 800px;
   border-collapse: collapse;
-  background: rgba(255,255,255,0.03);
-  border-radius: 8px;
+  background: rgba(5, 15, 25, 0.8);
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 0 8px #0002;
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.4),
+    0 0 15px rgba(0, 255, 255, 0.1);
   margin: 0 auto;
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 2;
 }
 
-#rankingTable, #rankingTable th, #rankingTable td {
-  border: 1px solid #00ffff22;
-}
-
-#rankingTable th, #rankingTable td {
-  padding: 12px 8px;
-  text-align: center;
+#rankingTable thead {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(0, 200, 255, 0.15));
+  border-bottom: 2px solid rgba(0, 255, 255, 0.5);
 }
 
 #rankingTable th {
-  background: rgba(0,255,255,0.10);
-  color: #00ffff;
-  font-size: 1rem;
+  padding: 15px 12px;
+  text-align: center;
+  color: #00FFFF;
+  font-size: 1.1rem;
+  font-weight: 700;
   letter-spacing: 1px;
+  text-transform: uppercase;
+  font-family: 'Orbitron', monospace;
+  text-shadow: 0 0 8px rgba(0, 255, 255, 0.6);
+  border-right: 1px solid rgba(0, 255, 255, 0.2);
 }
 
-#rankingTable tr:nth-child(even) {
-  background: rgba(255,255,255,0.04);
+#rankingTable th:last-child {
+  border-right: none;
 }
 
-#rankingTable tr:nth-child(odd) {
-  background: rgba(0,0,0,0.08);
+#rankingTable tbody tr {
+  border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+#rankingTable tbody tr:nth-child(even) {
+  background: rgba(0, 255, 255, 0.03);
+}
+
+#rankingTable tbody tr:nth-child(odd) {
+  background: rgba(0, 0, 0, 0.1);
 }
 
 #rankingTable td {
+  padding: 12px;
+  text-align: center;
   font-size: 1rem;
-  color: #fff;
+  color: #E0E6ED;
+  font-family: 'Orbitron', monospace;
+  font-weight: 500;
+  border-right: 1px solid rgba(0, 255, 255, 0.1);
 }
 
-#rankingTable tr:hover {
-  background: rgba(0,255,255,0.10);
-  transition: background 0.2s;
+#rankingTable td:last-child {
+  border-right: none;
 }
 
+#rankingTable tbody tr:hover {
+  background: linear-gradient(90deg, rgba(0, 255, 255, 0.15), rgba(0, 200, 255, 0.1));
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+  transform: scale(1.02);
+}
+
+/* Special styling for top 3 ranks */
+#rankingTable .rank-1 { 
+  color: #FFD700 !important; 
+  font-weight: 700 !important;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+}
+
+#rankingTable .rank-2 { 
+  color: #C0C0C0 !important; 
+  font-weight: 700 !important;
+  text-shadow: 0 0 10px rgba(192, 192, 192, 0.6);
+}
+
+#rankingTable .rank-3 { 
+  color: #CD7F32 !important; 
+  font-weight: 700 !important;
+  text-shadow: 0 0 10px rgba(205, 127, 50, 0.6);
+}
+
+/* Current user row highlight */
 #rankingTable tr.my-row {
-  background: #00ffff33 !important;
-  color: #222 !important;
-  font-weight: bold;
+  background: linear-gradient(90deg, rgba(0, 255, 255, 0.25), rgba(0, 200, 255, 0.2)) !important;
+  border: 2px solid rgba(0, 255, 255, 0.6) !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
 }
 
-#rankingTable td.rank-1 { color: gold; font-weight: bold; }
-#rankingTable td.rank-2 { color: silver; font-weight: bold; }
-#rankingTable td.rank-3 { color: #cd7f32; font-weight: bold; }
+#rankingTable tr.my-row td {
+  color: #FFFFFF !important;
+  text-shadow: 0 0 8px rgba(0, 255, 255, 0.6);
+}
 
-/* Responsive untuk tablet dan mobile */
-@media (max-width: 900px) {
+/* ==========================================================
+   ANIMATIONS
+   ========================================================== */
+@keyframes scanLine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes movePattern {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(20px, 20px); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* ==========================================================
+   RESPONSIVE DESIGN
+   ========================================================== */
+@media (max-width: 1024px) {
+  .leaderboard-container {
+    max-width: 95vw;
+    margin: 20px auto;
+  }
+  
+  .sidebar {
+    min-width: 160px;
+    max-width: 180px;
+  }
+  
+  #rankingTable {
+    min-width: 350px;
+  }
+}
+
+@media (max-width: 768px) {
   .leaderboard-container {
     flex-direction: column;
     max-width: 98vw;
+    margin: 10px auto;
   }
+  
   .sidebar {
     flex-direction: row;
     align-items: center;
     border-right: none;
-    border-bottom: 1px solid #00ffff44;
+    border-bottom: 2px solid rgba(0, 255, 255, 0.3);
     width: 100%;
-    padding: 10px 4px;
+    padding: 15px 10px;
     min-width: unset;
+    max-width: unset;
     justify-content: flex-start;
-    gap: 8px;
+    gap: 10px;
+    overflow-x: auto;
   }
+  
+  .sidebar::before {
+    height: 100%;
+    width: 3px;
+    background: linear-gradient(180deg, transparent, #00ffff, transparent);
+  }
+  
   .sidebar h6 {
     margin-bottom: 0;
-    margin-right: 10px;
-    font-size: 0.98rem;
+    margin-right: 15px;
+    font-size: 1rem;
+    flex-shrink: 0;
   }
+  
+  .sidebar button {
+    margin-bottom: 0;
+    margin-right: 8px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    min-width: 80px;
+  }
+  
   .board {
-    padding: 10px 2vw;
+    padding: 20px 10px;
   }
+  
+  .board h2 {
+    font-size: 1.6rem;
+  }
+  
   #rankingTable {
-    min-width: 220px;
-    font-size: 0.95rem;
+    min-width: 300px;
+    font-size: 0.9rem;
   }
-}
-
-@media (max-width: 600px) {
-  .leaderboard-container {
-    margin: 0;
-    border-radius: 0;
-  }
-  .sidebar {
-    padding: 6px 1px;
-    font-size: 0.95rem;
-  }
-  .board {
-    padding: 6px 1vw;
-  }
-  #rankingTable th, #rankingTable td {
-    padding: 6px 1px;
+  
+  #rankingTable th,
+  #rankingTable td {
+    padding: 10px 8px;
     font-size: 0.9rem;
   }
 }
 
-/* Pastikan table boleh scroll jika terlalu lebar */
-.board {
-  overflow-x: auto;
+@media (max-width: 480px) {
+  .leaderboard-container {
+    margin: 0;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+  
+  .sidebar {
+    padding: 10px 5px;
+    font-size: 0.85rem;
+  }
+  
+  .sidebar h6 {
+    font-size: 0.9rem;
+  }
+  
+  .sidebar button {
+    padding: 6px 8px;
+    font-size: 0.8rem;
+    min-width: 70px;
+  }
+  
+  .board {
+    padding: 15px 5px;
+  }
+  
+  .board h2 {
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+  }
+  
+  #rankingTable {
+    min-width: 280px;
+  }
+  
+  #rankingTable th,
+  #rankingTable td {
+    padding: 8px 6px;
+    font-size: 0.8rem;
+  }
+  
+  #rankingTable th {
+    font-size: 0.85rem;
+  }
 }
 
-/* Navbar Styles */
-.navbar {
-  background: rgba(44, 62, 80, 0.85);
-  padding: 16px 30px;
+/* ==========================================================
+   LOADING AND ERROR STATES
+   ========================================================== */
+.loading-state {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  color: white;
-}
-.navbar h1 {
-  font-size: 24px;
-  font-weight: bold;
+  justify-content: center;
+  padding: 50px 20px;
+  color: #00FFFF;
+  font-family: 'Orbitron', monospace;
 }
 
-/* Modal Styles */
-.modal {
-  position: fixed;
-  z-index: 9999;
-  left: 0; top: 0; width: 100vw; height: 100vh;
-  background: rgba(0,0,0,0.5);
-  display: flex; align-items: center; justify-content: center;
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(0, 255, 255, 0.3);
+  border-top: 3px solid #00FFFF;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
 }
-.modal-content {
-  background: #181c2f;
-  padding: 28px 24px;
-  border-radius: 12px;
-  min-width: 260px;
-  box-shadow: 0 4px 24px #0008;
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
+  color: #FF6464;
+  font-family: 'Orbitron', monospace;
   text-align: center;
 }
-.modal-content h3 { margin-bottom: 18px; color: #fff; }
+
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
+  color: #B0E0FF;
+  font-family: 'Orbitron', monospace;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  opacity: 0.6;
+}
+
+/* ==========================================================
+   MODAL STYLES (Enhanced)
+   ========================================================== */
+.modal {
+  position: fixed;
+  z-index: 99999;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background: linear-gradient(145deg, rgba(5, 15, 25, 0.95), rgba(10, 25, 40, 0.9));
+  border: 2px solid rgba(0, 255, 255, 0.4);
+  border-radius: 16px;
+  padding: 30px 25px;
+  min-width: 320px;
+  max-width: 90vw;
+  box-shadow: 
+    0 15px 40px rgba(0, 0, 0, 0.7),
+    0 0 25px rgba(0, 255, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  text-align: center;
+  position: relative;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+.modal-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #00ffff, transparent);
+  border-radius: 16px 16px 0 0;
+  animation: scanLine 2s linear infinite;
+}
+
+.modal-content h3 {
+  color: #00FFFF;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
+  font-family: 'Orbitron', monospace;
+}
+
 .modal-content input {
-  width: 90%;
-  padding: 10px;
-  border-radius: 7px;
-  border: 1px solid #00ffff55;
-  margin-bottom: 18px;
-  background: #222b3a;
-  color: #fff;
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  border-radius: 8px;
+  background: rgba(5, 15, 25, 0.8);
+  color: #FFFFFF;
+  font-size: 1rem;
+  font-family: 'Orbitron', monospace;
+  margin-bottom: 25px;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
 }
+
+.modal-content input:focus {
+  outline: none;
+  border-color: rgba(0, 255, 255, 0.6);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+  background: rgba(5, 15, 25, 0.9);
+}
+
+.modal-content input::placeholder {
+  color: rgba(176, 224, 255, 0.6);
+  font-family: 'Orbitron', monospace;
+}
+
 .modal-actions {
-  display: flex; gap: 12px; justify-content: center;
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
+
 .btn-action {
-  padding: 8px 18px;
-  border-radius: 7px;
-  border: none;
-  background: #00ffff;
-  color: #222;
-  font-weight: bold;
+  padding: 10px 20px;
+  border: 2px solid rgba(0, 255, 255, 0.5);
+  border-radius: 8px;
+  background: linear-gradient(45deg, rgba(0, 255, 255, 0.1), rgba(0, 200, 255, 0.05));
+  color: #00FFFF;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: 'Orbitron', monospace;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  min-width: 100px;
 }
+
+.btn-action::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+  transition: left 0.3s ease;
+}
+
+.btn-action:hover::before {
+  left: 100%;
+}
+
+.btn-action:hover {
+  border-color: rgba(0, 255, 255, 0.8);
+  background: linear-gradient(45deg, rgba(0, 255, 255, 0.2), rgba(0, 200, 255, 0.1));
+  color: #FFFFFF;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+  transform: translateY(-2px);
+}
+
 .btn-action.btn-cancel {
-  background: #ccc;
-  color: #222;
+  border-color: rgba(255, 100, 100, 0.5);
+  background: linear-gradient(45deg, rgba(255, 100, 100, 0.1), rgba(255, 50, 50, 0.05));
+  color: #FF6464;
 }
-.btn-action:hover { background: #7f00ff; color: #fff; }
-.btn-action.btn-cancel:hover { background: #ff0066; color: #fff; }
+
+.btn-action.btn-cancel:hover {
+  border-color: rgba(255, 100, 100, 0.8);
+  background: linear-gradient(45deg, rgba(255, 100, 100, 0.2), rgba(255, 50, 50, 0.1));
+  color: #FFFFFF;
+  box-shadow: 0 0 15px rgba(255, 100, 100, 0.4);
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
