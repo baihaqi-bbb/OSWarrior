@@ -1,90 +1,74 @@
-/* Unified profile dropdown styles — strong specificity & safe defaults */
-.profile-container{ position: relative !important; display:flex !important; align-items:center !important; gap:8px !important; cursor:pointer !important; overflow: visible !important; }
-
-/* Make avatar ring identical everywhere */
-.profile-img {
-  width:36px !important;
-  height:36px !important;
-  border-radius:50% !important;
-  object-fit:cover !important;
-  border: 2px solid #00ffff !important; /* consistent cyan ring */
-  box-shadow: 0 6px 20px rgba(0,0,0,0.45) !important;
+/* SIMPLE DROPDOWN - NO BULLSHIT */
+.profile-dropdown {
+  display: none;
+  position: fixed;
+  z-index: 999999;
+  background: rgba(5, 15, 25, 0.95);
+  border: 2px solid #00ffff;
+  border-radius: 12px;
+  padding: 0;
+  min-width: 240px;
+  max-width: 260px;
 }
 
-/* core dropdown */
-.profile-dropdown{
-  display: none !important;
-  position: absolute !important;
-  top: calc(100% + 8px) !important;
-  right: 8px !important;
-  min-width: 220px !important;
-  max-width: 360px !important;
-  background: linear-gradient(180deg, rgba(6,8,20,0.96), rgba(12,14,30,0.98)) !important;
-  border: 1px solid rgba(0,255,255,0.08) !important;
-  border-radius: 10px !important;
-  padding: 6px !important;
-  box-shadow: 0 12px 40px rgba(2,6,23,0.7) !important;
-  z-index: 99999 !important;
-  flex-direction: column !important;
-  gap: 0 !important;
-  opacity: 0 !important;
-  transform: translateY(-6px) scale(.995) !important;
-  transition: opacity .16s ease, transform .16s ease, visibility .16s ease !important;
+.profile-dropdown.show {
+  display: flex;
+  flex-direction: column;
 }
 
-/* visible states */
-.profile-dropdown.show,
-.profile-dropdown.open,
-.profile-dropdown.visible {
-  display: flex !important;
-  opacity: 1 !important;
-  transform: translateY(0) scale(1) !important;
+.profile-dropdown.hidden {
+  display: none;
 }
 
-/* items */
 .profile-dropdown a,
 .profile-dropdown button {
-  display: flex !important;
-  align-items: center !important;
-  gap: 10px !important;
-  padding: 10px 12px !important;
-  margin: 0 6px !important;
-  color: #e6eef8 !important;
-  text-decoration: none !important;
-  background: transparent !important;
-  border: 0 !important;
-  width: calc(100% - 12px) !important;
-  text-align: left !important;
-  font-size: 14px !important;
-  border-radius: 8px !important;
-  cursor: pointer !important;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 15px;
+  color: #e0e6ed;
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+  width: 100%;
+  text-align: left;
+  font-size: 14px;
+  font-family: 'Orbitron', monospace;
+  cursor: pointer;
 }
 
-/* hover / active */
 .profile-dropdown a:hover,
-.profile-dropdown button:hover,
-.profile-dropdown a.active,
-.profile-dropdown button.active {
-  background: rgba(0,255,255,0.06) !important;
-  color: #00ffff !important;
+.profile-dropdown button:hover {
+  background: rgba(0, 255, 255, 0.1);
+  color: #00ffff;
 }
 
-/* selected highlight */
-.profile-dropdown a.selected,
-.profile-dropdown a.active.selected {
-  background: rgba(0,255,255,0.12) !important;
-  color: #021818 !important;
+.settings-section {
+  background: rgba(0, 255, 255, 0.05);
+  border-top: 1px solid rgba(0, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+  margin: 0;
+  padding: 8px 0;
 }
 
-/* small icon slot */
-.profile-dropdown .icon,
-.profile-dropdown button .icon {
-  width:20px !important; height:20px !important; display:inline-flex !important; align-items:center !important; justify-content:center !important;
-  color: #ffd700 !important;
+.settings-title {
+  color: #00ffff;
+  font-size: 11px;
+  font-weight: 700;
+  margin: 0 0 6px 15px;
+  font-family: 'Orbitron', monospace;
+  text-transform: uppercase;
 }
 
-/* mobile placement */
-@media (max-width: 760px) {
-  .profile-dropdown { right: 8px !important; left: 8px !important; top: calc(100% + 10px) !important; max-width: calc(100% - 16px) !important; }
-  .profile-dropdown a, .profile-dropdown button { margin: 6px !important; }
+#logout-btn {
+  background: rgba(255, 0, 100, 0.1);
+  border-top: 1px solid rgba(255, 0, 100, 0.3);
+  color: #ff6b9d;
+  font-weight: 600;
+}
+
+#logout-btn:hover {
+  background: rgba(255, 0, 100, 0.2);
+  color: #ff8db3;
 }

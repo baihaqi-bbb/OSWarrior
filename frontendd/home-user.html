@@ -9,47 +9,96 @@
 <body class="home-user">
   <!-- Navbar -->
   <div class="navbar">
-    <h1>OSwarrior Dashboard</h1>
+    <div class="navbar-left">
+      <img src="image/os-warrior-logo.png" alt="OS Warrior" class="navbar-logo">
+      <h1>Home - OSwarrior</h1>
+    </div>
     <div class="navbar-right">
       <div class="profile-container" id="profile-toggle">
         <span id="username-navbar">Warrior</span>
         <img id="profile-img" class="profile-img" src="image/default-profile.png" alt="Profile"/>
-        <div id="profile-dropdown" class="profile-dropdown hidden">
-          <a id="view-profile" href="profile.html">👤 View Profile</a>
-          <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
-
-          <!-- 🧰 Quick Settings Section -->
-          <div class="settings-section">
-            <p class="settings-title">⚙️ Quick Settings</p>
-            <button id="toggle-theme">🌗 Dark / Light Mode</button>
-            <button id="change-avatar">🖼️ Change Avatar</button>
-            <button id="edit-name">✏️ Edit Name</button>
-          </div>
-
-          <button id="logout-btn">🚪 Logout</button>
-        </div>
       </div>
     </div>
   </div>
 
+  <!-- Profile Dropdown - Outside navbar but positioned relative to profile -->
+  <div id="profile-dropdown" class="profile-dropdown hidden">
+    <a id="view-profile" href="profile.html">👤 View Profile</a>
+    <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
 
-  <div class="welcome-banner">
-  <h2>Welcome, <span id="username">Warrior</span> 👑</h2>
-  <p>Ready to level up your OS skills today?</p>
-</div>
+    <!-- 🧰 Quick Settings Section -->
+    <div class="settings-section">
+      <p class="settings-title">⚙️ Quick Settings</p>
+      <button id="toggle-theme">🌗 Dark / Light Mode</button>
+      <button id="change-avatar">🖼️ Change Avatar</button>
+      <button id="edit-name">✏️ Edit Name</button>
+    </div>
 
-<!-- XP Bar Section -->
+    <button id="logout-btn">🚪 Logout</button>
+  </div>
+
+  <!-- Main Container -->
+  <div class="main-container">
+    <div class="content-area">
+      <!-- Welcome Banner -->
+      <div class="welcome-banner">
+  <div class="banner-decoration">
+    <div class="cyber-lines"></div>
+    <div class="electric-particles"></div>
+    <div class="floating-icons">
+      <span class="float-icon">⚔️</span>
+      <span class="float-icon">🛡️</span>
+      <span class="float-icon">💎</span>
+      <span class="float-icon">⚡</span>
+    </div>
+  </div>
+  
+  <div class="welcome-content">
+    <div class="welcome-text">
+      <h2>
+        ⚡ Welcome Back, <span id="username">Warrior</span>! 🛡️
+      </h2>
+      <p>
+        🚀 Ready to dominate the digital battlefield and master the cyber realm? Your next victory awaits! ⚔️
+      </p>
+    </div>
+    
+    <div class="warrior-status">
+      <div class="status-indicator">🔥 CYBER READY</div>
+      <div class="battle-ready">⚡ MAXIMUM POWER</div>
+      <div class="status-indicator">🎯 ACTIVE MISSION</div>
+    </div>
+  </div>
+  
+  <div class="banner-effects">
+    <div class="pulse-ring"></div>
+    <div class="scan-line"></div>
+  </div>
+    </div>
+  </div>
+</div><!-- XP Bar Section -->
 <div class="xp-section">
   <div class="xp-header">
-    <span id="player-name">Warrior 👑</span>
+    <span id="player-name">⚡ Cyber Warrior 👑</span>
     <span id="player-level">Level 1</span>
   </div>
   <div class="xp-bar">
     <div id="xp-progress"></div>
+    <div class="xp-spark"></div>
   </div>
   <div class="xp-footer">
     <span id="xp-current">0 XP</span>
     <span id="xp-max">/ 100 XP</span>
+  </div>
+  <div class="power-meter">
+    <span class="power-text">⚡ POWER LEVEL</span>
+    <div class="power-bars">
+      <div class="power-bar active"></div>
+      <div class="power-bar active"></div>
+      <div class="power-bar"></div>
+      <div class="power-bar"></div>
+      <div class="power-bar"></div>
+    </div>
   </div>
 </div>
 
@@ -62,33 +111,126 @@
 
 <!-- 🏆 Leaderboard Mini Panel -->
 <section class="leaderboard-mini">
-  <h2>🏆 Top 3 Warriors</h2>
+  <div class="section-header">
+    <h2>🏆 Elite Warriors</h2>
+    <div class="live-indicator">
+      <span class="live-dot"></span>
+      <span class="live-text">LIVE</span>
+    </div>
+  </div>
   <div id="top3-container" class="top3-container" aria-live="polite">
-    <!-- populated dynamically by js/home-user.js (uses .player .first/.second/.third classes so CSS remains unchanged) -->
+    <!-- populated dynamically by js/home-user.js -->
+  </div>
+  <div class="arena-footer">
+    <span class="arena-text">⚔️ Digital Arena • Battle for Glory</span>
   </div>
 </section>
 
   <!-- Content -->
   <div class="content">
-    <div class="card quiz">
+    <div class="card quiz cyber-card">
+      <div class="card-glow"></div>
       <span class="badge">New</span>
-      <span class="icon">📝</span>
-      <h2>Quiz</h2>
-      <p>Test your knowledge with interactive quizzes.</p>
-      <a href="quiz.html">Go</a>
+      <div class="card-header">
+        <span class="icon">🎯</span>
+        <div class="card-signal">
+          <div class="signal-bar"></div>
+          <div class="signal-bar"></div>
+          <div class="signal-bar"></div>
+        </div>
+      </div>
+      <h2>Cyber Quiz</h2>
+      <p>Test your knowledge in the digital battlefield with interactive challenges.</p>
+      <div class="card-stats">
+        <span class="stat">📊 15 Challenges</span>
+        <span class="stat">🏆 Max 500 XP</span>
+      </div>
+      <a href="quiz.html" onclick="markQuizAsVisited()" class="cyber-btn">
+        <span>ENGAGE</span>
+        <div class="btn-glow"></div>
+      </a>
     </div>
-    <div class="card leaderboard">
-      <span class="icon">🏆</span>
-      <h2>Leaderboard</h2>
-      <p>See your ranking among players.</p>
-      <a href="leaderboard.html">Go</a>
+    
+    <div class="card leaderboard cyber-card">
+      <div class="card-glow"></div>
+      <div class="card-header">
+        <span class="icon">👑</span>
+        <div class="rank-indicator">
+          <span class="rank-text">#1</span>
+        </div>
+      </div>
+      <h2>Arena Rankings</h2>
+      <p>Battle for supremacy and claim your place among the elite warriors.</p>
+      <div class="card-stats">
+        <span class="stat">⚔️ 142 Warriors</span>
+        <span class="stat">🔥 Live Battle</span>
+      </div>
+      <a href="leaderboard.html" class="cyber-btn">
+        <span>ENTER ARENA</span>
+        <div class="btn-glow"></div>
+      </a>
     </div>
-    <div class="card achievement">
-      <span class="icon">🎖️</span>
-      <h2>Achievements</h2>
-      <p>Unlock and track your milestones.</p>
-      <a href="achievement.html">Go</a>
+    
+    <div class="card achievement cyber-card">
+      <div class="card-glow"></div>
+      <div class="card-header">
+        <span class="icon">�</span>
+        <div class="achievement-counter">
+          <span class="counter">7/20</span>
+        </div>
+      </div>
+      <h2>Battle Honors</h2>
+      <p>Unlock legendary achievements and showcase your warrior prowess.</p>
+      <div class="card-stats">
+        <span class="stat">🎖️ 7 Unlocked</span>
+        <span class="stat">⭐ Rare Badges</span>
+      </div>
+      <a href="achievement.html" class="cyber-btn">
+        <span>VIEW HONORS</span>
+        <div class="btn-glow"></div>
+      </a>
     </div>
+    </div>
+    </div>
+  </div>
+
+  <!-- Sidebar Toggle Button -->
+  <button class="sidebar-toggle" id="sidebar-toggle">
+    <span id="toggle-icon">👥</span>
+  </button>
+
+  <!-- Right Sidebar - Players List -->
+  <div class="right-sidebar" id="right-sidebar">
+    <div class="sidebar-header">
+      <h3>🌐 Warriors Online</h3>
+      <div class="online-count">
+        <span class="online-dot"></span>
+        <span id="online-count-text">0 online</span>
+      </div>
+    </div>
+    
+    <div class="players-list" id="players-list">
+      <!-- Players will be populated dynamically -->
+      <div class="loading-players">
+        <div class="loading-spinner"></div>
+        <span>Loading warriors...</span>
+      </div>
+    </div>
+    
+    <div class="sidebar-footer">
+      <button class="refresh-btn" id="refresh-players">
+        <span class="refresh-icon">🔄</span>
+        <span>Refresh</span>
+      </button>
+    </div>
+    </div>
+  </div>
+
+  <!-- 🔔 Mission / Notification Alert -->
+  <div id="mission-alert" class="mission-alert hidden">
+    <span id="mission-icon">🎯</span>
+    <span id="mission-text">New mission available!</span>
+    <button id="mission-close">✖</button>
   </div>
 
   <!-- Modal Edit Name -->

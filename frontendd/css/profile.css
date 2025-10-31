@@ -1,3 +1,42 @@
+/* === NAVBAR STYLES === */
+.navbar {
+  background: rgba(44, 62, 80, 0.85);
+  padding: 16px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.navbar-logo {
+  height: 50px;
+  width: auto;
+  filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.3));
+  transition: transform 0.3s ease;
+}
+
+.navbar-logo:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.5));
+}
+
+.navbar h1 {
+  font-size: 24px;
+  margin: 0;
+  color: #fff;
+}
+
 /* === VIEW PROFILE PAGE === */
 body.view-profile {
   background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)),
@@ -9,8 +48,9 @@ body.view-profile {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh;
   margin: 0;
+  padding-top: 80px;
 }
 
 .view-profile-card {

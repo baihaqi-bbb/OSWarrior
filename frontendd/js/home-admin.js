@@ -220,36 +220,62 @@ onAuthStateChanged(auth, async (user) => {
 })();
 /* --- end added --- */
 
-// Removed XP, mission, leaderboard UI related code to avoid referencing removed DOM elements
+/**
+ * Setup profile dropdown toggle (top-right). Adds click-outside to close.
+ */
+function setupProfileDropdown() {
+  const profileContainer = document.querySelector('.profile-container');
+  const profileDropdown = document.getElementById('profile-dropdown');
+  if (!profileContainer || !profileDropdown) return;
 
-// === Profile Dropdown ===
-const profileContainer = document.querySelector(".profile-container");
-const profileDropdown = document.getElementById("profile-dropdown");
-let dropdownOpen = false;
-if (profileContainer) {
-  profileContainer.addEventListener("click", (e) => {
-    e.stopPropagation();
-    if (dropdownOpen) {
-      profileDropdown.classList.remove("show");
-      setTimeout(() => profileDropdown.classList.add("hidden"), 300);
+  // ensure initial state
+  profileDropdown.classList.add('hidden');
+  profileDropdown.classList.remove('show');
+
+  let open = false;
+  profileContainer.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    open = !open;
+    if (open) {
+      profileDropdown.classList.remove('hidden');
+      // small delay to allow CSS transition if any
+      setTimeout(() => profileDropdown.classList.add('show'), 10);
     } else {
-      profileDropdown.classList.remove("hidden");
-      setTimeout(() => profileDropdown.classList.add("show"), 10);
+      profileDropdown.classList.remove('show');
+      setTimeout(() => profileDropdown.classList.add('hidden'), 200);
     }
-    dropdownOpen = !dropdownOpen;
   });
-  document.addEventListener("click", (e) => {
-    if (dropdownOpen && !profileContainer.contains(e.target)) {
-      profileDropdown.classList.remove("show");
-      setTimeout(() => profileDropdown.classList.add("hidden"), 300);
-      dropdownOpen = false;
+
+  // click outside closes dropdown
+  document.addEventListener('click', (ev) => {
+    if (!open) return;
+    if (!profileContainer.contains(ev.target)) {
+      open = false;
+      profileDropdown.classList.remove('show');
+      setTimeout(() => profileDropdown.classList.add('hidden'), 200);
+    }
+  });
+
+  // keyboard: Esc closes
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' && open) {
+      open = false;
+      profileDropdown.classList.remove('show');
+      setTimeout(() => profileDropdown.classList.add('hidden'), 200);
     }
   });
 }
 
+// Removed XP, mission, leaderboard UI related code to avoid referencing removed DOM elements
+
 // PROFILE DROPDOWN BUTTONS
 const viewProfileBtn = document.getElementById("view-profile");
 if (viewProfileBtn) viewProfileBtn.addEventListener("click", () => { window.location.href = "profile.html"; });
+
+// Setup dropdown on page load
+document.addEventListener("DOMContentLoaded", () => {
+  setupProfileDropdown();
+});
 
 const viewAchievementsBtn = document.getElementById("view-achievements");
 if (viewAchievementsBtn) viewAchievementsBtn.addEventListener("click", (e) => { e.preventDefault(); window.location.href = "achievement.html"; });

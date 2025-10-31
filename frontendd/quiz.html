@@ -4,16 +4,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quiz - OSwarrior</title>
+  <link rel="stylesheet" href="css/navbar-logo.css">
   <link rel="stylesheet" href="css/quiz.css">
+  <link rel="stylesheet" href="css/profile-dropdown.css" />
 </head>
 <body class="quiz-page">
 
   <!-- Navbar -->
   <div class="navbar">
-    <h1>Quiz - OSwarrior</h1>
+    <div class="navbar-left">
+      <img src="image/os-warrior-logo.png" alt="OS Warrior" class="navbar-logo">
+      <h1>Quiz - OSwarrior</h1>
+    </div>
     <div class="navbar-right">
-      <img id="profile-img" class="profile-img" src="image/default-profile.png" alt="Profile"/>
-      <button id="logout-btn">Logout</button>
+      <div class="profile-container" id="profile-toggle">
+        <span id="username-navbar">Warrior</span>
+        <img id="profile-img" class="profile-img" src="image/default-profile.png" alt="Profile"/>
+        <div id="profile-dropdown" class="profile-dropdown hidden">
+          <a id="view-profile" href="profile.html">👤 View Profile</a>
+          <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
+          <div class="settings-section">
+            <p class="settings-title">⚙️ Quick Settings</p>
+            <button id="toggle-theme">🌗 Dark / Light Mode</button>
+            <button id="change-avatar">🖼️ Change Avatar</button>
+            <button id="edit-name">✏️ Edit Name</button>
+          </div>
+          <button id="logout-btn">🚪 Logout</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -39,7 +57,32 @@
     </div>
   </div>
 
+  <!-- Modal Edit Name -->
+  <div id="modal-edit-name" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>Edit Name</h3>
+      <input type="text" id="input-new-name" placeholder="Enter new name">
+      <div class="modal-actions">
+        <button id="save-name-btn" class="btn-action">Save</button>
+        <button id="cancel-name-btn" class="btn-action btn-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Change Avatar -->
+  <div id="modal-change-avatar" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>Change Avatar</h3>
+      <input type="text" id="input-avatar-url" placeholder="Paste image URL">
+      <div class="modal-actions">
+        <button id="save-avatar-btn" class="btn-action">Save</button>
+        <button id="cancel-avatar-btn" class="btn-action btn-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Firebase Script -->
+  <script type="module" src="js/common-navbar.js"></script>
   <script type="module" src="js/quiz.js"></script>
 
 </body>

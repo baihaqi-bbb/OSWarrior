@@ -113,4 +113,64 @@ body.quiz-page{
 .nav-left{ color:var(--muted); font-size:13px; }
 .btn{ padding:10px 14px; border-radius:10px; font-weight:700; border:1px solid rgba(255,255,255,0.04); background:transparent; cursor:pointer; color:#e6f7ff; }
 .btn.primary{ background:linear-gradient(90deg,var(--accent),var(--accent-2)); color:#fff; border:0; box-shadow:0 10px 30px rgba(37,99,235,0.12); }
+
+/* Navbar Styles */
+.navbar {
+  background: rgba(44, 62, 80, 0.85);
+  padding: 16px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+.navbar h1 {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Modal Styles */
+.modal {
+  position: fixed;
+  z-index: 9999;
+  left: 0; top: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-content {
+  background: #181c2f;
+  padding: 28px 24px;
+  border-radius: 12px;
+  min-width: 260px;
+  box-shadow: 0 4px 24px #0008;
+  text-align: center;
+}
+.modal-content h3 { margin-bottom: 18px; color: #fff; }
+.modal-content input {
+  width: 90%;
+  padding: 10px;
+  border-radius: 7px;
+  border: 1px solid #00ffff55;
+  margin-bottom: 18px;
+  background: #222b3a;
+  color: #fff;
+}
+.modal-actions {
+  display: flex; gap: 12px; justify-content: center;
+}
+.btn-action {
+  padding: 8px 18px;
+  border-radius: 7px;
+  border: none;
+  background: #00ffff;
+  color: #222;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-action.btn-cancel {
+  background: #ccc;
+  color: #222;
+}
+.btn-action:hover { background: #7f00ff; color: #fff; }
+.btn-action.btn-cancel:hover { background: #ff0066; color: #fff; }
 /* ...existing code... */

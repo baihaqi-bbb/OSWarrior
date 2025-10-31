@@ -2,7 +2,7 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDofTjaWk5M8m_hyrDRqxOGofzOV7Qlitw",
@@ -154,6 +154,8 @@ function updateXPBar(xp = 0, maxXP = 100, level = 1, name = 'Warrior') {
 function loadUserXP(uid, displayName) {
   if (!uid) return;
   
+  console.log("Loading user XP for:", uid, displayName);
+  
   // Load XP from backend API instead of Firestore
   fetch(`${API_BASE}/api/user/${encodeURIComponent(uid)}`, {
     credentials: 'include'
@@ -161,6 +163,10 @@ function loadUserXP(uid, displayName) {
   .then(res => {
     if (res.ok) {
       return res.json();
+    } else if (res.status === 404) {
+      // User not found, try to update with Firebase Auth info if available
+      console.log("User not found in backend, will be auto-created");
+      throw new Error(`User not found: ${res.status}`);
     } else {
       throw new Error(`API error: ${res.status}`);
     }
@@ -170,13 +176,38 @@ function loadUserXP(uid, displayName) {
     const xp = Number(userData.xp || 0);
     const level = Number(userData.level || Math.floor(xp / 100) + 1);
     const maxForLevel = Math.max(100, level * 100);
-    const name = userData.name || userData.displayName || displayName || "Aqi Mi";
+    const name = userData.name || userData.displayName || displayName || "Warrior";
     updateXPBar(xp, maxForLevel, level, name);
   })
   .catch(err => {
     console.warn("loadUserXP failed:", err);
-    // Fallback to default values
-    updateXPBar(0, 100, 1, displayName || "Aqi Mi");
+    
+    // Try one more time after a short delay (backend might be creating user)
+    setTimeout(() => {
+      fetch(`${API_BASE}/api/user/${encodeURIComponent(uid)}`, {
+        credentials: 'include'
+      })
+      .then(res => res.ok ? res.json() : null)
+      .then(userData => {
+        if (userData) {
+          console.log("User data loaded on retry:", userData);
+          const xp = Number(userData.xp || 0);
+          const level = Number(userData.level || Math.floor(xp / 100) + 1);
+          const maxForLevel = Math.max(100, level * 100);
+          const name = userData.name || userData.displayName || displayName || "Warrior";
+          updateXPBar(xp, maxForLevel, level, name);
+        } else {
+          // Final fallback to default values
+          console.log("Using fallback user data");
+          updateXPBar(0, 100, 1, displayName || "Warrior");
+        }
+      })
+      .catch(() => {
+        // Final fallback to default values
+        console.log("Using fallback user data after retry failed");
+        updateXPBar(0, 100, 1, displayName || "Warrior");
+      });
+    }, 1000); // Wait 1 second for backend to create user
   });
 }
 
@@ -254,26 +285,29 @@ async function loadTop3() {
 onAuthStateChanged(auth, async (user) => {
   try {
     if (!user) {
-      // leave page if not authed (adjust if public view allowed)
-      // window.location.href = "index.html";
-      await loadTop3();
+      console.log("User not authenticated, redirecting to login");
+      window.location.href = "index.html";
       return;
     }
+    
+    console.log("User authenticated:", user.uid, user.displayName || user.email);
+    
     // populate some UI nodes if present
     const profileImg = document.getElementById("profile-img");
     if (profileImg) profileImg.src = user.photoURL || DEFAULT_AVATAR;
 
-    const userRef = doc(db, "users", user.uid);
-    try {
-      const snap = await getDoc(userRef);
-      const updates = {};
-      if (!snap.exists()) updates.xp = 0, updates.level = 1;
-      if (!snap.exists() || (!snap.data().name && user.displayName)) updates.name = user.displayName;
-      if (!snap.exists() || (!snap.data().email && user.email)) updates.email = user.email || null;
-      if (Object.keys(updates).length) await setDoc(userRef, updates, { merge: true });
-    } catch (e) { console.warn("ensure user doc failed:", e); }
+    // Skip Firestore operations since we're using backend now
+    // const userRef = doc(db, "users", user.uid);
+    // try {
+    //   const snap = await getDoc(userRef);
+    //   const updates = {};
+    //   if (!snap.exists()) updates.xp = 0, updates.level = 1;
+    //   if (!snap.exists() || (!snap.data().name && user.displayName)) updates.name = user.displayName;
+    //   if (!snap.exists() || (!snap.data().email && user.email)) updates.email = user.email || null;
+    //   if (Object.keys(updates).length) await setDoc(userRef, updates, { merge: true });
+    // } catch (e) { console.warn("ensure user doc failed:", e); }
 
-    const displayName = user.displayName || user.email?.split('@')[0] || "Aqi Mi";
+    const displayName = user.displayName || user.email?.split('@')[0] || "Warrior";
     const usernameWelcome = document.getElementById("username");
     if (usernameWelcome) usernameWelcome.textContent = displayName;
     
@@ -284,13 +318,209 @@ onAuthStateChanged(auth, async (user) => {
     const playerName = document.getElementById("player-name");
     if (playerName) playerName.textContent = displayName + " 👑";
 
+    // Load user data from backend (will auto-create if needed)
     loadUserXP(user.uid, displayName);
     await loadTop3();
     retriggerCardAnimations(80);
   } catch (err) {
     console.error("Auth handler error:", err);
+    // Don't redirect on error, just log it
   }
 });
+
+// Cleanup when page unloads
+window.addEventListener('beforeunload', () => {
+  cleanupPlayersSidebar();
+});
+
+/**
+ * Setup welcome banner interactions and animations
+ */
+function setupWelcomeBanner() {
+  // Setup typing effect for welcome subtitle
+  setupTypingEffect();
+  
+  // Setup status card hover effects
+  setupStatusCardEffects();
+}
+
+/**
+ * Setup status card hover effects
+ */
+function setupStatusCardEffects() {
+  const statusCards = document.querySelectorAll('.status-card');
+  
+  statusCards.forEach(card => {
+    card.addEventListener('mouseenter', () => {
+      card.style.transform = 'translateY(-3px) scale(1.05)';
+      card.style.boxShadow = '0 15px 35px rgba(0, 255, 255, 0.4)';
+    });
+    
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = '';
+      card.style.boxShadow = '';
+    });
+  });
+}
+
+/**
+ * Create typing effect for welcome subtitle
+ */
+function setupTypingEffect() {
+  const typingText = document.querySelector('.typing-text');
+  if (!typingText) return;
+  
+  const messages = [
+    "Ready to dominate the digital battlefield?",
+    "Time to level up your OS mastery!",
+    "Your next victory awaits, warrior!",
+    "Conquer challenges and claim glory!",
+    "The arena is calling your name!"
+  ];
+  
+  let messageIndex = 0;
+  let charIndex = 0;
+  let isDeleting = false;
+  
+  function typeEffect() {
+    const currentMessage = messages[messageIndex];
+    
+    if (isDeleting) {
+      typingText.textContent = currentMessage.substring(0, charIndex - 1);
+      charIndex--;
+    } else {
+      typingText.textContent = currentMessage.substring(0, charIndex + 1);
+      charIndex++;
+    }
+    
+    let typeSpeed = isDeleting ? 50 : 100;
+    
+    if (!isDeleting && charIndex === currentMessage.length) {
+      typeSpeed = 2000; // Wait at end
+      isDeleting = true;
+    } else if (isDeleting && charIndex === 0) {
+      isDeleting = false;
+      messageIndex = (messageIndex + 1) % messages.length;
+      typeSpeed = 500; // Wait before starting new message
+    }
+    
+    setTimeout(typeEffect, typeSpeed);
+  }
+  
+  // Start typing effect after a delay
+  setTimeout(typeEffect, 1000);
+}
+
+/**
+ * Setup welcome action buttons
+ */
+function setupWelcomeActions() {
+  const startMissionBtn = document.querySelector('.action-btn.primary');
+  const viewStatsBtn = document.querySelector('.action-btn.secondary');
+  
+  if (startMissionBtn) {
+    startMissionBtn.addEventListener('click', (e) => {
+      // Create particle effect
+      createParticleEffect(startMissionBtn);
+      
+      // Navigate to quiz page with special effect
+      startMissionBtn.style.transform = 'scale(0.95)';
+      setTimeout(() => {
+        window.location.href = 'quiz.html';
+      }, 300);
+    });
+  }
+  
+  if (viewStatsBtn) {
+    viewStatsBtn.addEventListener('click', (e) => {
+      // Create particle effect
+      createParticleEffect(viewStatsBtn);
+      
+      // Navigate to profile page
+      viewStatsBtn.style.transform = 'scale(0.95)';
+      setTimeout(() => {
+        window.location.href = 'profile.html';
+      }, 300);
+    });
+  }
+}
+
+/**
+ * Setup avatar interaction in welcome banner
+ */
+function setupAvatarInteraction() {
+  const userAvatar = document.querySelector('.user-avatar');
+  const levelBadge = document.querySelector('.level-badge');
+  
+  if (userAvatar) {
+    userAvatar.addEventListener('click', () => {
+      // Add click animation
+      userAvatar.style.transform = 'scale(1.2)';
+      setTimeout(() => {
+        userAvatar.style.transform = '';
+      }, 200);
+      
+      // Show profile modal or navigate to profile
+      if (auth.currentUser) {
+        openPublicProfile(auth.currentUser.uid);
+      }
+    });
+    
+    // Add hover effect to level badge
+    if (levelBadge) {
+      userAvatar.addEventListener('mouseenter', () => {
+        levelBadge.style.transform = 'scale(1.1)';
+      });
+      
+      userAvatar.addEventListener('mouseleave', () => {
+        levelBadge.style.transform = '';
+      });
+    }
+  }
+}
+
+/**
+ * Update welcome banner avatar from user profile
+ */
+function updateWelcomeBannerAvatar() {
+  const userAvatar = document.querySelector('.user-avatar');
+  if (!userAvatar) return;
+  
+  // Update from current user
+  onAuthStateChanged(auth, (user) => {
+    if (user && userAvatar) {
+      userAvatar.src = user.photoURL || DEFAULT_AVATAR;
+      
+      // Also try to get from Firestore if available
+      getDoc(doc(db, "users", user.uid)).then(snap => {
+        if (snap.exists()) {
+          const data = snap.data();
+          const avatar = data.profileURL || data.photoURL || data.avatar;
+          if (avatar) {
+            userAvatar.src = avatar;
+          }
+        }
+      }).catch(e => {
+        console.warn("Failed to load avatar from Firestore:", e);
+      });
+    }
+  });
+}
+
+/**
+ * Update level badge in welcome banner
+ */
+function updateWelcomeLevelBadge(level = 1) {
+  const levelBadge = document.querySelector('.level-badge');
+  if (levelBadge) {
+    levelBadge.textContent = `LV.${level}`;
+    
+    // Add animation for level up
+    levelBadge.style.animation = 'none';
+    void levelBadge.offsetWidth; // Trigger reflow
+    levelBadge.style.animation = 'crownFloat 2s ease-in-out infinite';
+  }
+}
 
 // add near the UI helpers section (anywhere before DOMContentLoaded)
 
@@ -306,12 +536,23 @@ function setupProfileDropdown() {
   profileDropdown.classList.add('hidden');
   profileDropdown.classList.remove('show');
 
+  // Function to position dropdown correctly
+  function positionDropdown() {
+    const rect = profileContainer.getBoundingClientRect();
+    profileDropdown.style.position = 'fixed';
+    profileDropdown.style.top = (rect.bottom + 5) + 'px';
+    profileDropdown.style.right = '20px';
+    profileDropdown.style.left = 'auto';
+  }
+
   let open = false;
   profileContainer.addEventListener('click', (ev) => {
     ev.stopPropagation();
     open = !open;
     if (open) {
+      positionDropdown(); // Calculate position before showing
       profileDropdown.classList.remove('hidden');
+      profileDropdown.classList.add('show');
       // small delay to allow CSS transition if any
       setTimeout(() => profileDropdown.classList.add('show'), 10);
     } else {
@@ -340,10 +581,436 @@ function setupProfileDropdown() {
   });
 }
 
+// Check for new quizzes and update badge
+async function checkNewQuizzes() {
+  try {
+    // Get last visit time from localStorage
+    const lastVisit = localStorage.getItem('lastQuizVisit');
+    const lastVisitTime = lastVisit ? new Date(lastVisit) : new Date(0); // If no visit, use epoch
+    
+    console.log('Checking new quizzes...', { lastVisit, lastVisitTime });
+    
+    // Fetch available quizzes from backend
+    const response = await fetch(`${API_BASE}/api/quizzes`, {
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const quizzes = await response.json();
+      
+      // Check if there are new quizzes since last visit
+      let hasNewQuizzes = false;
+      let newestQuizDate = null;
+      
+      if (Array.isArray(quizzes) && quizzes.length > 0) {
+        // Check if any quiz is newer than last visit
+        for (const quiz of quizzes) {
+          const quizDate = new Date(quiz.createdAt || quiz.dateCreated || Date.now());
+          
+          if (!newestQuizDate || quizDate > newestQuizDate) {
+            newestQuizDate = quizDate;
+          }
+          
+          if (quizDate > lastVisitTime) {
+            hasNewQuizzes = true;
+          }
+        }
+        
+        // If no lastVisit (first time user), show badge for any published quiz
+        if (!lastVisit && quizzes.some(q => q.published !== false)) {
+          hasNewQuizzes = true;
+        }
+        
+        // Store quiz count for future reference
+        localStorage.setItem('lastQuizCount', quizzes.length.toString());
+      }
+      
+      // Update badge visibility
+      const badge = document.querySelector('.card.quiz .badge');
+      if (badge) {
+        if (hasNewQuizzes) {
+          badge.style.display = 'block';
+          badge.textContent = 'New';
+          // Add pulse animation for new quizzes
+          badge.classList.add('pulse-new');
+          
+          // Store that we've shown the new badge
+          if (newestQuizDate) {
+            localStorage.setItem('lastNewBadgeShown', newestQuizDate.toISOString());
+          }
+        } else {
+          badge.style.display = 'none';
+          badge.classList.remove('pulse-new');
+        }
+      }
+      
+      console.log('New quizzes check result:', { 
+        hasNewQuizzes, 
+        quizCount: quizzes.length,
+        newestQuizDate: newestQuizDate?.toISOString(),
+        lastVisitTime: lastVisitTime.toISOString()
+      });
+      
+    } else {
+      console.warn('Failed to fetch quizzes for new badge check');
+      // Hide badge if can't determine
+      const badge = document.querySelector('.card.quiz .badge');
+      if (badge) {
+        badge.style.display = 'none';
+        badge.classList.remove('pulse-new');
+      }
+    }
+    
+  } catch (error) {
+    console.error('Error checking new quizzes:', error);
+    // Hide badge on error
+    const badge = document.querySelector('.card.quiz .badge');
+    if (badge) {
+      badge.style.display = 'none';
+      badge.classList.remove('pulse-new');
+    }
+  }
+}
+
+// Mark quiz as visited (call this when user goes to quiz page)
+function markQuizAsVisited() {
+  localStorage.setItem('lastQuizVisit', new Date().toISOString());
+  
+  // Also update quiz count
+  fetch(`${API_BASE}/api/quizzes`, { credentials: 'include' })
+    .then(res => res.ok ? res.json() : [])
+    .then(quizzes => {
+      if (Array.isArray(quizzes)) {
+        localStorage.setItem('lastQuizCount', quizzes.length.toString());
+      }
+    })
+    .catch(err => console.warn('Failed to update quiz count:', err));
+}
+
+// Make function available globally
+window.markQuizAsVisited = markQuizAsVisited;
+
+// Player Sidebar Functions
+let playersCache = [];
+let refreshInterval;
+
+/**
+ * Load and display online players in sidebar
+ */
+async function loadOnlinePlayers() {
+  try {
+    const response = await fetch(`${API_BASE}/api/leaderboard`, {
+      credentials: 'include'
+    });
+    
+    if (!response.ok) throw new Error('Failed to load players');
+    
+    const data = await response.json();
+    const players = data.leaderboard || [];
+    
+    playersCache = players;
+    renderPlayersList(players);
+    updateOnlineCount(players.length);
+    
+  } catch (error) {
+    console.error('Failed to load online players:', error);
+    renderPlayersError();
+  }
+}
+
+/**
+ * Render players list in sidebar
+ */
+function renderPlayersList(players) {
+  const playersList = document.getElementById('players-list');
+  if (!playersList) return;
+  
+  if (players.length === 0) {
+    playersList.innerHTML = `
+      <div class="loading-players">
+        <span style="color: #B0E0FF;">No warriors online</span>
+      </div>
+    `;
+    return;
+  }
+  
+  const currentUser = auth.currentUser;
+  const currentUserId = currentUser ? currentUser.uid : null;
+  
+  // Get following list from localStorage
+  const following = JSON.parse(localStorage.getItem('following') || '[]');
+  
+  // Filter out current user and limit to first 20 players
+  const otherPlayers = players
+    .filter(player => player.uid !== currentUserId)
+    .slice(0, 20);
+  
+  playersList.innerHTML = otherPlayers.map(player => {
+    const name = escapeHtml(player.displayName || player.email || player.name || 'Unknown Warrior');
+    const avatar = player.profileImage || player.photoURL || player.avatar || DEFAULT_AVATAR;
+    const level = player.level || Math.floor((player.totalXP || 0) / 100) + 1;
+    const xp = player.totalXP || 0;
+    const isFollowing = following.includes(player.uid);
+    
+    return `
+      <div class="player-item" data-uid="${player.uid || ''}" onclick="openPlayerProfile('${player.uid || ''}')">
+        <img src="${avatar}" alt="${name}" class="player-avatar" onerror="this.src='${DEFAULT_AVATAR}'">
+        <div class="player-info">
+          <div class="player-name">${name}</div>
+          <div class="player-level">Level ${level} • ${xp.toLocaleString()} XP</div>
+        </div>
+        <div class="player-status"></div>
+        <div class="player-actions">
+          <div class="action-icon follow-btn ${isFollowing ? 'following' : ''}" onclick="followPlayer(event, '${player.uid || ''}', '${name}')" title="${isFollowing ? 'Following' : 'Follow'}">
+            ${isFollowing ? '✓' : '👥'}
+          </div>
+          <div class="action-icon message-btn" onclick="messagePlayer(event, '${player.uid || ''}', '${name}')" title="Message">
+            💬
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/**
+ * Render error state for players list
+ */
+function renderPlayersError() {
+  const playersList = document.getElementById('players-list');
+  if (!playersList) return;
+  
+  playersList.innerHTML = `
+    <div class="loading-players">
+      <span style="color: #FF6B6B;">Failed to load warriors</span>
+      <button onclick="loadOnlinePlayers()" style="margin-top: 10px; padding: 5px 10px; background: rgba(0,255,255,0.2); border: 1px solid rgba(0,255,255,0.3); border-radius: 5px; color: #00FFFF; cursor: pointer;">
+        Retry
+      </button>
+    </div>
+  `;
+}
+
+/**
+ * Update online count display
+ */
+function updateOnlineCount(count) {
+  const onlineCountText = document.getElementById('online-count-text');
+  if (onlineCountText) {
+    onlineCountText.textContent = `${count} online`;
+  }
+}
+
+/**
+ * Open player profile from sidebar
+ */
+function openPlayerProfile(uid) {
+  if (!uid) return;
+  openPublicProfile(uid);
+}
+
+/**
+ * Follow a player
+ */
+function followPlayer(event, uid, name) {
+  event.stopPropagation();
+  
+  if (!uid) return;
+  
+  const followBtn = event.target;
+  
+  // Disable button temporarily
+  followBtn.style.pointerEvents = 'none';
+  
+  // Animate button
+  followBtn.style.transform = 'scale(1.2)';
+  setTimeout(() => {
+    followBtn.innerHTML = '✓';
+    followBtn.style.color = '#00FF88';
+    followBtn.title = 'Following';
+    followBtn.style.transform = 'scale(1)';
+    
+    // Re-enable button after animation
+    setTimeout(() => {
+      followBtn.style.pointerEvents = 'auto';
+    }, 300);
+  }, 200);
+  
+  // Store follow status in localStorage
+  const following = JSON.parse(localStorage.getItem('following') || '[]');
+  if (!following.includes(uid)) {
+    following.push(uid);
+    localStorage.setItem('following', JSON.stringify(following));
+  }
+  
+  console.log('Following player:', uid, name);
+  showNotification(`Now following ${name}!`, 'success');
+}
+
+/**
+ * Message a player
+ */
+function messagePlayer(event, uid, name) {
+  event.stopPropagation();
+  
+  if (!uid) return;
+  
+  const messageBtn = event.target;
+  
+  // Animate button
+  messageBtn.style.transform = 'scale(1.3)';
+  messageBtn.style.color = '#FFED4A';
+  
+  setTimeout(() => {
+    messageBtn.style.transform = 'scale(1)';
+    messageBtn.style.color = '#FFD700';
+  }, 300);
+  
+  console.log('Messaging player:', uid, name);
+  showNotification(`Opening chat with ${name}...`, 'info');
+  
+  // Here you could implement actual messaging functionality
+  // For now, we'll simulate opening a chat
+  setTimeout(() => {
+    showNotification(`Chat with ${name} is ready!`, 'success');
+  }, 1500);
+}
+
+/**
+ * Show enhanced notification
+ */
+function showNotification(message, type = 'info') {
+  // Remove existing notifications
+  const existingNotifications = document.querySelectorAll('.notification');
+  existingNotifications.forEach(notif => notif.remove());
+  
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = `notification ${type}`;
+  
+  // Add icon based on type
+  const icons = {
+    success: '✅',
+    error: '❌',
+    info: 'ℹ️',
+    warning: '⚠️'
+  };
+  
+  notification.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span style="font-size: 1.1rem;">${icons[type] || icons.info}</span>
+      <span>${message}</span>
+    </div>
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // Animate in
+  setTimeout(() => {
+    notification.classList.add('show');
+  }, 100);
+  
+  // Remove after 4 seconds
+  setTimeout(() => {
+    notification.classList.remove('show');
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 400);
+  }, 4000);
+}
+
+/**
+ * Setup sidebar functionality
+ */
+function setupPlayersSidebar() {
+  // Load initial players
+  loadOnlinePlayers();
+  
+  // Setup refresh button
+  const refreshBtn = document.getElementById('refresh-players');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', () => {
+      refreshBtn.style.transform = 'scale(0.95)';
+      setTimeout(() => {
+        refreshBtn.style.transform = '';
+      }, 150);
+      loadOnlinePlayers();
+    });
+  }
+  
+  // Auto-refresh every 30 seconds
+  refreshInterval = setInterval(loadOnlinePlayers, 30000);
+}
+
+/**
+ * Setup sidebar toggle functionality
+ */
+function setupSidebarToggle() {
+  const toggleBtn = document.getElementById('sidebar-toggle');
+  const sidebar = document.getElementById('right-sidebar');
+  const toggleIcon = document.getElementById('toggle-icon');
+  
+  if (toggleBtn && sidebar && toggleIcon) {
+    toggleBtn.addEventListener('click', () => {
+      const isVisible = sidebar.classList.contains('show');
+      
+      if (isVisible) {
+        // Hide sidebar
+        sidebar.classList.remove('show');
+        toggleBtn.classList.remove('active');
+        toggleIcon.textContent = '👥';
+      } else {
+        // Show sidebar
+        sidebar.classList.add('show');
+        toggleBtn.classList.add('active');
+        toggleIcon.textContent = '✖';
+        // Refresh players when showing
+        loadOnlinePlayers();
+      }
+    });
+  }
+}
+
+/**
+ * Cleanup sidebar when leaving page
+ */
+function cleanupPlayersSidebar() {
+  if (refreshInterval) {
+    clearInterval(refreshInterval);
+    refreshInterval = null;
+  }
+}
+
+// Make functions available globally
+window.openPlayerProfile = openPlayerProfile;
+window.followPlayer = followPlayer;
+window.messagePlayer = messagePlayer;
+
+// Testing/debugging functions (for admin/development)
+window.resetNewBadge = function() {
+  localStorage.removeItem('lastQuizVisit');
+  localStorage.removeItem('lastQuizCount');
+  localStorage.removeItem('lastNewBadgeShown');
+  console.log('Badge status reset. Refresh page to see new badge.');
+  checkNewQuizzes();
+};
+
+window.checkNewQuizzesDebug = checkNewQuizzes;
+
 // call it on boot
 document.addEventListener("DOMContentLoaded", () => {
   ensurePublicProfileModal();
   setupProfileDropdown(); // <-- added
+  
+  // Setup welcome banner interactions
+  setupWelcomeBanner();
+  
+  // Setup players sidebar
+  setupPlayersSidebar();
+  
+  // Setup sidebar toggle functionality
+  setupSidebarToggle();
   
   // Setup dropdown button functions
   const toggleThemeBtn = document.getElementById("toggle-theme");
@@ -358,12 +1025,12 @@ document.addEventListener("DOMContentLoaded", () => {
   if (changeAvatarBtn) {
     changeAvatarBtn.addEventListener("click", () => {
       const modal = document.getElementById("modal-change-avatar");
-      const currentSrc = document.getElementById("profile-img").src;
       const input = document.getElementById("input-avatar-url");
       
       if (modal && input) {
-        input.value = currentSrc;
-        modal.style.display = "block";
+        input.value = "";
+        modal.style.display = "flex";
+        input.focus();
       }
     });
   }
@@ -371,22 +1038,40 @@ document.addEventListener("DOMContentLoaded", () => {
   // Avatar modal save
   const saveAvatarBtn = document.getElementById("save-avatar-btn");
   if (saveAvatarBtn) {
-    saveAvatarBtn.addEventListener("click", () => {
+    saveAvatarBtn.addEventListener("click", async () => {
       const input = document.getElementById("input-avatar-url");
       const modal = document.getElementById("modal-change-avatar");
       
-      if (input && input.value.trim()) {
+      if (input && input.value.trim() && auth.currentUser) {
         const newAvatarUrl = input.value.trim();
-        const profileImg = document.getElementById("profile-img");
+        const uid = auth.currentUser.uid;
         
-        if (profileImg) {
-          profileImg.src = newAvatarUrl;
+        try {
+          // Update Firebase user profile
+          await updateProfile(auth.currentUser, { photoURL: newAvatarUrl });
+          
+          // Update Firestore if available
+          try {
+            await updateDoc(doc(db, "users", uid), { profileURL: newAvatarUrl });
+          } catch (firestoreErr) {
+            console.warn("Firestore update failed, continuing with local update:", firestoreErr);
+          }
+          
+          // Update UI
+          const profileImg = document.getElementById("profile-img");
+          if (profileImg) profileImg.src = newAvatarUrl;
+          
+          // Save to localStorage as backup
           localStorage.setItem("avatar", newAvatarUrl);
+          
+          if (modal) modal.style.display = "none";
+          alert("Avatar berjaya ditukar!");
+        } catch (err) {
+          console.error("Avatar update error:", err);
+          alert("Gagal kemaskini avatar: " + err.message);
         }
-        
-        if (modal) modal.style.display = "none";
       } else {
-        alert("Please enter a valid image URL");
+        alert("Sila masukkan URL gambar yang sah");
       }
     });
   }
@@ -394,22 +1079,22 @@ document.addEventListener("DOMContentLoaded", () => {
   // Avatar modal cancel
   const cancelAvatarBtn = document.getElementById("cancel-avatar-btn");
   if (cancelAvatarBtn) {
-    cancelAvatarBtn.addEventListener("click", () => {
+    cancelAvatarBtn.onclick = () => {
       const modal = document.getElementById("modal-change-avatar");
       if (modal) modal.style.display = "none";
-    });
+    };
   }
   
   const editNameBtn = document.getElementById("edit-name");
   if (editNameBtn) {
     editNameBtn.addEventListener("click", () => {
       const modal = document.getElementById("modal-edit-name");
-      const currentName = document.getElementById("username-navbar").textContent;
       const input = document.getElementById("input-new-name");
       
       if (modal && input) {
-        input.value = currentName;
-        modal.style.display = "block";
+        input.value = "";
+        modal.style.display = "flex";
+        input.focus();
       }
     });
   }
@@ -417,27 +1102,45 @@ document.addEventListener("DOMContentLoaded", () => {
   // Name modal save
   const saveNameBtn = document.getElementById("save-name-btn");
   if (saveNameBtn) {
-    saveNameBtn.addEventListener("click", () => {
+    saveNameBtn.addEventListener("click", async () => {
       const input = document.getElementById("input-new-name");
       const modal = document.getElementById("modal-edit-name");
       
-      if (input && input.value.trim()) {
+      if (input && input.value.trim() && auth.currentUser) {
         const newName = input.value.trim();
+        const uid = auth.currentUser.uid;
         
-        // Update all name displays
-        const usernameNavbar = document.getElementById("username-navbar");
-        const username = document.getElementById("username");
-        const playerName = document.getElementById("player-name");
-        
-        if (usernameNavbar) usernameNavbar.textContent = newName;
-        if (username) username.textContent = newName;
-        if (playerName) playerName.textContent = newName + " 👑";
-        
-        localStorage.setItem("displayName", newName);
-        
-        if (modal) modal.style.display = "none";
+        try {
+          // Update Firebase user profile
+          await updateProfile(auth.currentUser, { displayName: newName });
+          
+          // Update Firestore if available  
+          try {
+            await updateDoc(doc(db, "users", uid), { name: newName });
+          } catch (firestoreErr) {
+            console.warn("Firestore update failed, continuing with local update:", firestoreErr);
+          }
+          
+          // Update all name displays in UI
+          const usernameNavbar = document.getElementById("username-navbar");
+          const username = document.getElementById("username");
+          const playerName = document.getElementById("player-name");
+          
+          if (usernameNavbar) usernameNavbar.textContent = newName;
+          if (username) username.textContent = newName;
+          if (playerName) playerName.textContent = newName + " 👑";
+          
+          // Save to localStorage as backup
+          localStorage.setItem("displayName", newName);
+          
+          if (modal) modal.style.display = "none";
+          alert("Nama berjaya ditukar!");
+        } catch (err) {
+          console.error("Name update error:", err);
+          alert("Gagal kemaskini nama: " + err.message);
+        }
       } else {
-        alert("Please enter a valid name");
+        alert("Sila masukkan nama yang sah");
       }
     });
   }
@@ -445,10 +1148,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Name modal cancel
   const cancelNameBtn = document.getElementById("cancel-name-btn");
   if (cancelNameBtn) {
-    cancelNameBtn.addEventListener("click", () => {
+    cancelNameBtn.onclick = () => {
       const modal = document.getElementById("modal-edit-name");
       if (modal) modal.style.display = "none";
-    });
+    };
   }
   
   const logoutBtn = document.getElementById("logout-btn");
@@ -502,5 +1205,131 @@ document.addEventListener("DOMContentLoaded", () => {
   
   loadTop3();
   retriggerCardAnimations(60);
+  
+  // Check for new quizzes and update badge
+  checkNewQuizzes();
+  
+  // Load leaderboard for new layout
+  loadLeaderboardForHome();
+  
+  // Load real data for card stats
+  loadRealCardData();
 });
+
+// Function to load real data for card statistics
+async function loadRealCardData() {
+  try {
+    // Load quiz data
+    const quizResponse = await fetch(`${API_BASE}/api/quizzes`);
+    if (quizResponse.ok) {
+      const quizData = await quizResponse.json();
+      const totalQuizzes = quizData.length || 0;
+      const maxXP = totalQuizzes * 20; // Assuming 20 XP per quiz
+      
+      // Update quiz card stats
+      const quizChallengesStat = document.querySelector('.quiz .stat');
+      if (quizChallengesStat) {
+        quizChallengesStat.textContent = `📊 ${totalQuizzes} Challenges`;
+      }
+      const quizXPStat = document.querySelectorAll('.quiz .stat')[1];
+      if (quizXPStat) {
+        quizXPStat.textContent = `🏆 Max ${maxXP} XP`;
+      }
+    }
+    
+    // Load leaderboard data for warrior count
+    let leaderboardData = null;
+    const leaderboardResponse = await fetch(`${API_BASE}/api/leaderboard`);
+    if (leaderboardResponse.ok) {
+      leaderboardData = await leaderboardResponse.json();
+      const totalWarriors = leaderboardData.leaderboard?.length || 0;
+      
+      // Update arena rankings stats
+      const warriorsStat = document.querySelector('.leaderboard .stat');
+      if (warriorsStat) {
+        warriorsStat.textContent = `⚔️ ${totalWarriors} Warriors`;
+      }
+    }
+    
+    // Load current user's achievements
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const userResponse = await fetch(`${API_BASE}/api/user/${currentUser.uid}`);
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        const userAchievements = userData.achievements || [];
+        const unlockedCount = userAchievements.length;
+        const totalAchievements = 20; // Total possible achievements
+        
+        // Update achievements stats
+        const achievementsStat = document.querySelector('.achievement .stat');
+        if (achievementsStat) {
+          achievementsStat.textContent = `🎖️ ${unlockedCount} Unlocked`;
+        }
+        
+        // Update achievement counter in header
+        const achievementCounter = document.querySelector('.achievement-counter .counter');
+        if (achievementCounter) {
+          achievementCounter.textContent = `${unlockedCount}/${totalAchievements}`;
+        }
+        
+        // Update user's rank in arena rankings card
+        if (leaderboardData && leaderboardData.leaderboard) {
+          const userRank = leaderboardData.leaderboard.findIndex(user => user.uid === currentUser.uid) + 1;
+          const rankText = document.querySelector('.leaderboard .rank-text');
+          if (rankText && userRank > 0) {
+            rankText.textContent = `#${userRank}`;
+          }
+        }
+      }
+    }
+    
+  } catch (error) {
+    console.error("Failed to load real card data:", error);
+    // Keep default values if API fails
+  }
+}
+
+// Function to load top 3 warriors for the new home layout
+async function loadLeaderboardForHome() {
+  try {
+    const response = await fetch(`${API_BASE}/api/leaderboard`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    
+    const data = await response.json();
+    const leaderboard = data.leaderboard || [];
+    
+    // Get the leaderboard container in the new layout
+    const leaderboardContainer = document.querySelector('.top3-container');
+    if (!leaderboardContainer) return;
+    
+    if (leaderboard.length === 0) {
+      leaderboardContainer.innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center;">No warriors yet</p>';
+      return;
+    }
+    
+    // Show top 3 warriors
+    const top3 = leaderboard.slice(0, 3);
+    leaderboardContainer.innerHTML = top3.map((warrior, index) => {
+      const rankClass = index === 0 ? 'first' : index === 1 ? 'second' : 'third';
+      const rankEmoji = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';
+      
+      return `
+        <div class="player ${rankClass}">
+          <div class="rank">${rankEmoji}</div>
+          <img src="${warrior.profileImage || DEFAULT_AVATAR}" alt="Profile" onerror="this.src='${DEFAULT_AVATAR}'">
+          <div class="name">${escapeHtml(warrior.displayName || warrior.email || 'Unknown Warrior')}</div>
+          <div class="xp">${warrior.totalXP || 0} XP</div>
+        </div>
+      `;
+    }).join('');
+    
+  } catch (error) {
+    console.error("Failed to load leaderboard:", error);
+    const leaderboardContainer = document.querySelector('.top3-container');
+    if (leaderboardContainer) {
+      leaderboardContainer.innerHTML = '<p style="color: rgba(255,100,100,0.8); text-align: center;">Failed to load leaderboard</p>';
+    }
+  }
+}
 
