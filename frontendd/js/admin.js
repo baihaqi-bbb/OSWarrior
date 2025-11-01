@@ -47,7 +47,7 @@ onAuthStateChanged(auth, async (user) => {
 
 async function loadLeaderboard() {
   try {
-    const res = await fetch("http://localhost:6000/api/leaderboard");
+    const res = await fetch("https://api.oswarrior.com/api/leaderboard");
     if (!res.ok) throw new Error("Failed fetching leaderboard");
     const data = await res.json();
     renderRows(data);

@@ -24,6 +24,7 @@ const corsOptions = {
       'http://127.0.0.1:4000',
       'https://oswarrior.com',
       'https://www.oswarrior.com',
+      'https://api.oswarrior.com',
       'https://frontendd-zne8.onrender.com',
       'https://oswarrior-iyii.onrender.com'
     ];
