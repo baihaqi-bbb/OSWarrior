@@ -284,84 +284,11 @@ Remember: Return ONLY the JSON object, no additional text.`;
       });
     }
 
-    async function expandShortOptions(questionText, shortOptions) {
-      if (!OPENAI_KEY) return null;
-      const prompt = `
-You are an Operating Systems expert. Given a multiple choice question and short option labels, create detailed, meaningful options.
-
-IMPORTANT: Generate STRICT JSON only with this structure:
-{"options":["Full detailed option A for OS concept","Full detailed option B for OS concept","Full detailed option C for OS concept","Full detailed option D for OS concept"], "answerIndex": <0-3>}
-
-Requirements:
-- Make options comprehensive and technically accurate for Operating Systems
-- Each option should be a complete, meaningful statement about OS concepts
-- Options must be plausible but clearly distinguishable
-- Use proper OS terminology (processes, threads, memory, scheduling, etc.)
-- Only one option should be clearly correct
-- If short labels suggest content, expand appropriately
-
-Question: ${questionText}
-Short labels: ${JSON.stringify(shortOptions)}
-`;
-      try {
-        const out = await callOpenAI(prompt);
-        const m = out.match(/\{[\s\S]*\}/m);
-        const jsonText = m ? m[0] : out;
-        const parsed = JSON.parse(jsonText);
-        if (Array.isArray(parsed.options) && parsed.options.length === 4 && Number.isFinite(parsed.answerIndex)) {
-          return { options: parsed.options.map(String), answerIndex: Number(parsed.answerIndex) };
-        }
-      } catch (e) {
-        console.warn("expandShortOptions failed:", e?.message || e);
-      }
-      return null;
-    }
-
-    const normalizedQuestions = [];
-    const rawQuestions = Array.isArray(parsed.questions) ? parsed.questions : [];
-    for (let idx = 0; idx < Math.min(5, rawQuestions.length); idx++) {
-      const q = rawQuestions[idx] || {};
-      const qq = {};
-      qq.question = String(q.question || (`Question ${idx+1}`)).trim();
-      qq.type = "mcq";
-
-      let opts = Array.isArray(q.options) ? q.options.map(s => String(s||"").trim()) : [];
-      const allSingleLetter = opts.length && opts.every(o => /^[A-Za-z]{1,2}$/.test(o));
-      if (allSingleLetter) {
-        const expanded = await expandShortOptions(qq.question, opts).catch(()=>null);
-        if (expanded) {
-          opts = expanded.options;
-          qq.answerIndex = expanded.answerIndex;
-        }
-      }
-
-      opts = opts.filter(Boolean).slice(0,4);
-      while (opts.length < 4) opts.push(`Option ${opts.length+1}`);
-      qq.options = opts;
-
-      if (typeof qq.answerIndex !== "number") {
-        let ai = (q && Number.isFinite(Number(q.answerIndex))) ? Number(q.answerIndex) : null;
-        if (ai === null && q && q.answer) {
-          const found = opts.findIndex(o => o.trim() === String(q.answer).trim());
-          ai = found >= 0 ? found : 0;
-        }
-        if (ai === null) ai = 0;
-        if (ai < 0 || ai > 3) ai = 0;
-        qq.answerIndex = ai;
-      }
-
-      normalizedQuestions.push(qq);
-    }
-
-    while (normalizedQuestions.length < 5) {
-      const i = normalizedQuestions.length + 1;
-      normalizedQuestions.push({ question: `Extra question ${i}?`, type: "mcq", options: ["A","B","C","D"], answerIndex: 0 });
-    }
-
+    // Use OpenAI response directly without any post-processing
     const quizDoc = {
       title: parsed.title || `Quiz from ${req.file.originalname || "notes"}`,
       sourcePreview: parsed.sourcePreview || extractedText.slice(0, 200),
-      questions: normalizedQuestions,
+      questions: parsed.questions, // Use OpenAI questions directly - no modifications
       weeks: weeks || null,
       sourceFileName: req.file.originalname || null,
       createdAt: new Date().toISOString()
@@ -1148,15 +1075,32 @@ app.post("/api/quizzes/:id/generate", async (req, res) => {
 
     console.log("Regenerating quiz using OpenAI...");
     
-    // Create prompt for regenerating general OS quiz
-    const prompt = `You are an expert Operating Systems instructor. Generate exactly 5 brand new, high-quality multiple choice questions about Operating Systems.
+    // Get existing quiz to access original notes content
+    let existingQuiz = null;
+    if (useFirestore && db) {
+      const docSnap = await db.collection("quizzes").doc(id).get();
+      if (!docSnap.exists) return res.status(404).json({ error: "Quiz not found" });
+      existingQuiz = docSnap.data();
+    } else {
+      const p = path.join(process.cwd(), "data", "quizzes.json");
+      const arr = fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8") || "[]") : [];
+      const found = arr.find(x => (x.id||x.quizId) === id);
+      if (!found) return res.status(404).json({ error: "Quiz not found" });
+      existingQuiz = found;
+    }
+
+    // Use original notes content for regeneration
+    const originalContent = existingQuiz.sourcePreview || "Operating Systems concepts";
+    
+    // Create prompt using original notes content
+    const prompt = `You are an expert Operating Systems instructor. Based on the original lecture notes content below, generate exactly 5 brand new, high-quality multiple choice questions.
 
 Return ONLY valid JSON in this exact format:
 {
   "title": "Operating Systems Quiz (Regenerated)",
   "questions": [
     {
-      "question": "Specific, clear Operating Systems question",
+      "question": "Specific, clear Operating Systems question based on the notes",
       "type": "mcq",
       "options": [
         "Detailed correct answer with proper OS terminology",
@@ -1170,13 +1114,16 @@ Return ONLY valid JSON in this exact format:
 }
 
 REQUIREMENTS:
-1. Generate EXACTLY 5 unique questions
-2. Cover diverse OS topics: processes, threads, memory management, file systems, CPU scheduling, deadlocks, synchronization, I/O systems, virtual memory
+1. Generate EXACTLY 5 unique questions based on the original notes content
+2. Questions should be different from the original quiz but cover similar topics
 3. Each option must be detailed (minimum 20 characters)
 4. Only one correct answer per question (answerIndex 0-3)
 5. Use proper technical terminology
-6. Questions should test deep understanding
-7. Make questions different from typical textbook examples
+6. Questions should test deep understanding of the concepts in the notes
+7. Make questions that relate to the original content provided
+
+Original Notes Content:
+${originalContent}
 
 Return ONLY the JSON object, no additional text.`;
 
