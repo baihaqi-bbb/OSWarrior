@@ -11,7 +11,7 @@ dotenv.config();
 const PORT = process.env.PORT || 4000;
 const app = express();
 
-// CORS: reflect origin and allow credentials for dev hosts
+// CORS: reflect origin and allow credentials for dev and production hosts
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
@@ -21,7 +21,11 @@ const corsOptions = {
       'http://127.0.0.1:5173',
       'http://localhost:5173',
       'http://localhost:4000',
-      'http://127.0.0.1:4000'
+      'http://127.0.0.1:4000',
+      'https://oswarrior.com',
+      'https://www.oswarrior.com',
+      'https://frontendd-zne8.onrender.com',
+      'https://oswarrior-iyii.onrender.com'
     ];
     if (allowed.includes(origin) || /^(https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?)$/.test(origin)) {
       return callback(null, true);
@@ -163,6 +167,23 @@ async function callOpenAI(prompt) {
   return j.choices?.[0]?.message?.content || "";
 }
 
+// Validate if OpenAI response contains good questions
+function isValidOpenAIResponse(parsed) {
+  if (!parsed || !parsed.questions || !Array.isArray(parsed.questions)) return false;
+  if (parsed.questions.length !== 5) return false; // Must have exactly 5 questions
+  
+  for (const q of parsed.questions) {
+    if (!q.question || !q.options || !Array.isArray(q.options)) return false;
+    if (q.options.length !== 4) return false;
+    if (typeof q.answerIndex !== 'number' || q.answerIndex < 0 || q.answerIndex > 3) return false;
+    
+    // Check if options are meaningful (not just single letters)
+    if (q.options.some(opt => opt.length < 5)) return false;
+  }
+  
+  return true;
+}
+
 // routes
 app.get("/", (req, res) => res.send("Server OK"));
 app.get("/api/health", (req, res) => res.json({ ok: true, port: PORT, storage: useFirestore ? "firestore" : "local" }));
@@ -192,105 +213,75 @@ app.post("/api/upload-notes", upload.single("file"), async (req, res) => {
       return res.status(500).json({ error: "Failed to extract text: " + String(e.message) });
     }
 
-    let parsed = null;
-    if (OPENAI_KEY) {
-      const prompt = `
-You are an Operating Systems expert. Given the lecture notes below, generate STRICT JSON ONLY with this exact structure and nothing else:
+    // 100% OpenAI - No fallback questions
+    if (!OPENAI_KEY) {
+      return res.status(500).json({ 
+        error: "OpenAI API key not configured. Please set OPENAI_API_KEY environment variable." 
+      });
+    }
+
+    console.log("Using OpenAI for quiz generation...");
+    const prompt = `You are an expert Operating Systems instructor. Based on the lecture notes provided, create exactly 5 high-quality multiple choice questions.
+
+Return ONLY valid JSON in this exact format:
 {
-  "title": "Operating Systems Quiz - [Week/Topic]",
-  "sourcePreview": "first 200 chars of notes",
+  "title": "Operating Systems Quiz - Week [X]",
+  "sourcePreview": "${extractedText.slice(0, 200).replace(/"/g, '\\"')}",
   "questions": [
-    { "question":"Clear, specific OS question with proper technical terminology","type":"mcq","options":["Detailed option A with proper OS concepts","Detailed option B with proper OS concepts","Detailed option C with proper OS concepts","Detailed option D with proper OS concepts"], "answerIndex": 0 }
+    {
+      "question": "Clear, specific Operating Systems question",
+      "type": "mcq",
+      "options": [
+        "Detailed correct answer with proper OS terminology",
+        "Plausible but incorrect option with OS concepts",
+        "Another plausible but incorrect option",
+        "Fourth plausible but incorrect option"
+      ],
+      "answerIndex": 0
+    }
   ]
 }
 
-IMPORTANT REQUIREMENTS:
-- Generate exactly 5 high-quality Operating Systems questions
-- Each question must be clear, specific, and test understanding of OS concepts
-- Each option must be a complete, meaningful answer (not just single letters or numbers)
-- Options should be plausible but only one clearly correct
-- Cover topics like: processes, threads, memory management, file systems, CPU scheduling, deadlocks, synchronization, I/O systems
-- Use proper technical terminology
-- answerIndex must be 0-3 indicating the correct option
+CRITICAL REQUIREMENTS:
+1. Generate EXACTLY 5 questions
+2. Questions must cover Operating Systems concepts: processes, threads, memory management, file systems, CPU scheduling, deadlocks, synchronization, I/O systems
+3. Each question must have 4 detailed options (minimum 20 characters each)
+4. Only one correct answer per question (indicated by answerIndex 0-3)
+5. Use proper technical terminology
+6. Questions should test understanding, not just memorization
+7. Avoid generic or placeholder text
 
-Lecture Notes:
-\`\`\`
+Lecture Notes Content:
 ${extractedText.slice(0, 4000)}
-\`\`\`
-`;
-      let modelOutput = "";
-      try {
-        modelOutput = await callOpenAI(prompt);
-        const m = modelOutput.match(/\{[\s\S]*\}/m);
-        const jsonText = m ? m[0] : modelOutput;
-        parsed = JSON.parse(jsonText);
-      } catch (e) {
-        console.error("OpenAI/parse failed:", e, "raw:", modelOutput);
-        return res.status(500).json({ error: "OpenAI or parse failed: " + String(e.message) });
+
+Remember: Return ONLY the JSON object, no additional text.`;
+
+    let parsed = null;
+    try {
+      const modelOutput = await callOpenAI(prompt);
+      console.log("OpenAI raw response length:", modelOutput.length);
+      
+      // Extract JSON from response
+      const jsonMatch = modelOutput.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error("No JSON found in OpenAI response");
       }
-    } else {
-      // Improved fallback with proper OS questions
-      parsed = {
-        title: `Operating Systems Quiz - ${req.file.originalname || "General"}`,
-        sourcePreview: extractedText.slice(0, 200),
-        questions: [
-          {
-            question: "What is the primary function of an operating system?",
-            type: "mcq",
-            options: [
-              "To manage hardware and software resources of a computer system",
-              "To compile and execute programming languages only", 
-              "To provide internet connectivity to applications",
-              "To create graphical user interfaces for games"
-            ],
-            answerIndex: 0
-          },
-          {
-            question: "Which scheduling algorithm gives priority to the process with the shortest burst time?",
-            type: "mcq", 
-            options: [
-              "First Come First Serve (FCFS)",
-              "Shortest Job First (SJF)",
-              "Round Robin (RR)",
-              "Priority Scheduling"
-            ],
-            answerIndex: 1
-          },
-          {
-            question: "What is a deadlock in operating systems?",
-            type: "mcq",
-            options: [
-              "A situation where processes are waiting for each other indefinitely",
-              "A method to prevent memory leaks",
-              "A type of process scheduling algorithm", 
-              "A technique for file compression"
-            ],
-            answerIndex: 0
-          },
-          {
-            question: "Which memory management technique divides memory into fixed-size blocks?",
-            type: "mcq",
-            options: [
-              "Segmentation",
-              "Virtual Memory",
-              "Paging", 
-              "Dynamic Loading"
-            ],
-            answerIndex: 2
-          },
-          {
-            question: "What is the purpose of a semaphore in operating systems?",
-            type: "mcq",
-            options: [
-              "To manage file permissions",
-              "To synchronize access to shared resources",
-              "To allocate memory to processes",
-              "To schedule CPU time for processes"
-            ],
-            answerIndex: 1
-          }
-        ]
-      };
+      
+      const jsonText = jsonMatch[0];
+      parsed = JSON.parse(jsonText);
+      
+      // Validate response quality
+      if (!isValidOpenAIResponse(parsed)) {
+        throw new Error("OpenAI response failed quality validation");
+      }
+      
+      console.log("✅ OpenAI generated", parsed.questions.length, "valid questions");
+      
+    } catch (e) {
+      console.error("OpenAI generation failed:", e.message);
+      return res.status(500).json({ 
+        error: `Quiz generation failed: ${e.message}. Please try again or check your lecture notes content.`
+      });
     }
 
     async function expandShortOptions(questionText, shortOptions) {
@@ -1148,101 +1139,109 @@ app.post("/api/quizzes/:id/generate", async (req, res) => {
   try {
     const id = String(req.params.id);
     
-    // Generate new high-quality OS questions
-    const generateOSQuestions = () => {
-      const osQuestions = [
-        {
-          question: "What is the main difference between preemptive and non-preemptive CPU scheduling?",
-          type: "mcq",
-          options: [
-            "Preemptive allows the OS to interrupt a running process, non-preemptive does not",
-            "Preemptive is faster than non-preemptive scheduling",
-            "Non-preemptive uses more memory than preemptive scheduling", 
-            "There is no difference between the two scheduling types"
-          ],
-          answerIndex: 0
-        },
-        {
-          question: "Which condition is NOT required for a deadlock to occur?",
-          type: "mcq",
-          options: [
-            "Mutual Exclusion",
-            "Hold and Wait",
-            "Preemption",
-            "Circular Wait"
-          ],
-          answerIndex: 2
-        },
-        {
-          question: "What is the purpose of virtual memory in operating systems?",
-          type: "mcq",
-          options: [
-            "To increase CPU processing speed",
-            "To allow programs larger than physical memory to execute",
-            "To improve network connectivity",
-            "To manage file system operations"
-          ],
-          answerIndex: 1
-        },
-        {
-          question: "In the context of process synchronization, what is a critical section?",
-          type: "mcq",
-          options: [
-            "A section of code that contains system calls",
-            "A section of code that accesses shared data and must be executed atomically",
-            "A section of code that handles interrupts",
-            "A section of code that manages memory allocation"
-          ],
-          answerIndex: 1
-        },
-        {
-          question: "Which page replacement algorithm suffers from Belady's anomaly?",
-          type: "mcq",
-          options: [
-            "Least Recently Used (LRU)",
-            "Optimal Page Replacement",
-            "First In First Out (FIFO)",
-            "Least Frequently Used (LFU)"
-          ],
-          answerIndex: 2
-        }
-      ];
-      
-      // Return 5 random questions
-      const shuffled = osQuestions.sort(() => 0.5 - Math.random());
-      return shuffled.slice(0, 5);
-    };
+    // 100% OpenAI regeneration - No static questions
+    if (!OPENAI_KEY) {
+      return res.status(500).json({ 
+        error: "OpenAI API key not configured. Cannot regenerate quiz without OpenAI." 
+      });
+    }
 
+    console.log("Regenerating quiz using OpenAI...");
+    
+    // Create prompt for regenerating general OS quiz
+    const prompt = `You are an expert Operating Systems instructor. Generate exactly 5 brand new, high-quality multiple choice questions about Operating Systems.
+
+Return ONLY valid JSON in this exact format:
+{
+  "title": "Operating Systems Quiz (Regenerated)",
+  "questions": [
+    {
+      "question": "Specific, clear Operating Systems question",
+      "type": "mcq",
+      "options": [
+        "Detailed correct answer with proper OS terminology",
+        "Plausible but incorrect option with OS concepts",
+        "Another plausible but incorrect option",
+        "Fourth plausible but incorrect option"
+      ],
+      "answerIndex": 0
+    }
+  ]
+}
+
+REQUIREMENTS:
+1. Generate EXACTLY 5 unique questions
+2. Cover diverse OS topics: processes, threads, memory management, file systems, CPU scheduling, deadlocks, synchronization, I/O systems, virtual memory
+3. Each option must be detailed (minimum 20 characters)
+4. Only one correct answer per question (answerIndex 0-3)
+5. Use proper technical terminology
+6. Questions should test deep understanding
+7. Make questions different from typical textbook examples
+
+Return ONLY the JSON object, no additional text.`;
+
+    let newQuestions = null;
+    try {
+      const modelOutput = await callOpenAI(prompt);
+      console.log("OpenAI regeneration response length:", modelOutput.length);
+      
+      // Extract JSON from response
+      const jsonMatch = modelOutput.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error("No JSON found in OpenAI response");
+      }
+      
+      const jsonText = jsonMatch[0];
+      const parsed = JSON.parse(jsonText);
+      
+      // Validate response quality
+      if (!isValidOpenAIResponse(parsed)) {
+        throw new Error("OpenAI response failed quality validation");
+      }
+      
+      newQuestions = parsed.questions;
+      console.log("✅ OpenAI regenerated", newQuestions.length, "valid questions");
+      
+    } catch (e) {
+      console.error("OpenAI regeneration failed:", e.message);
+      return res.status(500).json({ 
+        error: `Quiz regeneration failed: ${e.message}. Please try again.`
+      });
+    }
+
+    // Update quiz with new OpenAI generated questions
     if (useFirestore && db) {
       const docRef = db.collection("quizzes").doc(id);
       const docSnap = await docRef.get();
-      if (!docSnap.exists) return res.status(404).json({ error: "Not found" });
+      if (!docSnap.exists) return res.status(404).json({ error: "Quiz not found" });
       
       const data = docSnap.data() || {};
-      const newQuestions = generateOSQuestions();
       
       await docRef.set({ 
         ...data,
-        title: (data.title || "").replace(" (regenerated)", "") + " (regenerated)",
+        title: (data.title || "Operating Systems Quiz").replace(" (regenerated)", "") + " (regenerated)",
         questions: newQuestions, 
         regeneratedAt: new Date().toISOString() 
       }, { merge: true });
       
-      return res.json({ ok: true });
+      return res.json({ ok: true, message: "Quiz regenerated successfully with OpenAI" });
     } else {
       const p = path.join(process.cwd(), "data", "quizzes.json");
       const arr = fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8") || "[]") : [];
       const idx = arr.findIndex(x => (x.id||x.quizId) === id);
-      if (idx === -1) return res.status(404).json({ error: "Not found" });
+      if (idx === -1) return res.status(404).json({ error: "Quiz not found" });
       
-      arr[idx].title = (arr[idx].title || "").replace(" (regenerated)", "") + " (regenerated)";
-      arr[idx].questions = generateOSQuestions();
+      arr[idx].title = (arr[idx].title || "Operating Systems Quiz").replace(" (regenerated)", "") + " (regenerated)";
+      arr[idx].questions = newQuestions;
       arr[idx].regeneratedAt = new Date().toISOString();
       
       fs.writeFileSync(p, JSON.stringify(arr, null, 2), "utf8");
-      return res.json({ ok: true });
+      return res.json({ ok: true, message: "Quiz regenerated successfully with OpenAI" });
     }
-  } catch (e) { console.error(e); res.status(500).json({ error: String(e) }); }
+  } catch (e) { 
+    console.error("Regenerate endpoint error:", e); 
+    res.status(500).json({ error: "Internal server error: " + String(e.message) }); 
+  }
 });
 
 app.get("/api/reports", async (req, res) => {
