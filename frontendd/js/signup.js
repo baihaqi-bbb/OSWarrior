@@ -185,13 +185,25 @@ document.addEventListener('DOMContentLoaded', function() {
   // Initialize system status
   CyberEffects.updateSystemStatus('online', 'REGISTRATION SYSTEM ONLINE');
   
-  // Check if user is already logged in
+  // Check if user is already logged in - modified to allow signup
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      CyberEffects.showMessage(msg, '🔄 Already logged in, redirecting...', 'warning');
+      // Show warning but don't redirect immediately
+      CyberEffects.showMessage(msg, '⚠️ Already logged in. Logout first to create new account or continue to dashboard.', 'warning');
+      
+      // Add option to go to dashboard instead of forcing logout
       setTimeout(() => {
-        window.location.href = 'index.html';
-      }, 1000);
+        const confirmLogout = confirm('You are already logged in. Do you want to logout and create a new account?');
+        if (confirmLogout) {
+          auth.signOut().then(() => {
+            CyberEffects.showMessage(msg, '✅ Logged out successfully. You can now create a new account.', 'success');
+          });
+        } else {
+          // Redirect to appropriate dashboard based on role
+          const userRole = localStorage.getItem('userRole') || 'user';
+          window.location.href = userRole === 'admin' ? 'home-admin.html' : 'home-user.html';
+        }
+      }, 3000);
     }
   });
 
