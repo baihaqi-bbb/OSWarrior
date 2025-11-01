@@ -1085,21 +1085,98 @@ app.delete("/api/quizzes/:id", async (req, res) => {
 app.post("/api/quizzes/:id/generate", async (req, res) => {
   try {
     const id = String(req.params.id);
+    
+    // Generate new high-quality OS questions
+    const generateOSQuestions = () => {
+      const osQuestions = [
+        {
+          question: "What is the main difference between preemptive and non-preemptive CPU scheduling?",
+          type: "mcq",
+          options: [
+            "Preemptive allows the OS to interrupt a running process, non-preemptive does not",
+            "Preemptive is faster than non-preemptive scheduling",
+            "Non-preemptive uses more memory than preemptive scheduling", 
+            "There is no difference between the two scheduling types"
+          ],
+          answerIndex: 0
+        },
+        {
+          question: "Which condition is NOT required for a deadlock to occur?",
+          type: "mcq",
+          options: [
+            "Mutual Exclusion",
+            "Hold and Wait",
+            "Preemption",
+            "Circular Wait"
+          ],
+          answerIndex: 2
+        },
+        {
+          question: "What is the purpose of virtual memory in operating systems?",
+          type: "mcq",
+          options: [
+            "To increase CPU processing speed",
+            "To allow programs larger than physical memory to execute",
+            "To improve network connectivity",
+            "To manage file system operations"
+          ],
+          answerIndex: 1
+        },
+        {
+          question: "In the context of process synchronization, what is a critical section?",
+          type: "mcq",
+          options: [
+            "A section of code that contains system calls",
+            "A section of code that accesses shared data and must be executed atomically",
+            "A section of code that handles interrupts",
+            "A section of code that manages memory allocation"
+          ],
+          answerIndex: 1
+        },
+        {
+          question: "Which page replacement algorithm suffers from Belady's anomaly?",
+          type: "mcq",
+          options: [
+            "Least Recently Used (LRU)",
+            "Optimal Page Replacement",
+            "First In First Out (FIFO)",
+            "Least Frequently Used (LFU)"
+          ],
+          answerIndex: 2
+        }
+      ];
+      
+      // Return 5 random questions
+      const shuffled = osQuestions.sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, 5);
+    };
+
     if (useFirestore && db) {
       const docRef = db.collection("quizzes").doc(id);
       const docSnap = await docRef.get();
       if (!docSnap.exists) return res.status(404).json({ error: "Not found" });
+      
       const data = docSnap.data() || {};
-      const newQuestions = data.questions || [];
-      await docRef.set({ title: (data.title || "") + " (regenerated)", questions: newQuestions, regeneratedAt: new Date().toISOString() }, { merge: true });
+      const newQuestions = generateOSQuestions();
+      
+      await docRef.set({ 
+        ...data,
+        title: (data.title || "").replace(" (regenerated)", "") + " (regenerated)",
+        questions: newQuestions, 
+        regeneratedAt: new Date().toISOString() 
+      }, { merge: true });
+      
       return res.json({ ok: true });
     } else {
       const p = path.join(process.cwd(), "data", "quizzes.json");
       const arr = fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8") || "[]") : [];
       const idx = arr.findIndex(x => (x.id||x.quizId) === id);
       if (idx === -1) return res.status(404).json({ error: "Not found" });
-      arr[idx].title = (arr[idx].title || "") + " (regenerated)";
+      
+      arr[idx].title = (arr[idx].title || "").replace(" (regenerated)", "") + " (regenerated)";
+      arr[idx].questions = generateOSQuestions();
       arr[idx].regeneratedAt = new Date().toISOString();
+      
       fs.writeFileSync(p, JSON.stringify(arr, null, 2), "utf8");
       return res.json({ ok: true });
     }
