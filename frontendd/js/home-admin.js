@@ -100,13 +100,17 @@ async function loadAdminData() {
     const usersSnapshot = await getDocs(collection(db, "users"));
     adminData.users = [];
     usersSnapshot.forEach((doc) => {
-      adminData.users.push({ id: doc.id, ...doc.data() });
+      const userData = doc.data();
+      // Only include non-deleted users (same as user management page)
+      if (!userData.deleted) {
+        adminData.users.push({ id: doc.id, ...userData });
+      }
     });
     
     // Calculate user stats
     adminData.stats.totalUsers = adminData.users.length;
-    adminData.stats.activeUsers = adminData.users.filter(user => user.status !== 'suspended').length;
-    adminData.stats.suspendedUsers = adminData.users.filter(user => user.status === 'suspended').length;
+    adminData.stats.activeUsers = adminData.users.filter(user => !user.disabled && user.status !== 'suspended').length;
+    adminData.stats.suspendedUsers = adminData.users.filter(user => user.disabled || user.status === 'suspended').length;
     
     // Load quizzes data (from local data folder for now)
     try {

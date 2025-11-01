@@ -4,20 +4,59 @@
     "email": "ahmad@example.com",
     "xp": 250,
     "level": 3,
-    "photoURL": null
+    "photoURL": null,
+    "quizScore": 850,
+    "loginStreak": 7,
+    "achievements": ["first_login", "quiz_master", "week_streak"],
+    "joinedAt": "2024-01-01T00:00:00.000Z",
+    "lastLoginAt": "2024-01-15T08:30:00.000Z"
   },
   "demo-user-2": {
     "displayName": "Siti Sarah",
     "email": "siti@example.com", 
     "xp": 180,
     "level": 2,
-    "photoURL": null
+    "photoURL": null,
+    "quizScore": 420,
+    "loginStreak": 3,
+    "achievements": ["first_login", "early_bird"],
+    "joinedAt": "2024-01-02T00:00:00.000Z",
+    "lastLoginAt": "2024-01-14T09:15:00.000Z"
   },
   "demo-user-3": {
     "displayName": "Rahman Ibrahim",
     "email": "rahman@example.com",
     "xp": 120,
     "level": 2,
-    "photoURL": null
+    "photoURL": null,
+    "quizScore": 280,
+    "loginStreak": 1,
+    "achievements": ["first_login"],
+    "joinedAt": "2024-01-03T00:00:00.000Z",
+    "lastLoginAt": "2024-01-13T10:00:00.000Z"
+  },
+  "demo-user-4": {
+    "displayName": "Fatimah Zahra",
+    "email": "fatimah@example.com",
+    "xp": 320,
+    "level": 4,
+    "photoURL": null,
+    "quizScore": 950,
+    "loginStreak": 12,
+    "achievements": ["first_login", "quiz_master", "week_streak", "dedication"],
+    "joinedAt": "2024-01-01T00:00:00.000Z",
+    "lastLoginAt": "2024-01-15T07:45:00.000Z"
+  },
+  "demo-user-5": {
+    "displayName": "Hassan Omar",
+    "email": "hassan@example.com",
+    "xp": 95,
+    "level": 1,
+    "photoURL": null,
+    "quizScore": 150,
+    "loginStreak": 0,
+    "achievements": ["first_login"],
+    "joinedAt": "2024-01-10T00:00:00.000Z",
+    "lastLoginAt": "2024-01-12T16:20:00.000Z"
   }
 }

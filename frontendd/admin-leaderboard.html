@@ -1,71 +1,250 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Admin — Leaderboard</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="stylesheet" href="css/admin-leaderboard.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OSWarrior Admin - Leaderboard Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/navbar-shared.css">
+  <link rel="stylesheet" href="css/home-admin.css">
+  <link rel="stylesheet" href="css/admin-leaderboard.css">
+  <link rel="stylesheet" href="css/profile-navbar.css">
   <link rel="stylesheet" href="css/profile-dropdown.css" />
+  <link rel="stylesheet" href="css/responsive-utilities.css" />
 </head>
 <body class="home-admin">
+  <!-- Navbar -->
   <div class="navbar">
-    <h1>Admin Leaderboard</h1>
+    <div class="navbar-left">
+      <img src="image/os-warrior-logo.png" alt="OS Warrior" class="navbar-logo">
+      <h1>Admin - Leaderboard Management</h1>
+    </div>
     <div class="navbar-right">
       <div class="profile-container" id="profile-toggle">
         <span id="username-navbar">Admin</span>
         <img id="profile-img" class="profile-img" src="image/default-profile.png" alt="Profile"/>
-        <div id="profile-dropdown" class="profile-dropdown hidden">
-          <a id="view-profile" href="profile.html">👤 View Profile</a>
-          <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
-          <div class="settings-section">
-            <p class="settings-title">⚙️ Quick Settings</p>
-            <button id="toggle-theme">🌗 Dark / Light Mode</button>
-          </div>
-          <button id="logout-btn">🚪 Logout</button>
-        </div>
       </div>
     </div>
   </div>
 
-  <main>
-    <div class="leaderboard-header" style="max-width:1100px;margin:0 auto;padding:0 16px;">
-      <h2 style="margin:0">Leaderboard (admin)</h2>
-      <div style="margin-left:auto;">
-        <a href="home-admin.html" style="color:inherit;text-decoration:underline;">← Back to Admin Dashboard</a>
+  <!-- Profile Dropdown -->
+  <div id="profile-dropdown" class="profile-dropdown hidden">
+    <a id="view-profile" href="profile.html">👤 View Profile</a>
+    <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
+
+    <!-- Quick Settings Section -->
+    <div class="settings-section">
+      <p class="settings-title">⚙️ Quick Settings</p>
+      <button id="toggle-theme">🌗 Dark / Light Mode</button>
+      <button id="change-avatar">🖼️ Change Avatar</button>
+      <button id="edit-name">✏️ Edit Name</button>
+    </div>
+
+    <button id="logout-btn">🚪 Logout</button>
+  </div>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="header-content">
+        <h1>🏆 Leaderboard Management</h1>
+        <p>Monitor rankings, manage competitions, and analyze performance</p>
+      </div>
+      <div class="header-actions">
+        <button id="refreshLeaderboard" class="btn-action secondary">🔄 Refresh</button>
+        <button id="exportLeaderboard" class="btn-action primary">📊 Export CSV</button>
       </div>
     </div>
 
-    <!-- reuse same leaderboard DOM structure (styles are in admin-leaderboard.css) -->
-    <div class="leaderboard-container" style="max-width:1100px;margin:18px auto;">
-      <div class="sidebar">
-        <h6>Leaderboard</h6>
-        <button id="totalBtn">Total</button>
-        <div id="weekButtons"></div>
-      </div>
-
-      <div class="board" id="board">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-          <h2 style="margin:0">Total Ranking</h2>
-          <div style="margin-left:auto;">
-            <button id="lb-refresh" class="btn">Refresh (fetch)</button>
-          </div>
+    <!-- Leaderboard Stats Overview -->
+    <div class="leaderboard-stats">
+      <div class="stat-card">
+        <div class="stat-icon">👑</div>
+        <div class="stat-content">
+          <h3>Top Scorer</h3>
+          <div class="stat-value" id="top-scorer">Loading...</div>
+          <div class="stat-subtitle" id="top-score">0 points</div>
         </div>
-
-        <table id="rankingTable" aria-label="Admin Leaderboard">
-          <thead>
-            <tr><th>Rank</th><th>User</th><th>Score</th></tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-
-        <div id="lb-status"></div>
       </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">📈</div>
+        <div class="stat-content">
+          <h3>Total Participants</h3>
+          <div class="stat-value" id="total-participants">0</div>
+          <div class="stat-subtitle">Active users</div>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">🎯</div>
+        <div class="stat-content">
+          <h3>Average Score</h3>
+          <div class="stat-value" id="average-score">0</div>
+          <div class="stat-subtitle">Points per user</div>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">⚡</div>
+        <div class="stat-content">
+          <h3>Weekly Change</h3>
+          <div class="stat-value" id="weekly-change">+0%</div>
+          <div class="stat-subtitle">Activity growth</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Controls -->
+    <div class="filter-controls">
+      <div class="filter-group">
+        <label for="timeFilter">📅 Time Period:</label>
+        <select id="timeFilter" class="filter-select">
+          <option value="all" selected>All Time</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+          <option value="quarter">This Quarter</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label for="categoryFilter">🎮 Category:</label>
+        <select id="categoryFilter" class="filter-select">
+          <option value="overall" selected>Overall</option>
+          <option value="quiz">Quiz Scores</option>
+          <option value="xp">Experience Points</option>
+          <option value="streak">Login Streak</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label for="limitFilter">📊 Show Top:</label>
+        <select id="limitFilter" class="filter-select">
+          <option value="10">10 Users</option>
+          <option value="25" selected>25 Users</option>
+          <option value="50">50 Users</option>
+          <option value="100">100 Users</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Leaderboard Table -->
+    <div class="leaderboard-container">
+      <div class="table-header">
+        <h2>🏆 Current Rankings</h2>
+        <div class="table-actions">
+          <button id="resetRankings" class="btn-small btn-warning">🔄 Reset Rankings</button>
+          <button id="viewHistory" class="btn-small btn-info">📜 View History</button>
+        </div>
+      </div>
+      
+      <div class="table-responsive">
+        <table id="leaderboardTable" class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>User</th>
+              <th>Score</th>
+              <th>Level</th>
+              <th>Badges</th>
+              <th>Last Active</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody">
+            <!-- Leaderboard entries will be loaded here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div id="paginationControls" class="pagination-controls">
+      <!-- Pagination will be generated here -->
     </div>
   </main>
 
-  <!-- shared admin behaviour (module) -->
+  <!-- Modal Edit Name -->
+  <div id="modal-edit-name" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>✏️ Edit Admin Name</h3>
+      <input type="text" id="input-new-name" placeholder="🔐 Enter your admin name" maxlength="20">
+      <div class="modal-actions">
+        <button id="save-name-btn" class="btn-action">💾 Save</button>
+        <button id="cancel-name-btn" class="btn-action btn-cancel">❌ Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Change Avatar -->
+  <div id="modal-change-avatar" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>🖼️ Change Avatar</h3>
+      <input type="text" id="input-avatar-url" placeholder="🔗 Paste image URL or leave empty for default">
+      <div class="modal-actions">
+        <button id="save-avatar-btn" class="btn-action">💾 Save</button>
+        <button id="cancel-avatar-btn" class="btn-action btn-cancel">❌ Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Reset Rankings -->
+  <div id="modal-reset-rankings" class="modal" style="display:none;">
+    <div class="modal-content warning-modal">
+      <div class="warning-header">
+        <div class="warning-icon">⚠️</div>
+        <h3>Reset Rankings</h3>
+      </div>
+      
+      <div class="warning-body">
+        <p class="warning-message">Are you sure you want to reset all rankings?</p>
+        
+        <div class="warning-note">
+          <span class="note-icon">💀</span>
+          <span>This action will clear all leaderboard data and cannot be undone!</span>
+        </div>
+        
+        <div class="confirmation-input">
+          <label for="reset-confirmation">Type "RESET" to confirm:</label>
+          <input type="text" id="reset-confirmation" placeholder="Type RESET here" maxlength="5">
+        </div>
+      </div>
+      
+      <div class="warning-actions">
+        <button id="confirm-reset-btn" class="btn-action danger-btn" disabled>
+          <span class="btn-icon">🔄</span>
+          <span>Reset Rankings</span>
+        </button>
+        <button id="cancel-reset-btn" class="btn-action cancel-btn">
+          <span class="btn-icon">❌</span>
+          <span>Cancel</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="modal-success" class="modal" style="display:none;">
+    <div class="modal-content success-modal">
+      <div class="success-header">
+        <div class="success-icon">✅</div>
+        <h3 id="success-title">Success!</h3>
+      </div>
+      <div class="success-body">
+        <p id="success-message">Operation completed successfully!</p>
+      </div>
+      <div class="success-actions">
+        <button id="close-success-btn" class="btn-action success-btn">
+          <span class="btn-icon">👍</span>
+          <span>Got it!</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
   <script type="module" src="js/home-admin.js"></script>
-  <!-- leaderboard page script (non-module) - loaded after DOM so it can query elements -->
-  <script src="js/leaderboard.js"></script>
+  <script type="module" src="js/admin-leaderboard.js"></script>
 </body>
 </html>
