@@ -39,26 +39,98 @@
     </div>
   </div>
 
-  <div class="view-profile-container">
-    <div class="view-profile-card">
-      <img id="profile-picture" class="view-profile-img" src="image/default-profile.png" alt="Profile Picture">
-      <h2 id="profile-name">Nama Pengguna</h2>
-      <p id="profile-email">email@example.com</p>
-
-      <div class="view-profile-stats">
-        <div class="stat-box">
-          <span id="profile-level" class="stat-number">0</span>
-          <span class="stat-label">Level</span>
+  <div class="profile-main-container">
+    <!-- Enhanced Cyber Profile Card -->
+    <div class="cyber-profile-card">
+      <!-- Profile Header with Glow Effects -->
+      <div class="profile-header">
+        <div class="profile-bg-effect"></div>
+        <div class="profile-avatar-container">
+          <div class="avatar-glow-ring">
+            <img id="profile-picture" class="profile-avatar" src="image/default-profile.png" alt="Profile Picture">
+          </div>
+          <div class="profile-level-badge">
+            <span id="profile-level">0</span>
+          </div>
         </div>
-        <div class="stat-box">
-          <span id="profile-xp" class="stat-number">0</span>
-          <span class="stat-label">XP</span>
-        </div>
-        <div class="stat-box">
-          <span id="profile-achievements" class="stat-number">0</span>
-          <span class="stat-label">Achievements</span>
+        <div class="profile-info">
+          <h2 id="profile-name" class="profile-username">Cyber Warrior</h2>
+          <p id="profile-email" class="profile-email">email@example.com</p>
+          <div class="profile-title">
+            <span class="title-icon">⚔️</span>
+            <span class="title-text">🌟 Quiz Master</span>
+          </div>
         </div>
       </div>
+
+      <!-- Enhanced Stats Grid -->
+      <div class="cyber-stats-grid">
+        <div class="stat-card experience">
+          <div class="stat-icon">💎</div>
+          <div class="stat-content">
+            <span id="profile-xp" class="stat-number">0</span>
+            <span class="stat-label">Experience</span>
+            <div class="stat-progress">
+              <div class="progress-bar"></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="stat-card level">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-content">
+            <span id="profile-level-display" class="stat-number">0</span>
+            <span class="stat-label">Level</span>
+            <div class="level-indicator">
+              <span class="level-text">Beginner</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="stat-card achievements">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-content">
+            <span id="profile-achievements" class="stat-number">0</span>
+            <span class="stat-label">Achievements</span>
+            <div class="achievement-preview">
+              <span class="achievement-text">View All</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="stat-card rank">
+          <div class="stat-icon">👑</div>
+          <div class="stat-content">
+            <span class="stat-number">0</span>
+            <span class="stat-label">Quizzes Taken</span>
+            <div class="rank-indicator">
+              <span class="rank-text">Unranked</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Enhanced Action Buttons -->
+      <div class="profile-actions-grid">
+        <button id="edit-name" class="cyber-action-btn primary">
+          <span class="btn-icon">✏️</span>
+          <span class="btn-text">Edit Name</span>
+        </button>
+        <button id="change-avatar" class="cyber-action-btn secondary">
+          <span class="btn-icon">🖼️</span>
+          <span class="btn-text">Change Avatar</span>
+        </button>
+        <button onclick="window.location.href='achievement.html'" class="cyber-action-btn achievement">
+          <span class="btn-icon">🏆</span>
+          <span class="btn-text">View Achievements</span>
+        </button>
+        <button onclick="window.location.href='home-user.html'" class="cyber-action-btn back">
+          <span class="btn-icon">⬅️</span>
+          <span class="btn-text">Back to Dashboard</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
       <!-- Modal Edit Nama -->
         <div id="modal-name" class="modal hidden">
@@ -84,38 +156,6 @@
             </div>
         </div>
         </div>
-
-
-      <div class="profile-actions">
-        <button id="edit-name" class="btn-action">✏ Edit Nama</button>
-        <button id="change-avatar" class="btn-action">🧑‍🚀 Tukar Avatar</button>
-      </div>
-
-      <button class="btn-back" onclick="window.location.href='home-user.html'">⬅ Kembali</button>
-    </div>
-  </div>
-
-  <!-- Modal Edit Name -->
-  <div id="modal-edit-name" class="modal" style="display:none;">
-    <div class="modal-content">
-      <h3>✏️ Edit Warrior Name</h3>
-      <input type="text" id="input-new-name" placeholder="Enter your warrior name" maxlength="20">
-      <div class="modal-actions">
-        <button id="save-name-btn" class="btn-action">💾 Save</button>
-        <button id="cancel-name-btn" class="btn-action btn-cancel">❌ Cancel</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Change Avatar -->
-  <div id="modal-change-avatar" class="modal" style="display:none;">
-    <div class="modal-content">
-      <h3>🖼️ Change Avatar</h3>
-      <input type="text" id="input-avatar-url" placeholder="Paste image URL or leave empty for default">
-      <div class="modal-actions">
-        <button id="save-avatar-btn" class="btn-action">💾 Save</button>
-        <button id="cancel-avatar-btn" class="btn-action btn-cancel">❌ Cancel</button>
-      </div>
     </div>
   </div>
 

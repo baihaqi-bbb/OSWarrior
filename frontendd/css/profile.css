@@ -1,207 +1,360 @@
-/* === NAVBAR STYLES === */
-.navbar {
-  background: rgba(44, 62, 80, 0.85);
-  padding: 16px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  backdrop-filter: blur(10px);
-}
-
-.navbar-left {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.navbar-logo {
-  height: 50px;
-  width: auto;
-  filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.3));
-  transition: transform 0.3s ease;
-}
-
-.navbar-logo:hover {
-  transform: scale(1.05);
-  filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.5));
-}
-
-.navbar h1 {
-  font-size: 24px;
-  margin: 0;
-  color: #fff;
-}
-
-/* === VIEW PROFILE PAGE === */
+/* === ENHANCED CYBER PROFILE PAGE === */
 body.view-profile {
-  background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)),
-              url("https://wallpaperbat.com/img/12107870-cyberpunk-city-street-sci-fi-wallpaper.jpg")
-              no-repeat center center fixed;
+  background: linear-gradient(135deg, rgba(5, 15, 25, 0.95), rgba(10, 25, 40, 0.9)),
+              url("../image/background.png") center center fixed;
   background-size: cover;
-  font-family: 'Poppins', sans-serif;
-  color: #fff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  font-family: 'Orbitron', monospace;
+  color: #FFFFFF;
   min-height: 100vh;
   margin: 0;
   padding-top: 80px;
+  overflow-x: hidden;
 }
 
-.view-profile-card {
-  background: rgba(15, 15, 30, 0.85);
-  padding: 35px;
-  border-radius: 15px;
-  max-width: 360px;
-  width: 90%;
-  text-align: center;
-  border: 2px solid #0ff;
-  box-shadow: 0 0 25px rgba(0,255,255,0.5);
-}
-
-.view-profile-img {
-  width: 110px;
-  height: 110px;
-  border-radius: 50%;
-  border: 3px solid #00ffff;
-  box-shadow: 0 0 15px #00ffff;
-  object-fit: cover;
-  margin-bottom: 15px;
-}
-
-.view-profile-card h2 {
-  font-size: 1.6rem;
-  margin: 0;
-  text-shadow: 0 0 10px #0ff;
-}
-
-.view-profile-card p {
-  font-size: 0.95rem;
-  color: #ccc;
-  margin-bottom: 15px;
-}
-
-/* Stats Box */
-.view-profile-stats {
+/* Main Container */
+.profile-main-container {
   display: flex;
-  justify-content: space-around;
-  margin-top: 15px;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 80px);
+  padding: 20px;
 }
 
-.view-profile-stats .stat-box {
-  background: rgba(0, 255, 255, 0.08);
-  padding: 12px;
-  border-radius: 10px;
-  min-width: 80px;
+/* Enhanced Profile Card */
+.cyber-profile-card {
+  background: linear-gradient(145deg, rgba(5, 15, 25, 0.95), rgba(10, 25, 40, 0.9));
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 0;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.8),
+    0 0 40px rgba(0, 255, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(15px);
+}
+
+/* Profile Header */
+.profile-header {
+  position: relative;
+  padding: 40px 30px 30px;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 200, 255, 0.05));
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.profile-bg-effect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #00ffff, transparent);
+  animation: scanLine 3s linear infinite;
+}
+
+/* Avatar Container */
+.profile-avatar-container {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+.avatar-glow-ring {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #00ffff, #0066ff, #00ffff);
+  padding: 4px;
+  animation: avatarGlow 2s ease-in-out infinite alternate;
+}
+
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(5, 15, 25, 0.9);
+}
+
+.profile-level-badge {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  background: linear-gradient(45deg, #ff6b35, #f7931e);
+  color: #FFFFFF;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: 3px solid rgba(5, 15, 25, 0.9);
+  box-shadow: 0 0 15px rgba(255, 107, 53, 0.5);
+}
+
+/* Profile Info */
+.profile-info {
+  text-align: center;
+}
+
+.profile-username {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: #00FFFF;
+  text-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+}
+
+.profile-email {
+  font-size: 0.9rem;
+  margin: 0 0 15px 0;
+  color: rgba(176, 224, 255, 0.8);
+}
+
+.profile-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 255, 255, 0.1);
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.title-icon {
+  font-size: 1.1rem;
+}
+
+.title-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #00FFFF;
+}
+
+/* Enhanced Stats Grid */
+.cyber-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  padding: 30px;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 200, 255, 0.05));
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 15px;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.stat-card:hover::before {
+  left: 100%;
+}
+
+.stat-card:hover {
+  border-color: rgba(0, 255, 255, 0.6);
+  box-shadow: 0 8px 25px rgba(0, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.stat-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  display: block;
 }
 
 .stat-number {
   display: block;
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #0ff;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #00FFFF;
+  margin-bottom: 5px;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
 }
 
 .stat-label {
   display: block;
-  font-size: 0.8rem;
-  color: #aaa;
+  font-size: 0.85rem;
+  color: rgba(176, 224, 255, 0.8);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-/* Button */
-.profile-actions {
+/* Progress Bar for XP */
+.stat-progress {
+  width: 100%;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #00ffff, #0066ff);
+  border-radius: 3px;
+  width: 65%;
+  transition: width 1s ease;
+}
+
+/* Additional Indicators */
+.level-indicator, .achievement-preview, .rank-indicator {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 5px;
+}
+
+/* Action Buttons Grid */
+.profile-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  padding: 0 30px 30px;
+}
+
+.cyber-action-btn {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 10px;
-  margin-top: 20px;
-}
-
-.btn-action {
-  background: transparent;
-  border: 1px solid #0ff;
-  color: #0ff;
-  padding: 10px;
-  border-radius: 8px;
-  font-weight: 500;
+  padding: 15px 20px;
+  border: 2px solid rgba(0, 255, 255, 0.4);
+  border-radius: 12px;
+  background: linear-gradient(45deg, rgba(0, 255, 255, 0.1), rgba(0, 200, 255, 0.05));
+  color: #00FFFF;
+  font-family: 'Orbitron', monospace;
+  font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.btn-action:hover {
-  background: #0ff;
-  color: #000;
-  transform: scale(1.05);
+.cyber-action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+  transition: left 0.3s ease;
 }
 
-.btn-back {
-  margin-top: 20px;
-  background: linear-gradient(90deg, #0ff, #7f00ff);
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: none;
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.3s;
+.cyber-action-btn:hover::before {
+  left: 100%;
 }
 
-.btn-back:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 15px #0ff;
+.cyber-action-btn:hover {
+  border-color: rgba(0, 255, 255, 0.8);
+  background: linear-gradient(45deg, rgba(0, 255, 255, 0.2), rgba(0, 200, 255, 0.1));
+  box-shadow: 0 8px 25px rgba(0, 255, 255, 0.3);
+  transform: translateY(-2px);
 }
 
-.modal {
-  position: fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background: rgba(0,0,0,0.7);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  z-index: 999;
+.cyber-action-btn.primary {
+  border-color: rgba(0, 255, 127, 0.4);
+  color: #00FF7F;
 }
 
-.modal.hidden { display: none; }
-
-.modal-content {
-  background:#111;
-  padding:25px;
-  border-radius:15px;
-  text-align:center;
-  color:#fff;
-  border:2px solid #0ff;
-  box-shadow:0 0 20px #0ff;
+.cyber-action-btn.primary:hover {
+  border-color: rgba(0, 255, 127, 0.8);
+  box-shadow: 0 8px 25px rgba(0, 255, 127, 0.3);
 }
 
-.modal-content input {
-  width:80%;
-  padding:8px;
-  margin-bottom:15px;
-  border-radius:8px;
-  border:none;
-  outline:none;
+.cyber-action-btn.secondary {
+  border-color: rgba(255, 165, 0, 0.4);
+  color: #FFA500;
 }
 
-.modal-actions button {
-  margin:0 10px;
-  padding:8px 15px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  font-weight:600;
+.cyber-action-btn.secondary:hover {
+  border-color: rgba(255, 165, 0, 0.8);
+  box-shadow: 0 8px 25px rgba(255, 165, 0, 0.3);
 }
 
-#modal-name-save, #modal-avatar-save {
-  background: #0ff;
-  color:#000;
+.cyber-action-btn.achievement {
+  border-color: rgba(255, 215, 0, 0.4);
+  color: #FFD700;
 }
 
-#modal-name-cancel, #modal-avatar-cancel {
-  background:#333;
-  color:#fff;
+.cyber-action-btn.achievement:hover {
+  border-color: rgba(255, 215, 0, 0.8);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+}
+
+.cyber-action-btn.back {
+  border-color: rgba(255, 100, 100, 0.4);
+  color: #FF6464;
+}
+
+.cyber-action-btn.back:hover {
+  border-color: rgba(255, 100, 100, 0.8);
+  box-shadow: 0 8px 25px rgba(255, 100, 100, 0.3);
+}
+
+.btn-icon {
+  font-size: 1.1rem;
+}
+
+/* Animations */
+@keyframes avatarGlow {
+  0% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); }
+  100% { box-shadow: 0 0 30px rgba(0, 255, 255, 0.8), 0 0 40px rgba(0, 255, 255, 0.3); }
+}
+
+@keyframes scanLine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .cyber-profile-card {
+    margin: 10px;
+    max-width: none;
+  }
+  
+  .cyber-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 20px;
+  }
+  
+  .profile-actions-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 0 20px 20px;
+  }
+  
+  .profile-header {
+    padding: 30px 20px 20px;
+  }
+  
+  .profile-username {
+    font-size: 1.5rem;
+  }
 }

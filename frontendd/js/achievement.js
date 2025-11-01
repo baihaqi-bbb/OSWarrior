@@ -439,16 +439,55 @@ const toggleThemeBtn = document.getElementById("toggle-theme");
 if(toggleThemeBtn) toggleThemeBtn.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
 
 const changeAvatarBtn = document.getElementById("change-avatar");
-if(changeAvatarBtn) changeAvatarBtn.addEventListener("click", () => alert("🚧 Feature coming soon: Avatar changer!"));
+if(changeAvatarBtn) changeAvatarBtn.addEventListener("click", () => {
+  const modal = document.getElementById("modal-change-avatar");
+  if(modal) {
+    // Reset avatar preview to current user avatar
+    const preview = document.getElementById("avatar-preview");
+    if(preview && auth.currentUser) {
+      preview.src = auth.currentUser.photoURL || "image/default-profile.png";
+    }
+    showModal(modal);
+  }
+});
 
 const editNameBtn = document.getElementById("edit-name");
-if(editNameBtn) editNameBtn.addEventListener("click", async () => {
-  const newName = prompt("Masukkan nama baru:");
-  if(newName && newName.trim() && auth.currentUser) {
-    const trimmedName = newName.trim();
+if(editNameBtn) editNameBtn.addEventListener("click", () => {
+  const modal = document.getElementById("modal-edit-name");
+  if(modal) {
+    const input = document.getElementById("input-new-name");
+    if(input && auth.currentUser) {
+      input.value = auth.currentUser.displayName || "";
+    }
+    showModal(modal);
+  }
+});
+
+// Modal functionality
+function showModal(modal) {
+  modal.style.display = "flex";
+  setTimeout(() => modal.classList.add("show"), 10);
+}
+
+function hideModal(modal) {
+  modal.classList.remove("show");
+  setTimeout(() => modal.style.display = "none", 300);
+}
+
+// Edit Name Modal Handlers
+const saveNameBtn = document.getElementById("save-name-btn");
+if(saveNameBtn) saveNameBtn.addEventListener("click", async () => {
+  const input = document.getElementById("input-new-name");
+  const modal = document.getElementById("modal-edit-name");
+  
+  if (input && input.value.trim() && auth.currentUser) {
+    const trimmedName = input.value.trim();
     const uid = auth.currentUser.uid;
     
     try {
+      saveNameBtn.disabled = true;
+      saveNameBtn.textContent = "Saving...";
+      
       // Update Firebase user profile
       await updateProfile(auth.currentUser, { displayName: trimmedName });
       
@@ -463,12 +502,76 @@ if(editNameBtn) editNameBtn.addEventListener("click", async () => {
       const usernameNavbar = document.getElementById("username-navbar");
       if(usernameNavbar) usernameNavbar.textContent = trimmedName;
       
-      alert("✅ Nama berjaya dikemaskini!");
+      hideModal(modal);
+      showMissionAlert("✅ Name updated successfully!", "🎉");
       
     } catch (error) {
       console.error("Error updating name:", error);
-      alert("❌ Gagal mengemas kini nama: " + error.message);
+      showMissionAlert("❌ Failed to update name: " + error.message, "😞");
+    } finally {
+      saveNameBtn.disabled = false;
+      saveNameBtn.textContent = "💾 Save";
     }
+  }
+});
+
+const cancelNameBtn = document.getElementById("cancel-name-btn");
+if(cancelNameBtn) cancelNameBtn.addEventListener("click", () => {
+  const modal = document.getElementById("modal-edit-name");
+  hideModal(modal);
+});
+
+// Change Avatar Modal Handlers
+const saveAvatarBtn = document.getElementById("save-avatar-btn");
+if(saveAvatarBtn) saveAvatarBtn.addEventListener("click", async () => {
+  const input = document.getElementById("input-avatar-url");
+  const modal = document.getElementById("modal-change-avatar");
+  
+  if (input && input.value.trim() && auth.currentUser) {
+    const avatarUrl = input.value.trim();
+    
+    try {
+      saveAvatarBtn.disabled = true;
+      saveAvatarBtn.textContent = "Saving...";
+      
+      // Update Firebase user profile
+      await updateProfile(auth.currentUser, { photoURL: avatarUrl });
+      
+      // Update Firestore document
+      const userDocRef = doc(db, "users", auth.currentUser.uid);
+      await updateDoc(userDocRef, { 
+        photoURL: avatarUrl
+      });
+      
+      // Update UI immediately
+      const profileImg = document.getElementById("profile-img");
+      if(profileImg) profileImg.src = avatarUrl;
+      
+      hideModal(modal);
+      showMissionAlert("✅ Avatar updated successfully!", "🎉");
+      
+    } catch (error) {
+      console.error("Error updating avatar:", error);
+      showMissionAlert("❌ Failed to update avatar: " + error.message, "😞");
+    } finally {
+      saveAvatarBtn.disabled = false;
+      saveAvatarBtn.textContent = "💾 Save";
+    }
+  } else {
+    showMissionAlert("❌ Please enter an avatar URL", "🖼️");
+  }
+});
+
+const cancelAvatarBtn = document.getElementById("cancel-avatar-btn");
+if(cancelAvatarBtn) cancelAvatarBtn.addEventListener("click", () => {
+  const modal = document.getElementById("modal-change-avatar");
+  hideModal(modal);
+});
+
+// Close modal when clicking outside
+document.addEventListener("click", (e) => {
+  if (e.target.classList.contains("modal")) {
+    hideModal(e.target);
   }
 });
 
@@ -480,6 +583,6 @@ if(logoutBtn) logoutBtn.addEventListener("click", async () => {
     window.location.href = "index.html";
   } catch (error) {
     console.error("❌ Logout error:", error);
-    alert("Gagal logout: " + error.message);
+    showMissionAlert("❌ Logout failed: " + error.message, "😞");
   }
 });

@@ -61,11 +61,12 @@ onAuthStateChanged(auth, async (user) => {
   // Initialize with Firebase Auth data first
   let displayName = user.displayName || user.email?.split('@')[0] || "Warrior";
   let photoURL = user.photoURL || "image/default-profile.png";
+  let userDocSnap = null; // Declare in broader scope
   
   // Try to get more complete data from Firestore
   try {
     const userDocRef = doc(db, "users", user.uid);
-    const userDocSnap = await getDoc(userDocRef);
+    userDocSnap = await getDoc(userDocRef);
     
     if (userDocSnap.exists()) {
       const userData = userDocSnap.data();
