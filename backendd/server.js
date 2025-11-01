@@ -213,82 +213,119 @@ app.post("/api/upload-notes", upload.single("file"), async (req, res) => {
       return res.status(500).json({ error: "Failed to extract text: " + String(e.message) });
     }
 
-    // 100% OpenAI - No fallback questions
-    if (!OPENAI_KEY) {
-      return res.status(500).json({ 
-        error: "OpenAI API key not configured. Please set OPENAI_API_KEY environment variable." 
-      });
-    }
-
-    console.log("Using OpenAI for quiz generation...");
-    const prompt = `You are an expert Operating Systems instructor. Based on the lecture notes provided, create exactly 5 high-quality multiple choice questions.
-
-Return ONLY valid JSON in this exact format:
+    let parsed = null;
+    if (OPENAI_KEY) {
+      const prompt = `
+Given the lecture notes below, generate STRICT JSON ONLY with this exact structure and nothing else:
 {
-  "title": "Operating Systems Quiz - Week [X]",
-  "sourcePreview": "${extractedText.slice(0, 200).replace(/"/g, '\\"')}",
+  "title": "short title",
+  "sourcePreview": "first 200 chars",
   "questions": [
-    {
-      "question": "Clear, specific Operating Systems question",
-      "type": "mcq",
-      "options": [
-        "Detailed correct answer with proper OS terminology",
-        "Plausible but incorrect option with OS concepts",
-        "Another plausible but incorrect option",
-        "Fourth plausible but incorrect option"
-      ],
-      "answerIndex": 0
-    }
+    { "question":"...","type":"mcq","options":["opt1","opt2","opt3","opt4"], "answerIndex": 0 }
   ]
 }
-
-CRITICAL REQUIREMENTS:
-1. Generate EXACTLY 5 questions
-2. Questions must cover Operating Systems concepts: processes, threads, memory management, file systems, CPU scheduling, deadlocks, synchronization, I/O systems
-3. Each question must have 4 detailed options (minimum 20 characters each)
-4. Only one correct answer per question (indicated by answerIndex 0-3)
-5. Use proper technical terminology
-6. Questions should test understanding, not just memorization
-7. Avoid generic or placeholder text
-
-Lecture Notes Content:
+Produce exactly 5 questions. Each question must be type "mcq" and have exactly 4 options. answerIndex must be the index (0-3) of the correct option.
+Notes:
+\`
 ${extractedText.slice(0, 4000)}
-
-Remember: Return ONLY the JSON object, no additional text.`;
-
-    let parsed = null;
-    try {
-      const modelOutput = await callOpenAI(prompt);
-      console.log("OpenAI raw response length:", modelOutput.length);
-      
-      // Extract JSON from response
-      const jsonMatch = modelOutput.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error("No JSON found in OpenAI response");
+\`
+`;
+      let modelOutput = "";
+      try {
+        modelOutput = await callOpenAI(prompt);
+        const m = modelOutput.match(/\{[\s\S]*\}$/m);
+        const jsonText = m ? m[0] : modelOutput;
+        parsed = JSON.parse(jsonText);
+      } catch (e) {
+        console.error("OpenAI/parse failed:", e, "raw:", modelOutput);
+        return res.status(500).json({ error: "OpenAI or parse failed: " + String(e.message) });
       }
-      
-      const jsonText = jsonMatch[0];
-      parsed = JSON.parse(jsonText);
-      
-      // Validate response quality
-      if (!isValidOpenAIResponse(parsed)) {
-        throw new Error("OpenAI response failed quality validation");
-      }
-      
-      console.log("✅ OpenAI generated", parsed.questions.length, "valid questions");
-      
-    } catch (e) {
-      console.error("OpenAI generation failed:", e.message);
-      return res.status(500).json({ 
-        error: `Quiz generation failed: ${e.message}. Please try again or check your lecture notes content.`
-      });
+    } else {
+      const lines = extractedText.split(/\r?\n/).filter(Boolean);
+      parsed = {
+        title: `Quiz from ${req.file.originalname || "notes"}`,
+        sourcePreview: extractedText.slice(0, 200),
+        questions: Array.from({length:5}).map((_,i)=>{
+          const stem = lines[i] || `Placeholder question ${i+1}`;
+          return {
+            question: stem.slice(0,300) + "?",
+            type: "mcq",
+            options: [`A ${i+1}`, `B ${i+1}`, `C ${i+1}`, `D ${i+1}`],
+            answerIndex: 0
+          };
+        })
+      };
     }
 
-    // Use OpenAI response directly without any post-processing
+    async function expandShortOptions(questionText, shortOptions) {
+      if (!OPENAI_KEY) return null;
+      const prompt = `
+You are given a multiple choice question and a set of 1-letter choice labels (e.g. ["A","B","C","D"]) or similar short tokens.
+Produce STRICT JSON only: {"options":["full option A text","full option B text","full option C text","full option D text"], "answerIndex": <0-3>}
+Make options plausible, distinct, and relevant to the question. Use the original correct label if possible.
+Question:
+${questionText}
+Short labels: ${JSON.stringify(shortOptions)}
+`;
+      try {
+        const out = await callOpenAI(prompt);
+        const m = out.match(/\{[\s\S]*\}/m);
+        const jsonText = m ? m[0] : out;
+        const parsed = JSON.parse(jsonText);
+        if (Array.isArray(parsed.options) && parsed.options.length === 4 && Number.isFinite(parsed.answerIndex)) {
+          return { options: parsed.options.map(String), answerIndex: Number(parsed.answerIndex) };
+        }
+      } catch (e) {
+        console.warn("expandShortOptions failed:", e?.message || e);
+      }
+      return null;
+    }
+
+    const normalizedQuestions = [];
+    const rawQuestions = Array.isArray(parsed.questions) ? parsed.questions : [];
+    for (let idx = 0; idx < Math.min(5, rawQuestions.length); idx++) {
+      const q = rawQuestions[idx] || {};
+      const qq = {};
+      qq.question = String(q.question || (`Question ${idx+1}`)).trim();
+      qq.type = "mcq";
+
+      let opts = Array.isArray(q.options) ? q.options.map(s => String(s||"").trim()) : [];
+      const allSingleLetter = opts.length && opts.every(o => /^[A-Za-z]{1,2}$/.test(o));
+      if (allSingleLetter) {
+        const expanded = await expandShortOptions(qq.question, opts).catch(()=>null);
+        if (expanded) {
+          opts = expanded.options;
+          qq.answerIndex = expanded.answerIndex;
+        }
+      }
+
+      opts = opts.filter(Boolean).slice(0,4);
+      while (opts.length < 4) opts.push(`Option ${opts.length+1}`);
+      qq.options = opts;
+
+      if (typeof qq.answerIndex !== "number") {
+        let ai = (q && Number.isFinite(Number(q.answerIndex))) ? Number(q.answerIndex) : null;
+        if (ai === null && q && q.answer) {
+          const found = opts.findIndex(o => o.trim() === String(q.answer).trim());
+          ai = found >= 0 ? found : 0;
+        }
+        if (ai === null) ai = 0;
+        if (ai < 0 || ai > 3) ai = 0;
+        qq.answerIndex = ai;
+      }
+
+      normalizedQuestions.push(qq);
+    }
+
+    while (normalizedQuestions.length < 5) {
+      const i = normalizedQuestions.length + 1;
+      normalizedQuestions.push({ question: `Extra question ${i}?`, type: "mcq", options: ["A","B","C","D"], answerIndex: 0 });
+    }
+
     const quizDoc = {
       title: parsed.title || `Quiz from ${req.file.originalname || "notes"}`,
       sourcePreview: parsed.sourcePreview || extractedText.slice(0, 200),
-      questions: parsed.questions, // Use OpenAI questions directly - no modifications
+      questions: normalizedQuestions,
       weeks: weeks || null,
       sourceFileName: req.file.originalname || null,
       createdAt: new Date().toISOString()
@@ -1065,130 +1102,25 @@ app.delete("/api/quizzes/:id", async (req, res) => {
 app.post("/api/quizzes/:id/generate", async (req, res) => {
   try {
     const id = String(req.params.id);
-    
-    // 100% OpenAI regeneration - No static questions
-    if (!OPENAI_KEY) {
-      return res.status(500).json({ 
-        error: "OpenAI API key not configured. Cannot regenerate quiz without OpenAI." 
-      });
-    }
-
-    console.log("Regenerating quiz using OpenAI...");
-    
-    // Get existing quiz to access original notes content
-    let existingQuiz = null;
-    if (useFirestore && db) {
-      const docSnap = await db.collection("quizzes").doc(id).get();
-      if (!docSnap.exists) return res.status(404).json({ error: "Quiz not found" });
-      existingQuiz = docSnap.data();
-    } else {
-      const p = path.join(process.cwd(), "data", "quizzes.json");
-      const arr = fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8") || "[]") : [];
-      const found = arr.find(x => (x.id||x.quizId) === id);
-      if (!found) return res.status(404).json({ error: "Quiz not found" });
-      existingQuiz = found;
-    }
-
-    // Use original notes content for regeneration
-    const originalContent = existingQuiz.sourcePreview || "Operating Systems concepts";
-    
-    // Create prompt using original notes content
-    const prompt = `You are an expert Operating Systems instructor. Based on the original lecture notes content below, generate exactly 5 brand new, high-quality multiple choice questions.
-
-Return ONLY valid JSON in this exact format:
-{
-  "title": "Operating Systems Quiz (Regenerated)",
-  "questions": [
-    {
-      "question": "Specific, clear Operating Systems question based on the notes",
-      "type": "mcq",
-      "options": [
-        "Detailed correct answer with proper OS terminology",
-        "Plausible but incorrect option with OS concepts",
-        "Another plausible but incorrect option",
-        "Fourth plausible but incorrect option"
-      ],
-      "answerIndex": 0
-    }
-  ]
-}
-
-REQUIREMENTS:
-1. Generate EXACTLY 5 unique questions based on the original notes content
-2. Questions should be different from the original quiz but cover similar topics
-3. Each option must be detailed (minimum 20 characters)
-4. Only one correct answer per question (answerIndex 0-3)
-5. Use proper technical terminology
-6. Questions should test deep understanding of the concepts in the notes
-7. Make questions that relate to the original content provided
-
-Original Notes Content:
-${originalContent}
-
-Return ONLY the JSON object, no additional text.`;
-
-    let newQuestions = null;
-    try {
-      const modelOutput = await callOpenAI(prompt);
-      console.log("OpenAI regeneration response length:", modelOutput.length);
-      
-      // Extract JSON from response
-      const jsonMatch = modelOutput.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error("No JSON found in OpenAI response");
-      }
-      
-      const jsonText = jsonMatch[0];
-      const parsed = JSON.parse(jsonText);
-      
-      // Validate response quality
-      if (!isValidOpenAIResponse(parsed)) {
-        throw new Error("OpenAI response failed quality validation");
-      }
-      
-      newQuestions = parsed.questions;
-      console.log("✅ OpenAI regenerated", newQuestions.length, "valid questions");
-      
-    } catch (e) {
-      console.error("OpenAI regeneration failed:", e.message);
-      return res.status(500).json({ 
-        error: `Quiz regeneration failed: ${e.message}. Please try again.`
-      });
-    }
-
-    // Update quiz with new OpenAI generated questions
     if (useFirestore && db) {
       const docRef = db.collection("quizzes").doc(id);
       const docSnap = await docRef.get();
-      if (!docSnap.exists) return res.status(404).json({ error: "Quiz not found" });
-      
+      if (!docSnap.exists) return res.status(404).json({ error: "Not found" });
       const data = docSnap.data() || {};
-      
-      await docRef.set({ 
-        ...data,
-        title: (data.title || "Operating Systems Quiz").replace(" (regenerated)", "") + " (regenerated)",
-        questions: newQuestions, 
-        regeneratedAt: new Date().toISOString() 
-      }, { merge: true });
-      
-      return res.json({ ok: true, message: "Quiz regenerated successfully with OpenAI" });
+      const newQuestions = data.questions || [];
+      await docRef.set({ title: (data.title || "") + " (regenerated)", questions: newQuestions, regeneratedAt: new Date().toISOString() }, { merge: true });
+      return res.json({ ok: true });
     } else {
       const p = path.join(process.cwd(), "data", "quizzes.json");
       const arr = fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8") || "[]") : [];
       const idx = arr.findIndex(x => (x.id||x.quizId) === id);
-      if (idx === -1) return res.status(404).json({ error: "Quiz not found" });
-      
-      arr[idx].title = (arr[idx].title || "Operating Systems Quiz").replace(" (regenerated)", "") + " (regenerated)";
-      arr[idx].questions = newQuestions;
+      if (idx === -1) return res.status(404).json({ error: "Not found" });
+      arr[idx].title = (arr[idx].title || "") + " (regenerated)";
       arr[idx].regeneratedAt = new Date().toISOString();
-      
       fs.writeFileSync(p, JSON.stringify(arr, null, 2), "utf8");
-      return res.json({ ok: true, message: "Quiz regenerated successfully with OpenAI" });
+      return res.json({ ok: true });
     }
-  } catch (e) { 
-    console.error("Regenerate endpoint error:", e); 
-    res.status(500).json({ error: "Internal server error: " + String(e.message) }); 
-  }
+  } catch (e) { console.error(e); res.status(500).json({ error: String(e) }); }
 });
 
 app.get("/api/reports", async (req, res) => {
