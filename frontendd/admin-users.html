@@ -1,56 +1,430 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Admin — Manage Users</title>
-  <link rel="stylesheet" href="css/home-admin.css" />
-  <link rel="stylesheet" href="css/admin-users.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OSWarrior Admin - Manage Users</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/navbar-shared.css">
+  <link rel="stylesheet" href="css/home-admin.css">
+  <link rel="stylesheet" href="css/admin-users.css">
+  <link rel="stylesheet" href="css/profile-navbar.css">
   <link rel="stylesheet" href="css/profile-dropdown.css" />
+  <link rel="stylesheet" href="css/responsive-utilities.css" />
 </head>
 <body class="home-admin">
+  <!-- Navbar -->
   <div class="navbar">
-    <h1>Manage Users</h1>
+    <div class="navbar-left">
+      <img src="image/os-warrior-logo.png" alt="OS Warrior" class="navbar-logo">
+      <h1>Admin - User Management</h1>
+    </div>
     <div class="navbar-right">
       <div class="profile-container" id="profile-toggle">
         <span id="username-navbar">Admin</span>
         <img id="profile-img" class="profile-img" src="image/default-profile.png" alt="Profile"/>
-        <div id="profile-dropdown" class="profile-dropdown hidden">
-          <a id="view-profile" href="profile.html">👤 View Profile</a>
-          <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
-          <div class="settings-section">
-            <p class="settings-title">⚙️ Quick Settings</p>
-            <button id="toggle-theme">🌗 Dark / Light Mode</button>
-            <button id="change-avatar">🖼️ Change Avatar</button>
-            <button id="edit-name">✏️ Edit Name</button>
-          </div>
-          <button id="logout-btn">🚪 Logout</button>
-        </div>
       </div>
     </div>
   </div>
 
-  <main style="padding:20px; max-width:1000px; margin:auto">
-    <div style="display:flex; gap:12px; margin-bottom:12px;">
-      <input id="search" placeholder="Search by email or name" style="flex:1;padding:8px" />
-      <button id="exportCsv">Export CSV</button>
+  <!-- Profile Dropdown - Outside navbar but positioned relative to profile -->
+  <div id="profile-dropdown" class="profile-dropdown hidden">
+    <a id="view-profile" href="profile.html">👤 View Profile</a>
+    <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
+
+    <!-- 🧰 Quick Settings Section -->
+    <div class="settings-section">
+      <p class="settings-title">⚙️ Quick Settings</p>
+      <button id="toggle-theme">🌗 Dark / Light Mode</button>
+      <button id="change-avatar">🖼️ Change Avatar</button>
+      <button id="edit-name">✏️ Edit Name</button>
     </div>
 
-    <!-- wrapped and classed so CSS applies -->
-    <div class="table-responsive">
-      <table id="usersTable" class="users-table" style="width:100%;border-collapse:collapse">
-        <thead>
-          <tr><th>Email</th><th>Name</th><th>Role</th><th>Disabled</th><th>Actions</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+    <button id="logout-btn">🚪 Logout</button>
+  </div>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="header-content">
+        <h1>👥 User Management</h1>
+        <p>Manage user accounts, roles, and permissions</p>
+      </div>
+      <div class="header-actions">
+        <button id="fixDuplicates" class="btn-action warning" style="display:none;">⚠️ Fix Duplicates</button>
+        <button id="exportCsv" class="btn-action secondary">📊 Export CSV</button>
+        <button id="addUser" class="btn-action primary">➕ Add User</button>
+      </div>
     </div>
 
-    <div id="pager" style="margin-top:12px"></div>
+    <!-- Search and Filters -->
+    <div class="search-filters">
+      <div class="search-wrap">
+        <input id="search" type="text" placeholder="🔍 Search by email or name..." />
+      </div>
+      <div class="filter-controls">
+        <select id="roleFilter" class="filter-select">
+          <option value="">All Roles</option>
+          <option value="admin">Admin</option>
+          <option value="user">User</option>
+        </select>
+        <select id="statusFilter" class="filter-select">
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="disabled">Disabled</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="table-container">
+      <div class="table-responsive">
+        <table id="usersTable" class="users-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Join Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Users will be loaded here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div id="pager" class="pagination-controls">
+      <!-- Pagination will be generated here -->
+    </div>
   </main>
 
-  <!-- shared admin dashboard behaviour (init Firebase, profile, dropdown, logout) -->
+  <!-- Modal Edit Name -->
+  <div id="modal-edit-name" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>✏️ Edit Admin Name</h3>
+      <input type="text" id="input-new-name" placeholder="🔐 Enter your admin name" maxlength="20">
+      <div class="modal-actions">
+        <button id="save-name-btn" class="btn-action">💾 Save</button>
+        <button id="cancel-name-btn" class="btn-action btn-cancel">❌ Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Change Avatar -->
+  <div id="modal-change-avatar" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>🖼️ Change Avatar</h3>
+      <input type="text" id="input-avatar-url" placeholder="🔗 Paste image URL or leave empty for default">
+      <div class="modal-actions">
+        <button id="save-avatar-btn" class="btn-action">💾 Save</button>
+        <button id="cancel-avatar-btn" class="btn-action btn-cancel">❌ Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Add User -->
+  <div id="modal-add-user" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>➕ Add New User</h3>
+      <div class="form-group">
+        <label for="input-user-name">👤 Full Name:</label>
+        <input type="text" id="input-user-name" placeholder="Enter user's full name" maxlength="50" required>
+      </div>
+      <div class="form-group">
+        <label for="input-user-email">📧 Email Address:</label>
+        <input type="email" id="input-user-email" placeholder="Enter user's email address" required>
+      </div>
+      <div class="form-group">
+        <label for="input-user-role">🔐 Role:</label>
+        <select id="input-user-role" required>
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="input-user-avatar">🖼️ Avatar URL (Optional):</label>
+        <input type="url" id="input-user-avatar" placeholder="https://example.com/avatar.jpg">
+      </div>
+      <div class="modal-actions">
+        <button id="save-user-btn" class="btn-action">➕ Add User</button>
+        <button id="cancel-user-btn" class="btn-action btn-cancel">❌ Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Confirm Add User -->
+  <div id="modal-confirm-add-user" class="modal" style="display:none;">
+    <div class="modal-content confirmation-modal">
+      <div class="confirmation-header">
+        <div class="confirm-icon">⚡</div>
+        <h3>Confirm User Creation</h3>
+      </div>
+      
+      <div class="confirmation-body">
+        <p class="confirm-message">Are you sure you want to add this new user to OSWarrior?</p>
+        
+        <div class="user-preview-card">
+          <div class="preview-avatar">
+            <img id="preview-user-avatar" src="image/default-profile.png" alt="User Avatar">
+          </div>
+          <div class="preview-details">
+            <div class="preview-item">
+              <span class="preview-label">👤 Name:</span>
+              <span id="preview-user-name" class="preview-value">-</span>
+            </div>
+            <div class="preview-item">
+              <span class="preview-label">📧 Email:</span>
+              <span id="preview-user-email" class="preview-value">-</span>
+            </div>
+            <div class="preview-item">
+              <span class="preview-label">🔐 Role:</span>
+              <span id="preview-user-role" class="preview-value role-badge">-</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="warning-note">
+          <span class="warning-icon">⚠️</span>
+          <span>This user will be granted access to the OSWarrior platform immediately.</span>
+        </div>
+      </div>
+      
+      <div class="confirmation-actions">
+        <button id="confirm-add-user-btn" class="btn-action confirm-btn">
+          <span class="btn-icon">✅</span>
+          <span>Yes, Add User</span>
+        </button>
+        <button id="cancel-confirm-add-user-btn" class="btn-action cancel-btn">
+          <span class="btn-icon">❌</span>
+          <span>Cancel</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Success Add User -->
+  <div id="modal-success-add-user" class="modal" style="display:none;">
+    <div class="modal-content success-modal">
+      <div class="success-header">
+        <div class="success-icon">🎉</div>
+        <h3>User Added Successfully!</h3>
+      </div>
+      
+      <div class="success-body">
+        <p class="success-message">The new user has been successfully added to OSWarrior platform!</p>
+        
+        <div class="success-details">
+          <div class="success-item">
+            <span class="success-label">👤 User:</span>
+            <span id="success-user-name" class="success-value">-</span>
+          </div>
+          <div class="success-item">
+            <span class="success-label">📧 Email:</span>
+            <span id="success-user-email" class="success-value">-</span>
+          </div>
+          <div class="success-item">
+            <span class="success-label">🔐 Role:</span>
+            <span id="success-user-role" class="success-value role-badge">-</span>
+          </div>
+        </div>
+        
+        <div class="success-note">
+          <span class="note-icon">ℹ️</span>
+          <span>The user can now log in and access the platform with their assigned role.</span>
+        </div>
+      </div>
+      
+      <div class="success-actions">
+        <button id="close-success-btn" class="btn-action success-btn">
+          <span class="btn-icon">✅</span>
+          <span>Great!</span>
+        </button>
+        <button id="add-another-user-btn" class="btn-action secondary-btn">
+          <span class="btn-icon">➕</span>
+          <span>Add Another User</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Edit User -->
+  <div id="modal-edit-user" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>✏️ Edit User</h3>
+      <div class="form-group">
+        <label for="edit-user-name">👤 Full Name:</label>
+        <input type="text" id="edit-user-name" placeholder="Enter user's full name" maxlength="50" required>
+      </div>
+      <div class="form-group">
+        <label for="edit-user-email">📧 Email Address:</label>
+        <input type="email" id="edit-user-email" placeholder="Enter user's email address" required>
+      </div>
+      <div class="modal-actions">
+        <button id="save-edit-user-btn" class="btn-action">💾 Save Changes</button>
+        <button id="cancel-edit-user-btn" class="btn-action btn-cancel">❌ Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Confirm Disable User -->
+  <div id="modal-confirm-disable" class="modal" style="display:none;">
+    <div class="modal-content warning-modal">
+      <div class="warning-header">
+        <div class="warning-icon">⚠️</div>
+        <h3 id="disable-modal-title">Disable User Account</h3>
+      </div>
+      
+      <div class="warning-body">
+        <p id="disable-message" class="warning-message">Are you sure you want to disable this user account?</p>
+        
+        <div class="user-info-card">
+          <div class="info-avatar">
+            <img id="disable-user-avatar" src="image/default-profile.png" alt="User Avatar">
+          </div>
+          <div class="info-details">
+            <h4 id="disable-user-name">User Name</h4>
+            <p id="disable-user-email">user@email.com</p>
+          </div>
+        </div>
+        
+        <div class="warning-note">
+          <span class="note-icon">ℹ️</span>
+          <span id="disable-note">This user will be unable to access the platform until re-enabled.</span>
+        </div>
+      </div>
+      
+      <div class="warning-actions">
+        <button id="confirm-disable-btn" class="btn-action warning-btn">
+          <span class="btn-icon">⚠️</span>
+          <span id="disable-action-text">Yes, Disable</span>
+        </button>
+        <button id="cancel-disable-btn" class="btn-action cancel-btn">
+          <span class="btn-icon">❌</span>
+          <span>Cancel</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Confirm Delete User -->
+  <div id="modal-confirm-delete" class="modal" style="display:none;">
+    <div class="modal-content danger-modal">
+      <div class="danger-header">
+        <div class="danger-icon">🗑️</div>
+        <h3>Delete User Account</h3>
+      </div>
+      
+      <div class="danger-body">
+        <p class="danger-message">⚠️ WARNING: This action CANNOT be undone!</p>
+        
+        <div class="user-info-card">
+          <div class="info-avatar">
+            <img id="delete-user-avatar" src="image/default-profile.png" alt="User Avatar">
+          </div>
+          <div class="info-details">
+            <h4 id="delete-user-name">User Name</h4>
+            <p id="delete-user-email">user@email.com</p>
+          </div>
+        </div>
+        
+        <div class="danger-note">
+          <span class="note-icon">💀</span>
+          <span>This will permanently remove the user and all their data from the system.</span>
+        </div>
+        
+        <div class="confirmation-input">
+          <label for="delete-confirmation">Type "DELETE" to confirm:</label>
+          <input type="text" id="delete-confirmation" placeholder="Type DELETE here" maxlength="6">
+        </div>
+      </div>
+      
+      <div class="danger-actions">
+        <button id="confirm-delete-btn" class="btn-action danger-btn" disabled>
+          <span class="btn-icon">🗑️</span>
+          <span>Delete User</span>
+        </button>
+        <button id="cancel-delete-btn" class="btn-action cancel-btn">
+          <span class="btn-icon">❌</span>
+          <span>Cancel</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Success Action -->
+  <div id="modal-success-action" class="modal" style="display:none;">
+    <div class="modal-content success-modal">
+      <div class="success-header">
+        <div class="success-icon">✅</div>
+        <h3 id="success-action-title">Action Completed!</h3>
+      </div>
+      
+      <div class="success-body">
+        <p id="success-action-message" class="success-message">The action has been completed successfully!</p>
+        
+        <div class="success-details">
+          <div class="success-item">
+            <span class="success-label">👤 User:</span>
+            <span id="success-action-user" class="success-value">-</span>
+          </div>
+          <div class="success-item">
+            <span class="success-label">⚡ Action:</span>
+            <span id="success-action-type" class="success-value">-</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="success-actions">
+        <button id="close-success-action-btn" class="btn-action success-btn">
+          <span class="btn-icon">✅</span>
+          <span>Got It!</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Fix Duplicates -->
+  <div id="modal-fix-duplicates" class="modal" style="display:none;">
+    <div class="modal-content warning-modal">
+      <div class="warning-header">
+        <div class="warning-icon">⚠️</div>
+        <h3>Fix Duplicate Emails</h3>
+      </div>
+      
+      <div class="warning-body">
+        <p class="warning-message">Found duplicate email addresses in the system!</p>
+        
+        <div id="duplicates-list" class="duplicates-container">
+          <!-- Duplicate email groups will be shown here -->
+        </div>
+        
+        <div class="warning-note">
+          <span class="note-icon">ℹ️</span>
+          <span>Select which users to keep for each duplicate email. Other users will be deleted.</span>
+        </div>
+      </div>
+      
+      <div class="warning-actions">
+        <button id="apply-duplicate-fixes" class="btn-action warning-btn">
+          <span class="btn-icon">🔧</span>
+          <span>Apply Fixes</span>
+        </button>
+        <button id="cancel-duplicate-fixes" class="btn-action cancel-btn">
+          <span class="btn-icon">❌</span>
+          <span>Cancel</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
   <script type="module" src="js/home-admin.js"></script>
-  <!-- page-specific logic (must NOT call initializeApp again) -->
   <script type="module" src="js/admin-users.js"></script>
 </body>
 </html>

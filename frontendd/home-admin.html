@@ -2,39 +2,264 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>OSwarrior Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OSWarrior Admin Control Center</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/navbar-shared.css">
   <link rel="stylesheet" href="css/home-admin.css">
-  <link rel="stylesheet" href="css/quiz.css">
+  <link rel="stylesheet" href="css/profile-navbar.css">
   <link rel="stylesheet" href="css/profile-dropdown.css" />
+  <link rel="stylesheet" href="css/responsive-utilities.css" />
 </head>
 <body class="home-admin">
   <!-- Navbar -->
-  <div class="navbar">
-    <h1>OSwarrior Admin Dashboard</h1>
-    <div class="navbar-right">
+  <div class="navbar" style="background: rgba(5, 15, 25, 0.95) !important; padding: 15px 30px !important; display: flex !important; justify-content: space-between !important; align-items: center !important; border-bottom: 2px solid rgba(0, 255, 255, 0.6) !important; backdrop-filter: blur(25px) !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; z-index: 1000 !important; box-shadow: 0 2px 15px rgba(0, 255, 255, 0.3) !important; height: 70px !important; min-height: 70px !important; max-height: 70px !important;">
+    <div class="navbar-left" style="display: flex !important; align-items: center !important; gap: 20px !important;">
+      <img src="image/os-warrior-logo.png" alt="OS Warrior" class="navbar-logo" style="height: 55px !important; width: auto !important; filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.7)) !important; transition: all 0.3s ease !important;">
+      <h1 style="color: #00FFFF !important; font-size: 1.8rem !important; font-weight: 700 !important; margin: 0 !important; text-shadow: 0 0 15px rgba(0, 255, 255, 0.6) !important; font-family: 'Orbitron', monospace !important; letter-spacing: 1px !important; transition: all 0.3s ease !important;">Admin - OSwarrior</h1>
+    </div>
+    <div class="navbar-right" style="display: flex !important; align-items: center !important; flex-shrink: 0 !important; overflow: visible !important; position: relative !important;">
       <div class="profile-container" id="profile-toggle">
         <span id="username-navbar">Admin</span>
         <img id="profile-img" class="profile-img" src="image/default-profile.png" alt="Profile"/>
-        <div id="profile-dropdown" class="profile-dropdown hidden">
-          <a id="view-profile" href="profile.html">👤 View Profile</a>
-          <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
-          <div class="settings-section">
-            <p class="settings-title">⚙️ Quick Settings</p>
-            <button id="toggle-theme">🌗 Dark / Light Mode</button>
-            <button id="change-avatar">🖼️ Change Avatar</button>
-            <button id="edit-name">✏️ Edit Name</button>
-          </div>
-          <button id="logout-btn">🚪 Logout</button>
-        </div>
       </div>
     </div>
   </div>
 
+  <!-- Profile Dropdown - Outside navbar but positioned relative to profile -->
+  <div id="profile-dropdown" class="profile-dropdown hidden">
+    <a id="view-profile" href="profile.html">👤 View Profile</a>
+    <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
+
+    <!-- 🧰 Quick Settings Section -->
+    <div class="settings-section">
+      <p class="settings-title">⚙️ Quick Settings</p>
+      <button id="toggle-theme">🌗 Dark / Light Mode</button>
+      <button id="change-avatar">🖼️ Change Avatar</button>
+      <button id="edit-name">✏️ Edit Name</button>
+    </div>
+
+    <button id="logout-btn">🚪 Logout</button>
+  </div>
+
+  <!-- Dashboard Stats Overview -->
+  <section class="stats-dashboard">
+    <div class="stats-container">
+      <div class="stat-card" id="total-users-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-content">
+          <h3>Total Users</h3>
+          <div class="stat-number" id="total-users">-</div>
+          <div class="stat-change positive" id="users-change">+12 this week</div>
+        </div>
+      </div>
+      
+      <div class="stat-card" id="total-quizzes-card">
+        <div class="stat-icon">🧩</div>
+        <div class="stat-content">
+          <h3>Active Quizzes</h3>
+          <div class="stat-number" id="total-quizzes">-</div>
+          <div class="stat-change positive" id="quizzes-change">+5 this week</div>
+        </div>
+      </div>
+      
+      <div class="stat-card" id="system-health-card">
+        <div class="stat-icon">💾</div>
+        <div class="stat-content">
+          <h3>System Health</h3>
+          <div class="stat-number" id="system-health">98%</div>
+          <div class="stat-change positive" id="health-change">All systems operational</div>
+        </div>
+      </div>
+      
+      <div class="stat-card" id="activity-card">
+        <div class="stat-icon">📈</div>
+        <div class="stat-content">
+          <h3>Daily Activity</h3>
+          <div class="stat-number" id="daily-activity">-</div>
+          <div class="stat-change neutral" id="activity-change">Sessions today</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Actions Panel -->
+  <section class="quick-actions">
+    <h2>🚀 Quick Actions</h2>
+    <div class="actions-grid">
+      <button class="action-btn emergency" id="system-maintenance">
+        <span class="action-icon">🔧</span>
+        <span class="action-text">System Maintenance</span>
+      </button>
+      <button class="action-btn warning" id="backup-data">
+        <span class="action-icon">💾</span>
+        <span class="action-text">Backup Database</span>
+      </button>
+      <button class="action-btn info" id="send-announcement">
+        <span class="action-icon">📢</span>
+        <span class="action-text">Send Announcement</span>
+      </button>
+      <button class="action-btn success" id="refresh-stats">
+        <span class="action-icon">🔄</span>
+        <span class="action-text">Refresh Stats</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- Admin Control Modules -->
+  <section class="admin-modules">
+    <h2>🎛️ Control Modules</h2>
+    <div class="modules-grid">
+      <div class="module-card" id="manage-users">
+        <div class="module-header">
+          <span class="module-icon">👥</span>
+          <div class="module-badge" id="users-badge">0</div>
+        </div>
+        <div class="module-content">
+          <h3>User Management</h3>
+          <p>Manage user accounts, roles, and permissions. View user activity and handle account issues.</p>
+          <div class="module-stats">
+            <span class="stat-item">Active: <strong id="active-users">-</strong></span>
+            <span class="stat-item">Suspended: <strong id="suspended-users">-</strong></span>
+          </div>
+        </div>
+        <div class="module-actions">
+          <a href="admin-users.html" class="module-btn primary">Manage Users</a>
+          <button class="module-btn secondary" id="quick-user-stats">Quick Stats</button>
+        </div>
+      </div>
+
+      <div class="module-card" id="manage-quizzes">
+        <div class="module-header">
+          <span class="module-icon">🧩</span>
+          <div class="module-badge quiz-badge" id="quizzes-badge">0</div>
+        </div>
+        <div class="module-content">
+          <h3>Quiz Management</h3>
+          <p>Create, edit, and manage quizzes. Monitor quiz performance and student engagement.</p>
+          <div class="module-stats">
+            <span class="stat-item">Published: <strong id="published-quizzes">-</strong></span>
+            <span class="stat-item">Draft: <strong id="draft-quizzes">-</strong></span>
+          </div>
+        </div>
+        <div class="module-actions">
+          <a href="admin-quizzes.html" class="module-btn primary">Manage Quizzes</a>
+          <button class="module-btn secondary" id="create-quick-quiz">Create New</button>
+        </div>
+      </div>
+
+      <div class="module-card" id="upload-system">
+        <div class="module-header">
+          <span class="module-icon">📤</span>
+          <div class="module-badge upload-badge" id="uploads-badge">0</div>
+        </div>
+        <div class="module-content">
+          <h3>Content Upload</h3>
+          <p>Upload lecture notes and materials. Generate AI-powered quizzes from content.</p>
+          <div class="module-stats">
+            <span class="stat-item">Files: <strong id="uploaded-files">-</strong></span>
+            <span class="stat-item">Generated: <strong id="generated-quizzes">-</strong></span>
+          </div>
+        </div>
+        <div class="module-actions">
+          <a href="admin-upload.html" class="module-btn primary">Upload Content</a>
+          <button class="module-btn secondary" id="upload-status">Upload Status</button>
+        </div>
+      </div>
+
+      <div class="module-card" id="leaderboard-system">
+        <div class="module-header">
+          <span class="module-icon">🏆</span>
+          <div class="module-badge leaderboard-badge" id="leaderboard-badge">0</div>
+        </div>
+        <div class="module-content">
+          <h3>Leaderboard Control</h3>
+          <p>Monitor rankings, export data, and manage competitive elements of the platform.</p>
+          <div class="module-stats">
+            <span class="stat-item">Top Players: <strong id="top-players">-</strong></span>
+            <span class="stat-item">Competitions: <strong id="active-competitions">-</strong></span>
+          </div>
+        </div>
+        <div class="module-actions">
+          <a href="admin-leaderboard.html" class="module-btn primary">View Rankings</a>
+          <button class="module-btn secondary" id="reset-leaderboard">Reset Scores</button>
+        </div>
+      </div>
+
+      <div class="module-card" id="reports-system">
+        <div class="module-header">
+          <span class="module-icon">📊</span>
+          <div class="module-badge reports-badge" id="reports-badge">0</div>
+        </div>
+        <div class="module-content">
+          <h3>Analytics & Reports</h3>
+          <p>Generate detailed reports on user engagement, quiz performance, and system usage.</p>
+          <div class="module-stats">
+            <span class="stat-item">Reports: <strong id="available-reports">-</strong></span>
+            <span class="stat-item">Exports: <strong id="recent-exports">-</strong></span>
+          </div>
+        </div>
+        <div class="module-actions">
+          <a href="admin-reports.html" class="module-btn primary">View Reports</a>
+          <button class="module-btn secondary" id="generate-report">Generate New</button>
+        </div>
+      </div>
+
+      <div class="module-card" id="audit-system">
+        <div class="module-header">
+          <span class="module-icon">🔍</span>
+          <div class="module-badge audit-badge" id="audit-badge">0</div>
+        </div>
+        <div class="module-content">
+          <h3>Audit & Logs</h3>
+          <p>Review system logs, user actions, and security events. Monitor platform health.</p>
+          <div class="module-stats">
+            <span class="stat-item">Events: <strong id="recent-events">-</strong></span>
+            <span class="stat-item">Alerts: <strong id="active-alerts">-</strong></span>
+          </div>
+        </div>
+        <div class="module-actions">
+          <a href="admin-logs.html" class="module-btn primary">View Logs</a>
+          <button class="module-btn secondary" id="export-logs">Export Logs</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recent Activity Feed -->
+  <section class="activity-feed">
+    <h2>📝 Recent System Activity</h2>
+    <div class="activity-container" id="activity-container">
+      <div class="activity-item">
+        <div class="activity-icon">👤</div>
+        <div class="activity-content">
+          <p><strong>New user registration:</strong> warrior_2024 joined the platform</p>
+          <span class="activity-time">2 minutes ago</span>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-icon">🧩</div>
+        <div class="activity-content">
+          <p><strong>Quiz completed:</strong> "Operating Systems Basics" by student_123</p>
+          <span class="activity-time">5 minutes ago</span>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-icon">📤</div>
+        <div class="activity-content">
+          <p><strong>Content uploaded:</strong> New lecture notes uploaded for processing</p>
+          <span class="activity-time">12 minutes ago</span>
+        </div>
+      </div>
+    </div>
+    <button class="view-all-btn" id="view-all-activity">View All Activity</button>
+  </section>
+
   <!-- Modal Edit Name -->
   <div id="modal-edit-name" class="modal" style="display:none;">
     <div class="modal-content">
-      <h3>✏️ Edit Warrior Name</h3>
-      <input type="text" id="input-new-name" placeholder="Enter your warrior name" maxlength="20">
+      <h3>✏️ Edit Admin Name</h3>
+      <input type="text" id="input-new-name" placeholder="Enter your admin name" maxlength="20">
       <div class="modal-actions">
         <button id="save-name-btn" class="btn-action">💾 Save</button>
         <button id="cancel-name-btn" class="btn-action btn-cancel">❌ Cancel</button>
@@ -51,51 +276,6 @@
         <button id="save-avatar-btn" class="btn-action">💾 Save</button>
         <button id="cancel-avatar-btn" class="btn-action btn-cancel">❌ Cancel</button>
       </div>
-    </div>
-  </div>
-
-  <!-- Admin Control Panel -->
-  <div class="content admin-control-panel" style="padding:28px;">
-    <div class="card" id="manage-users">
-      <span class="icon">👥</span>
-      <h2>Manage Users</h2>
-      <p>View, edit roles, suspend or delete users.</p>
-      <a href="admin-users.html" class="card-action">Open</a>
-    </div>
-
-    <div class="card" id="manage-quizzes">
-      <span class="icon">🧩</span>
-      <h2>Manage Quizzes</h2>
-      <p>Create, edit or remove generated quizzes.</p>
-      <a href="admin-quizzes.html" class="card-action">Open</a>
-    </div>
-
-    <div class="card" id="upload-notes">
-      <span class="icon">📤</span>
-      <h2>Upload Notes</h2>
-      <p>Upload lecture notes to generate quizzes (OpenAI).</p>
-      <a href="admin-quizzes.html" class="card-action">Upload</a>
-    </div>
-
-    <div class="card" id="admin-leaderboard">
-      <span class="icon">🏆</span>
-      <h2>Leaderboard</h2>
-      <p>Admin view: export / reset leaderboard data.</p>
-      <a href="admin-leaderboard.html" class="card-action">Open</a>
-    </div>
-
-    <div class="card" id="admin-reports">
-      <span class="icon">📊</span>
-      <h2>Reports</h2>
-      <p>View usage, quiz stats and export reports.</p>
-      <a href="admin-reports.html" class="card-action">Open</a>
-    </div>
-
-    <div class="card" id="admin-logs">
-      <span class="icon">🧾</span>
-      <h2>Audit Logs</h2>
-      <p>See recent admin actions and system logs.</p>
-      <a href="admin-logs.html" class="card-action">Open</a>
     </div>
   </div>
 
