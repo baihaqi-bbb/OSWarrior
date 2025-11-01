@@ -72,7 +72,9 @@ async function authHeaders() {
 // replace loadQuizzes to fill client cache
 async function loadQuizzes() {
   const headers = await authHeaders();
-  const res = await fetch(`${API_BASE}/api/quizzes`, { headers });
+  // Add cache-busting parameter to ensure fresh data
+  const timestamp = Date.now();
+  const res = await fetch(`${API_BASE}/api/quizzes?_t=${timestamp}`, { headers });
   if (!res.ok) {
     console.error("Failed loading quizzes", await res.text().catch(()=>""));
     quizzesCache = [];
@@ -181,11 +183,33 @@ function escapeHtml(s) {
   return String(s || "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-async function fetchQuiz(id) {
+async function fetchQuiz(id, forceRefresh = false) {
+  // If force refresh, skip cache
+  if (!forceRefresh) {
+    // Try to get from cache first
+    const cachedQuiz = quizzesCache.find(q => q.id === id);
+    if (cachedQuiz) {
+      return cachedQuiz;
+    }
+  }
+  
+  // If not in cache or force refresh, fetch from API
   const headers = await authHeaders();
-  const res = await fetch(`${API_BASE}/api/quizzes/${encodeURIComponent(id)}`, { headers });
+  // Add cache-busting parameter to ensure fresh data
+  const timestamp = Date.now();
+  const res = await fetch(`${API_BASE}/api/quizzes/${encodeURIComponent(id)}?_t=${timestamp}`, { headers });
   if (!res.ok) throw new Error("Not found");
-  return await res.json();
+  const quiz = await res.json();
+  
+  // Update cache with the fetched quiz
+  const existingIndex = quizzesCache.findIndex(q => q.id === id);
+  if (existingIndex >= 0) {
+    quizzesCache[existingIndex] = quiz;
+  } else {
+    quizzesCache.push(quiz);
+  }
+  
+  return quiz;
 }
 
 // ensure modal form HTML exists (used by view/edit if create modal not opened yet)
@@ -717,8 +741,21 @@ async function regenerateQuiz(id, showAlert = true) {
       headers
     });
     if (!res.ok) throw new Error(await res.text());
+    
+    // Clear the specific quiz from cache to force fresh fetch
+    const existingIndex = quizzesCache.findIndex(q => q.id === id);
+    if (existingIndex >= 0) {
+      quizzesCache.splice(existingIndex, 1);
+    }
+    
     if (showAlert) alert("Regenerated");
     await loadQuizzes();
+    
+    // If modal is open and showing this quiz, refresh it with force refresh
+    if (currentEditingId === id) {
+      const refreshedQuiz = await fetchQuiz(id, true); // Force refresh
+      populateQuizForm(refreshedQuiz);
+    }
   } catch (err) {
     console.error("regenerateQuiz error:", err);
     alert("Regenerate failed: " + (err.message || err));
