@@ -154,10 +154,49 @@ async function openPublicProfile(uid) {
 function updateXPBar(xp = 0, maxXP = 100, level = 1, name = 'Warrior') {
   const bar = document.getElementById("xp-progress");
   if (bar) bar.style.width = Math.max(0, Math.min(100, (xp / maxXP) * 100)) + "%";
-  const cur = document.getElementById("xp-current"); if (cur) cur.textContent = `${xp} XP`;
-  const max = document.getElementById("xp-max"); if (max) max.textContent = `/ ${maxXP} XP`;
+  const cur = document.getElementById("xp-current"); if (cur) cur.textContent = `${xp}`;
+  const max = document.getElementById("xp-max"); if (max) max.textContent = `${maxXP} XP`;
   const lvl = document.getElementById("player-level"); if (lvl) lvl.textContent = `Level ${level}`;
   const pname = document.getElementById("player-name"); if (pname) pname.textContent = `${name} 👑`;
+  
+  // Update power cores based on level
+  updatePowerCores(level);
+}
+
+function updatePowerCores(level = 1) {
+  const powerBars = document.querySelectorAll(".power-bar");
+  const activeBars = Math.min(5, Math.max(1, Math.floor(level / 2) + 1));
+  
+  powerBars.forEach((bar, index) => {
+    if (index < activeBars) {
+      bar.classList.add("active");
+    } else {
+      bar.classList.remove("active");
+    }
+  });
+}
+
+function updateMissionProgress(userData) {
+  // Calculate mission progress from user data
+  const completedQuizzes = userData.completedQuizzes?.length || 0;
+  const totalQuizzes = 14; // Total available quizzes/missions
+  const totalXP = userData.xp || 0;
+  const successRate = completedQuizzes > 0 ? Math.round((completedQuizzes / totalQuizzes) * 100) : 0;
+  const progressPercent = Math.round((completedQuizzes / totalQuizzes) * 100);
+  
+  // Update mission counter
+  const counterEl = document.querySelector(".mission-counter .counter");
+  if (counterEl) counterEl.textContent = `${completedQuizzes}/${totalQuizzes}`;
+  
+  // Update mission stats
+  const statValues = document.querySelectorAll(".mission-stats .stat-value");
+  if (statValues[0]) statValues[0].textContent = `${completedQuizzes} Missions`;
+  if (statValues[1]) statValues[1].textContent = `${totalXP.toLocaleString()} XP`;
+  if (statValues[2]) statValues[2].textContent = `${successRate}%`;
+  
+  // Update progress bar
+  const progressFill = document.querySelector(".mission-progress-bar .progress-fill");
+  if (progressFill) progressFill.style.width = `${progressPercent}%`;
 }
 function loadUserXP(uid, displayName) {
   if (!uid) return;
@@ -185,7 +224,10 @@ function loadUserXP(uid, displayName) {
     const level = Number(userData.level || Math.floor(xp / 100) + 1);
     const maxForLevel = Math.max(100, level * 100);
     const name = userData.name || userData.displayName || displayName || "Warrior";
+    
+    // Update both XP bar and mission progress
     updateXPBar(xp, maxForLevel, level, name);
+    updateMissionProgress(userData);
   })
   .catch(err => {
     console.warn("loadUserXP failed:", err);
@@ -204,6 +246,7 @@ function loadUserXP(uid, displayName) {
           const maxForLevel = Math.max(100, level * 100);
           const name = userData.name || userData.displayName || displayName || "Warrior";
           updateXPBar(xp, maxForLevel, level, name);
+          updateMissionProgress(userData);
         } else {
           // Final fallback to default values
           console.log("Using fallback user data");

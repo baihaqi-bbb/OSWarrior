@@ -386,11 +386,23 @@ body.home-user .navbar h1 {
   background: rgba(0, 255, 255, 0.2);
   border-radius: 4px;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .power-bar.active {
   background: linear-gradient(90deg, #00FFFF, #0080FF);
   box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+  animation: powerPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes powerPulse {
+  0% { 
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+  }
+  100% { 
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
+  }
 }
 
 /* Leaderboard Card Styles */

@@ -31,8 +31,13 @@ let quizId = null;
 let answers = [];
 let current = 0;
 let questionTimer = null;
-let timeLeft = 30; // 30 seconds per question
+let timeLeft = 15; // 15 seconds per question
 let isAnswered = false;
+
+// Overall Quiz Timer
+let quizTimer = null;
+let quizStartTime = null;
+let totalQuizTime = 0;
 
 function createEl(tag, props = {}, children = []) {
   const el = document.createElement(tag);
@@ -51,7 +56,7 @@ function startTimer() {
     clearInterval(questionTimer);
   }
   
-  timeLeft = 30; // Reset to 30 seconds
+  timeLeft = 15; // Reset to 15 seconds
   isAnswered = false;
   updateTimerDisplay();
   
@@ -87,6 +92,56 @@ function updateTimerDisplay() {
       timerBadge.classList.add('warning');
     }
   }
+}
+
+// Overall Quiz Timer Functions
+function startQuizTimer() {
+  quizStartTime = Date.now();
+  const timerElement = document.getElementById('quiz-timer');
+  const timerText = document.getElementById('timer-text');
+  
+  // Show the timer
+  if (timerElement) {
+    timerElement.style.display = 'block';
+  }
+  
+  // Update quiz timer to show per-question countdown
+  quizTimer = setInterval(() => {
+    updateQuizTimerDisplay();
+  }, 1000);
+}
+
+function updateQuizTimerDisplay() {
+  const timerText = document.getElementById('timer-text');
+  const timerDisplay = document.getElementById('quiz-timer');
+  
+  if (timerText) {
+    // Show per-question countdown instead of total time
+    timerText.textContent = `${timeLeft.toString().padStart(2, '0')}s`;
+    
+    // Add warning class based on time left for current question
+    if (timerDisplay) {
+      timerDisplay.classList.remove('warning', 'danger');
+      if (timeLeft <= 5) {
+        timerDisplay.classList.add('danger');
+      } else if (timeLeft <= 10) {
+        timerDisplay.classList.add('warning');
+      }
+    }
+  }
+}
+
+function stopQuizTimer() {
+  if (quizTimer) {
+    clearInterval(quizTimer);
+    quizTimer = null;
+  }
+}
+
+function getFormattedQuizTime() {
+  const minutes = Math.floor(totalQuizTime / 60);
+  const seconds = totalQuizTime % 60;
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
 function showNotification(message) {
@@ -169,6 +224,44 @@ async function submitQuiz() {
 }
 
 function showQuizReview(results) {
+  clearInterval(questionTimer); // Make sure question timer is stopped
+  stopQuizTimer(); // Stop the overall quiz timer
+  
+  // Show completion modal first
+  showCompletionModal(results);
+}
+
+function showCompletionModal(results) {
+  const modal = document.getElementById('completion-modal');
+  const finalScore = document.getElementById('final-score');
+  const finalPercentage = document.getElementById('final-percentage');
+  const timeTaken = document.getElementById('time-taken');
+  const xpEarned = document.getElementById('xp-earned');
+  
+  // Use actual quiz time taken
+  const actualTime = getFormattedQuizTime();
+  
+  // Update modal content
+  finalScore.textContent = `${results.score}/${results.total}`;
+  finalPercentage.textContent = `${Math.round((results.score/results.total)*100)}%`;
+  timeTaken.textContent = actualTime;
+  xpEarned.textContent = `+${results.score * 10} XP`;
+  
+  // Add event listeners
+  document.getElementById('review-answers').onclick = () => {
+    modal.style.display = 'none';
+    showDetailedReview(results);
+  };
+  
+  document.getElementById('back-to-menu').onclick = () => {
+    window.location.href = 'quiz.html';
+  };
+  
+  // Show modal
+  modal.style.display = 'flex';
+}
+
+function showDetailedReview(results) {
   clearInterval(questionTimer); // Make sure timer is stopped
   
   const container = document.querySelector("#quizzes-list");
@@ -177,14 +270,14 @@ function showQuizReview(results) {
   // Update header
   const weekInfo = document.querySelector('.week-info');
   if (weekInfo) {
-    weekInfo.textContent = `Week ${week} - Quiz Results`;
+    weekInfo.textContent = `Week ${week} - Quiz Results & Review`;
   }
   
   // Update stats
   const statBadges = document.querySelectorAll('.stat-badge');
   if (statBadges.length >= 3) {
     statBadges[0].innerHTML = `📊 Final Score: ${results.score}/${results.total}`;
-    statBadges[1].innerHTML = `� ${Math.round((results.score/results.total)*100)}% Accuracy`;
+    statBadges[1].innerHTML = `🎯 ${Math.round((results.score/results.total)*100)}% Accuracy`;
     statBadges[2].innerHTML = `💎 ${results.score * 10} XP Earned`;
   }
   
@@ -193,7 +286,7 @@ function showQuizReview(results) {
   // Results header
   const resultsHeader = createEl("div", { className: "results-header" });
   resultsHeader.innerHTML = `
-    <h2>�🎉 Quiz Complete!</h2>
+    <h2>📋 Quiz Review</h2>
     <div class="score-display">
       <div class="score-big">${results.score} / ${results.total}</div>
       <div class="score-percentage">${Math.round((results.score/results.total)*100)}% Correct</div>
@@ -292,6 +385,11 @@ function renderQuestion(idx, container, metaEl) {
   container.innerHTML = "";
   const q = questions[idx];
   
+  // Start quiz timer on first question
+  if (idx === 0 && !quizTimer) {
+    startQuizTimer();
+  }
+  
   // Update header info
   const weekInfo = document.querySelector('.week-info');
   if (weekInfo) {
@@ -302,7 +400,7 @@ function renderQuestion(idx, container, metaEl) {
   const statBadges = document.querySelectorAll('.stat-badge');
   if (statBadges.length >= 3) {
     statBadges[0].innerHTML = `📊 Question ${idx+1}/${questions.length}`;
-    statBadges[1].innerHTML = `⏱️ <span id="timer-display">30s</span>`;
+    statBadges[1].innerHTML = `⏱️ <span id="timer-display">15s</span>`;
     statBadges[2].innerHTML = `💎 ${questions.length * 10} XP Max`;
   }
 
@@ -485,4 +583,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   });
+});
+
+// Cleanup timers on page unload
+window.addEventListener('beforeunload', () => {
+  stopQuizTimer();
+  if (questionTimer) {
+    clearInterval(questionTimer);
+  }
 });

@@ -1,17 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Take Quiz</title>
-  <!-- gantikan dengan CSS sendiri -->
-  <link rel="stylesheet" href="css/my-quiz.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Take Quiz - OSwarrior</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/navbar-shared.css">
+  <link rel="stylesheet" href="css/navbar-logo.css">
+  <link rel="stylesheet" href="css/profile-navbar.css">
+  <link rel="stylesheet" href="css/profile-dropdown.css">
+  <link rel="stylesheet" href="css/take-quiz.css">
+  <link rel="stylesheet" href="css/quiz.css">
 </head>
 <body class="quiz-page">
-  <!-- kontainer diperlukan oleh take-quiz.js -->
-  <div id="quiz-meta"></div>
-  <div id="quizzes-list"></div>
-  <div id="no-quizzes" style="display:none"></div>
 
+  <!-- Navbar -->
+  <div class="navbar">
+    <div class="navbar-left">
+      <img src="image/os-warrior-logo.png" alt="OS Warrior" class="navbar-logo">
+      <h1>Quiz Arena - OSwarrior</h1>
+    </div>
+    <div class="navbar-right">
+      <div class="profile-container" id="profile-toggle">
+        <span id="username-navbar">Warrior</span>
+        <img id="profile-img-navbar" class="profile-img" src="image/default-profile.png" alt="Profile"/>
+        <div id="profile-dropdown" class="profile-dropdown hidden">
+          <a id="view-profile" href="profile.html">👤 View Profile</a>
+          <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
+          <div class="settings-section">
+            <p class="settings-title">⚙️ Quick Settings</p>
+            <button id="toggle-theme">🌗 Dark / Light Mode</button>
+            <button id="change-avatar">🖼️ Change Avatar</button>
+            <button id="edit-name">✏️ Edit Name</button>
+          </div>
+          <button id="logout-btn">🚪 Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="main-container">
+    <!-- Quiz Header Banner -->
+    <div class="quiz-header">
+      <div class="banner-decoration">
+        <div class="cyber-lines"></div>
+        <div class="electric-particles"></div>
+        <div class="floating-icons">
+          <div class="float-icon">⚡</div>
+          <div class="float-icon">🧠</div>
+          <div class="float-icon">💻</div>
+          <div class="float-icon">🎯</div>
+        </div>
+      </div>
+      <div class="header-content">
+        <h1>⚔️ CYBER QUIZ ARENA ⚔️</h1>
+        <p class="week-info">Test your OS knowledge in the digital battlefield</p>
+        <div class="quiz-progress">
+          <div class="progress-indicator">
+            <span id="quiz-status">🟢 SYSTEM READY</span>
+          </div>
+          <div class="progress-indicator">
+            <span id="user-level">⚡ Level 1 Warrior</span>
+          </div>
+          <!-- Quiz Timer -->
+          <div class="timer-display" id="quiz-timer" style="display: none;">
+            <span class="timer-icon">⏱️</span>
+            <span class="timer-text" id="timer-text">00:00</span>
+          </div>
+        </div>
+      </div>
+      <div class="banner-effects">
+        <div class="scan-line"></div>
+        <div class="pulse-ring"></div>
+      </div>
+    </div>
+
+    <!-- Quiz Meta Info (populated by JS) -->
+    <div id="quiz-meta"></div>
+
+    <!-- Quiz Questions Container (populated by JS) -->
+    <div id="quizzes-list"></div>
+
+    <!-- No Quizzes Available Message -->
+    <div id="no-quizzes" style="display:none;">
+      <div class="no-quiz-icon">📚</div>
+      <div class="no-quiz-title">No Quizzes Available</div>
+      <div class="no-quiz-message">
+        Check back later or contact your instructor for available quizzes.
+      </div>
+      <div style="margin-top: 30px;">
+        <button class="btn primary" onclick="window.location.href='quiz.html'">
+          ⬅️ Back to Quiz Selection
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Modals for Feedback -->
+  <div id="completion-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <h3>🎉 Quiz Completed!</h3>
+      <div id="completion-details">
+        <div class="score-display">
+          <div class="score-big" id="final-score">0/0</div>
+          <div class="score-percentage" id="final-percentage">0%</div>
+        </div>
+        <div class="completion-stats">
+          <div class="stat-item">
+            <span class="stat-label">Time Taken</span>
+            <span class="stat-value" id="time-taken">0:00</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">XP Earned</span>
+            <span class="stat-value" id="xp-earned">+0 XP</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="review-answers" class="btn-action">📋 Review Answers</button>
+        <button id="back-to-menu" class="btn-action btn-cancel">🏠 Back to Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="js/common-navbar.js"></script>
   <script type="module" src="js/take-quiz.js"></script>
 </body>
 </html>
