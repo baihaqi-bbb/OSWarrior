@@ -11,7 +11,7 @@ dotenv.config();
 const PORT = process.env.PORT || 4000;
 const app = express();
 
-// CORS: reflect origin and allow credentials for dev and production hosts
+// CORS: reflect origin and allow credentials for dev hosts
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
@@ -21,11 +21,7 @@ const corsOptions = {
       'http://127.0.0.1:5173',
       'http://localhost:5173',
       'http://localhost:4000',
-      'http://127.0.0.1:4000',
-      'https://oswarrior.com',
-      'https://www.oswarrior.com',
-      'https://frontendd-zne8.onrender.com',
-      'https://oswarrior-iyii.onrender.com'
+      'http://127.0.0.1:4000'
     ];
     if (allowed.includes(origin) || /^(https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?)$/.test(origin)) {
       return callback(null, true);
@@ -199,16 +195,25 @@ app.post("/api/upload-notes", upload.single("file"), async (req, res) => {
     let parsed = null;
     if (OPENAI_KEY) {
       const prompt = `
-Given the lecture notes below, generate STRICT JSON ONLY with this exact structure and nothing else:
+You are an Operating Systems expert. Given the lecture notes below, generate STRICT JSON ONLY with this exact structure and nothing else:
 {
-  "title": "short title",
-  "sourcePreview": "first 200 chars",
+  "title": "Operating Systems Quiz - [Week/Topic]",
+  "sourcePreview": "first 200 chars of notes",
   "questions": [
-    { "question":"...","type":"mcq","options":["opt1","opt2","opt3","opt4"], "answerIndex": 0 }
+    { "question":"Clear, specific OS question with proper technical terminology","type":"mcq","options":["Detailed option A with proper OS concepts","Detailed option B with proper OS concepts","Detailed option C with proper OS concepts","Detailed option D with proper OS concepts"], "answerIndex": 0 }
   ]
 }
-Produce exactly 5 questions. Each question must be type "mcq" and have exactly 4 options. answerIndex must be the index (0-3) of the correct option.
-Notes:
+
+IMPORTANT REQUIREMENTS:
+- Generate exactly 5 high-quality Operating Systems questions
+- Each question must be clear, specific, and test understanding of OS concepts
+- Each option must be a complete, meaningful answer (not just single letters or numbers)
+- Options should be plausible but only one clearly correct
+- Cover topics like: processes, threads, memory management, file systems, CPU scheduling, deadlocks, synchronization, I/O systems
+- Use proper technical terminology
+- answerIndex must be 0-3 indicating the correct option
+
+Lecture Notes:
 \`\`\`
 ${extractedText.slice(0, 4000)}
 \`\`\`
@@ -216,7 +221,7 @@ ${extractedText.slice(0, 4000)}
       let modelOutput = "";
       try {
         modelOutput = await callOpenAI(prompt);
-        const m = modelOutput.match(/\{[\s\S]*\}$/m);
+        const m = modelOutput.match(/\{[\s\S]*\}/m);
         const jsonText = m ? m[0] : modelOutput;
         parsed = JSON.parse(jsonText);
       } catch (e) {
@@ -224,30 +229,87 @@ ${extractedText.slice(0, 4000)}
         return res.status(500).json({ error: "OpenAI or parse failed: " + String(e.message) });
       }
     } else {
-      const lines = extractedText.split(/\r?\n/).filter(Boolean);
+      // Improved fallback with proper OS questions
       parsed = {
-        title: `Quiz from ${req.file.originalname || "notes"}`,
+        title: `Operating Systems Quiz - ${req.file.originalname || "General"}`,
         sourcePreview: extractedText.slice(0, 200),
-        questions: Array.from({length:5}).map((_,i)=>{
-          const stem = lines[i] || `Placeholder question ${i+1}`;
-          return {
-            question: stem.slice(0,300) + "?",
+        questions: [
+          {
+            question: "What is the primary function of an operating system?",
             type: "mcq",
-            options: [`A ${i+1}`, `B ${i+1}`, `C ${i+1}`, `D ${i+1}`],
+            options: [
+              "To manage hardware and software resources of a computer system",
+              "To compile and execute programming languages only", 
+              "To provide internet connectivity to applications",
+              "To create graphical user interfaces for games"
+            ],
             answerIndex: 0
-          };
-        })
+          },
+          {
+            question: "Which scheduling algorithm gives priority to the process with the shortest burst time?",
+            type: "mcq", 
+            options: [
+              "First Come First Serve (FCFS)",
+              "Shortest Job First (SJF)",
+              "Round Robin (RR)",
+              "Priority Scheduling"
+            ],
+            answerIndex: 1
+          },
+          {
+            question: "What is a deadlock in operating systems?",
+            type: "mcq",
+            options: [
+              "A situation where processes are waiting for each other indefinitely",
+              "A method to prevent memory leaks",
+              "A type of process scheduling algorithm", 
+              "A technique for file compression"
+            ],
+            answerIndex: 0
+          },
+          {
+            question: "Which memory management technique divides memory into fixed-size blocks?",
+            type: "mcq",
+            options: [
+              "Segmentation",
+              "Virtual Memory",
+              "Paging", 
+              "Dynamic Loading"
+            ],
+            answerIndex: 2
+          },
+          {
+            question: "What is the purpose of a semaphore in operating systems?",
+            type: "mcq",
+            options: [
+              "To manage file permissions",
+              "To synchronize access to shared resources",
+              "To allocate memory to processes",
+              "To schedule CPU time for processes"
+            ],
+            answerIndex: 1
+          }
+        ]
       };
     }
 
     async function expandShortOptions(questionText, shortOptions) {
       if (!OPENAI_KEY) return null;
       const prompt = `
-You are given a multiple choice question and a set of 1-letter choice labels (e.g. ["A","B","C","D"]) or similar short tokens.
-Produce STRICT JSON only: {"options":["full option A text","full option B text","full option C text","full option D text"], "answerIndex": <0-3>}
-Make options plausible, distinct, and relevant to the question. Use the original correct label if possible.
-Question:
-${questionText}
+You are an Operating Systems expert. Given a multiple choice question and short option labels, create detailed, meaningful options.
+
+IMPORTANT: Generate STRICT JSON only with this structure:
+{"options":["Full detailed option A for OS concept","Full detailed option B for OS concept","Full detailed option C for OS concept","Full detailed option D for OS concept"], "answerIndex": <0-3>}
+
+Requirements:
+- Make options comprehensive and technically accurate for Operating Systems
+- Each option should be a complete, meaningful statement about OS concepts
+- Options must be plausible but clearly distinguishable
+- Use proper OS terminology (processes, threads, memory, scheduling, etc.)
+- Only one option should be clearly correct
+- If short labels suggest content, expand appropriately
+
+Question: ${questionText}
 Short labels: ${JSON.stringify(shortOptions)}
 `;
       try {

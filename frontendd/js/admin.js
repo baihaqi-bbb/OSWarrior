@@ -15,6 +15,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const API_BASE = "https://oswarrior-backend.onrender.com";
 
 const profileImg = document.getElementById("profile-img");
 const profileName = document.getElementById("profile-name");
@@ -47,7 +48,7 @@ onAuthStateChanged(auth, async (user) => {
 
 async function loadLeaderboard() {
   try {
-    const res = await fetch("http://localhost:6000/api/leaderboard");
+    const res = await fetch(`${API_BASE}/api/leaderboard`);
     if (!res.ok) throw new Error("Failed fetching leaderboard");
     const data = await res.json();
     renderRows(data);
