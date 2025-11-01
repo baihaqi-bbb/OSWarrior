@@ -3066,9 +3066,179 @@ body.home-user.dark-theme .btn-action {
   animation: pulse-dot 2s infinite;
 }
 
+/* Search Warriors Container */
+.search-warriors-container {
+  padding: 12px 15px;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+  background: rgba(5, 15, 25, 0.8);
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(0, 20, 40, 0.6);
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.search-input-wrapper:focus-within {
+  border-color: rgba(0, 255, 255, 0.6);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+}
+
+#search-warriors {
+  flex: 1;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-family: 'Orbitron', monospace;
+  outline: none;
+  width: 100%;
+}
+
+#search-warriors::placeholder {
+  color: rgba(176, 224, 255, 0.6);
+  font-family: 'Orbitron', monospace;
+}
+
+.search-warriors-button {
+  background: linear-gradient(45deg, rgba(0, 255, 255, 0.2), rgba(0, 200, 255, 0.1));
+  border: none;
+  padding: 8px 10px;
+  border-radius: 0 6px 6px 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #00FFFF;
+  font-size: 12px;
+}
+
+.search-warriors-button:hover {
+  background: linear-gradient(45deg, rgba(0, 255, 255, 0.3), rgba(0, 200, 255, 0.2));
+  color: #FFFFFF;
+  box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+}
+
+.search-results {
+  margin-top: 8px;
+  max-height: 150px;
+  overflow-y: auto;
+  background: rgba(0, 20, 40, 0.8);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  border-radius: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 255, 255, 0.3) transparent;
+}
+
+.search-results::-webkit-scrollbar {
+  width: 4px;
+}
+
+.search-results::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.search-results::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-item:hover {
+  background: rgba(0, 255, 255, 0.1);
+}
+
+.search-result-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.search-result-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.search-result-name {
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: 'Orbitron', monospace;
+}
+
+.search-result-level {
+  color: rgba(0, 255, 255, 0.8);
+  font-size: 10px;
+  font-family: 'Orbitron', monospace;
+}
+
+.follow-btn {
+  padding: 4px 8px;
+  background: linear-gradient(45deg, rgba(0, 255, 136, 0.2), rgba(0, 204, 102, 0.1));
+  border: 1px solid rgba(0, 255, 136, 0.4);
+  border-radius: 4px;
+  color: #00FF88;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: 'Orbitron', monospace;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.follow-btn:hover {
+  background: linear-gradient(45deg, rgba(0, 255, 136, 0.3), rgba(0, 204, 102, 0.2));
+  color: #FFFFFF;
+  box-shadow: 0 0 6px rgba(0, 255, 136, 0.3);
+  transform: scale(1.05);
+}
+
+.follow-btn.following {
+  background: linear-gradient(45deg, rgba(255, 136, 0, 0.2), rgba(204, 102, 0, 0.1));
+  border-color: rgba(255, 136, 0, 0.4);
+  color: #FF8800;
+}
+
+.follow-btn.following:hover {
+  background: linear-gradient(45deg, rgba(255, 68, 68, 0.2), rgba(204, 68, 68, 0.1));
+  border-color: rgba(255, 68, 68, 0.4);
+  color: #FF4444;
+}
+
+.no-results {
+  padding: 15px;
+  text-align: center;
+  color: rgba(176, 224, 255, 0.6);
+  font-size: 11px;
+  font-family: 'Orbitron', monospace;
+}
+
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Players List Styles */

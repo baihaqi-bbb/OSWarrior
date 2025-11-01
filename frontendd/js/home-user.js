@@ -1097,6 +1097,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Setup sidebar toggle functionality
   setupSidebarToggle();
   
+  // Initialize search warriors functionality
+  initializeSearchWarriors();
+  
   // Setup dropdown button functions
   const toggleThemeBtn = document.getElementById("toggle-theme");
   if (toggleThemeBtn) {
@@ -1415,6 +1418,314 @@ async function loadLeaderboardForHome() {
     if (leaderboardContainer) {
       leaderboardContainer.innerHTML = '<p style="color: rgba(255,100,100,0.8); text-align: center;">Failed to load leaderboard</p>';
     }
+  }
+}
+
+// ===================================
+// SEARCH WARRIORS FUNCTIONALITY
+// ===================================
+
+let searchResults = [];
+let searchTimeout = null;
+
+/**
+ * Initialize search warriors functionality
+ */
+function initializeSearchWarriors() {
+  const searchInput = document.getElementById('search-warriors');
+  const searchBtn = document.getElementById('search-warriors-btn');
+  const searchResultsContainer = document.getElementById('search-results');
+  
+  if (!searchInput || !searchBtn || !searchResultsContainer) return;
+  
+  // Search on input with debounce
+  searchInput.addEventListener('input', (e) => {
+    const query = e.target.value.trim();
+    
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      if (query.length >= 2) {
+        searchWarriors(query);
+      } else {
+        hideSearchResults();
+      }
+    }, 300);
+  });
+  
+  // Search on button click
+  searchBtn.addEventListener('click', () => {
+    const query = searchInput.value.trim();
+    if (query.length >= 2) {
+      searchWarriors(query);
+    }
+  });
+  
+  // Search on Enter key
+  searchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      const query = searchInput.value.trim();
+      if (query.length >= 2) {
+        searchWarriors(query);
+      }
+    }
+  });
+  
+  // Hide search results when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-warriors-container')) {
+      hideSearchResults();
+    }
+  });
+}
+
+/**
+ * Search for warriors based on query
+ */
+async function searchWarriors(query) {
+  const searchResultsContainer = document.getElementById('search-results');
+  if (!searchResultsContainer) return;
+  
+  try {
+    // Show loading state
+    searchResultsContainer.style.display = 'block';
+    searchResultsContainer.innerHTML = `
+      <div class="search-result-item">
+        <div class="search-result-info">
+          <div class="loading-spinner" style="width: 16px; height: 16px; border: 2px solid rgba(0,255,255,0.3); border-top: 2px solid #00FFFF; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+          <span class="search-result-name">Searching warriors...</span>
+        </div>
+      </div>
+    `;
+    
+    // Search from cached players first (local search)
+    const localResults = searchLocalWarriors(query);
+    
+    // Also try to search from API for more comprehensive results
+    const apiResults = await searchWarriorsFromAPI(query);
+    
+    // Combine and deduplicate results
+    const combinedResults = combineSearchResults(localResults, apiResults);
+    
+    // Filter out current user
+    const currentUser = auth.currentUser;
+    const filteredResults = combinedResults.filter(warrior => 
+      warrior.uid !== (currentUser ? currentUser.uid : null)
+    );
+    
+    searchResults = filteredResults;
+    renderSearchResults(filteredResults);
+    
+  } catch (error) {
+    console.error('Search failed:', error);
+    searchResultsContainer.innerHTML = `
+      <div class="no-results">
+        ❌ Search failed. Please try again.
+      </div>
+    `;
+  }
+}
+
+/**
+ * Search from cached local players
+ */
+function searchLocalWarriors(query) {
+  const lowerQuery = query.toLowerCase();
+  
+  return playersCache.filter(warrior => {
+    const name = (warrior.displayName || warrior.name || warrior.email || '').toLowerCase();
+    const email = (warrior.email || '').toLowerCase();
+    const level = (warrior.level || Math.floor((warrior.totalXP || warrior.xp || 0) / 100) + 1).toString();
+    
+    return name.includes(lowerQuery) || 
+           email.includes(lowerQuery) || 
+           level.includes(lowerQuery);
+  }).slice(0, 10); // Limit to 10 results
+}
+
+/**
+ * Search warriors from API
+ */
+async function searchWarriorsFromAPI(query) {
+  try {
+    // Use existing /api/users endpoint instead of non-existent /api/search-users
+    const response = await fetch(`${API_BASE}/api/users`, {
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      // If users API fails, fall back to leaderboard
+      const leaderboardResponse = await fetch(`${API_BASE}/api/leaderboard`, {
+        credentials: 'include'
+      });
+      
+      if (leaderboardResponse.ok) {
+        const data = await leaderboardResponse.json();
+        const allWarriors = data.leaderboard || [];
+        return searchLocalWarriorsFromArray(allWarriors, query);
+      }
+      
+      return [];
+    }
+    
+    const data = await response.json();
+    const allUsers = data.users || [];
+    
+    // Transform API users data to match expected format
+    const transformedUsers = allUsers.map(user => ({
+      uid: user.userId || user.uid,
+      displayName: user.name || user.displayName,
+      email: user.email,
+      profileImage: user.photoURL || user.profileImage,
+      photoURL: user.photoURL,
+      avatar: user.photoURL || user.profileImage,
+      totalXP: user.xp || 0,
+      level: user.level || Math.floor((user.xp || 0) / 100) + 1
+    }));
+    
+    // Search through the transformed users data
+    return searchLocalWarriorsFromArray(transformedUsers, query);
+    
+  } catch (error) {
+    console.error('API search failed:', error);
+    return [];
+  }
+}
+
+/**
+ * Search from array of warriors
+ */
+function searchLocalWarriorsFromArray(warriors, query) {
+  const lowerQuery = query.toLowerCase();
+  
+  return warriors.filter(warrior => {
+    const name = (warrior.displayName || warrior.name || warrior.email || '').toLowerCase();
+    const email = (warrior.email || '').toLowerCase();
+    const level = (warrior.level || Math.floor((warrior.totalXP || warrior.xp || 0) / 100) + 1).toString();
+    
+    return name.includes(lowerQuery) || 
+           email.includes(lowerQuery) || 
+           level.includes(lowerQuery);
+  }).slice(0, 10);
+}
+
+/**
+ * Combine and deduplicate search results
+ */
+function combineSearchResults(localResults, apiResults) {
+  const combined = [...localResults];
+  const existingUids = new Set(localResults.map(warrior => warrior.uid));
+  
+  // Add API results that are not already in local results
+  apiResults.forEach(warrior => {
+    if (!existingUids.has(warrior.uid)) {
+      combined.push(warrior);
+    }
+  });
+  
+  return combined.slice(0, 15); // Limit total results to 15
+}
+
+/**
+ * Render search results
+ */
+function renderSearchResults(results) {
+  const searchResultsContainer = document.getElementById('search-results');
+  if (!searchResultsContainer) return;
+  
+  if (results.length === 0) {
+    searchResultsContainer.innerHTML = `
+      <div class="no-results">
+        🔍 No warriors found. Try a different search term.
+      </div>
+    `;
+    return;
+  }
+  
+  // Get following list from localStorage
+  const following = JSON.parse(localStorage.getItem('following') || '[]');
+  
+  searchResultsContainer.innerHTML = results.map(warrior => {
+    const name = escapeHtml(warrior.displayName || warrior.email || warrior.name || 'Unknown Warrior');
+    const avatar = warrior.profileImage || warrior.photoURL || warrior.avatar || DEFAULT_AVATAR;
+    const level = warrior.level || Math.floor((warrior.totalXP || 0) / 100) + 1;
+    const isFollowing = following.includes(warrior.uid);
+    
+    return `
+      <div class="search-result-item" onclick="openPlayerProfile('${warrior.uid || ''}')">
+        <div class="search-result-info">
+          <img src="${avatar}" alt="${name}" class="search-result-avatar" onerror="this.src='${DEFAULT_AVATAR}'">
+          <div>
+            <div class="search-result-name">${name}</div>
+            <div class="search-result-level">Level ${level}</div>
+          </div>
+        </div>
+        <button class="follow-btn ${isFollowing ? 'following' : ''}" 
+                onclick="followWarriorFromSearch(event, '${warrior.uid || ''}', '${name}')"
+                title="${isFollowing ? 'Unfollow' : 'Follow'}">
+          ${isFollowing ? 'Following' : 'Follow'}
+        </button>
+      </div>
+    `;
+  }).join('');
+  
+  searchResultsContainer.style.display = 'block';
+}
+
+/**
+ * Follow warrior from search results
+ */
+function followWarriorFromSearch(event, uid, name) {
+  event.stopPropagation();
+  
+  if (!uid) return;
+  
+  const followBtn = event.target;
+  const following = JSON.parse(localStorage.getItem('following') || '[]');
+  const isCurrentlyFollowing = following.includes(uid);
+  
+  // Disable button temporarily
+  followBtn.disabled = true;
+  
+  if (isCurrentlyFollowing) {
+    // Unfollow
+    const updatedFollowing = following.filter(id => id !== uid);
+    localStorage.setItem('following', JSON.stringify(updatedFollowing));
+    
+    followBtn.textContent = 'Follow';
+    followBtn.className = 'follow-btn';
+    followBtn.title = 'Follow';
+    
+    showNotification(`Unfollowed ${name}`, 'info');
+  } else {
+    // Follow
+    following.push(uid);
+    localStorage.setItem('following', JSON.stringify(following));
+    
+    followBtn.textContent = 'Following';
+    followBtn.className = 'follow-btn following';
+    followBtn.title = 'Unfollow';
+    
+    showNotification(`Now following ${name}!`, 'success');
+  }
+  
+  // Re-enable button
+  setTimeout(() => {
+    followBtn.disabled = false;
+  }, 500);
+  
+  // Update the main players list to reflect follow status
+  setTimeout(() => {
+    renderPlayersList(playersCache);
+  }, 100);
+}
+
+/**
+ * Hide search results
+ */
+function hideSearchResults() {
+  const searchResultsContainer = document.getElementById('search-results');
+  if (searchResultsContainer) {
+    searchResultsContainer.style.display = 'none';
   }
 }
 
