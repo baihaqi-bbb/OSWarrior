@@ -4,60 +4,62 @@ const auth = getAuth();
 const WEEKS_COUNT = 14;
 const API_BASE = "https://api.oswarrior.com"; // production API subdomain
 
-document.addEventListener("DOMContentLoaded", () => {
-  const fileEl = document.getElementById("file");
-  const weeksEl = document.getElementById("weeks");
-  const btn = document.getElementById("uploadBtn");
-  const out = document.getElementById("uploadOut") || (() => {
-    const p = document.createElement("pre"); p.id = "uploadOut"; document.body.appendChild(p); return p;
-  })();
-
-  if (!btn) {
-    console.warn("#uploadBtn not found in page");
-    return;
+// === SUCCESS MODAL ===
+function showSuccessModal(quiz, sourceFileName) {
+  const modal = document.getElementById("modal-success");
+  if (modal) {
+    // Update success details
+    document.getElementById("success-title").textContent = "🎉 Quiz Generated Successfully!";
+    document.getElementById("success-quiz-title").textContent = quiz.title || "Untitled Quiz";
+    document.getElementById("success-questions").textContent = quiz.questions?.length || "0";
+    document.getElementById("success-weeks").textContent = quiz.weeks || "Not specified";
+    document.getElementById("success-source").textContent = sourceFileName || "Unknown";
+    
+    modal.style.display = "flex";
+    
+    // Trigger animations
+    setTimeout(() => {
+      modal.classList.add("show");
+    }, 100);
   }
+}
 
-  btn.addEventListener("click", async () => {
-    try {
-      if (!fileEl || !fileEl.files || !fileEl.files[0]) {
-        alert("Sila pilih fail untuk diupload.");
-        return;
-      }
+function hideSuccessModal() {
+  const modal = document.getElementById("modal-success");
+  if (modal) {
+    modal.classList.remove("show");
+    setTimeout(() => {
+      modal.style.display = "none";
+    }, 300);
+  }
+}
 
-      // pastikan weeks ditakrifkan
-      let weeks = ["1"];
-      if (weeksEl && String(weeksEl.value).trim()) {
-        try {
-          // terima input sama ada "1" atau "1,2" atau JSON array
-          const raw = String(weeksEl.value).trim();
-          if (raw.startsWith("[")) weeks = JSON.parse(raw);
-          else weeks = raw.split(",").map(s => s.trim()).filter(Boolean);
-          if (!Array.isArray(weeks) || weeks.length === 0) weeks = ["1"];
-        } catch (e) {
-          weeks = [String(weeksEl.value).trim() || "1"];
-        }
-      }
+// === SUCCESS MODAL ACTIONS ===
+function viewQuiz(quizId) {
+  hideSuccessModal();
+  // Redirect to quiz view page
+  window.location.href = `quiz.html?id=${quizId}`;
+}
 
-      const form = new FormData();
-      form.append("file", fileEl.files[0]);
-      form.append("weeks", JSON.stringify(weeks));
+function uploadAnother() {
+  hideSuccessModal();
+  // Clear any selection and focus on file input
+  resetUploadForm();
+  document.getElementById("quiz-file").focus();
+}
 
-      const res = await fetch(`${API_BASE}/api/upload-notes`, { method: "POST", body: form });
-      const text = await res.text();
-      if (!res.ok) {
-        out.textContent = `Upload failed (${res.status}):\n${text}`;
-        throw new Error(text || `Status ${res.status}`);
-      }
+function closeSuccessModal() {
+  hideSuccessModal();
+}
 
-      try { out.textContent = JSON.stringify(JSON.parse(text), null, 2); } catch { out.textContent = text; }
-      alert("Upload berjaya");
-    } catch (err) {
-      console.error(err);
-      alert("Ralat upload: " + (err.message || err));
-    }
-  });
+// === INITIALIZATION ===
+document.addEventListener("DOMContentLoaded", () => {
+  initializeUploadPage();
+  loadExistingQuizzes();
+  updateStatsCards();
 });
 
+// === UI ELEMENTS ===
 const weekDropdownBtn = document.getElementById("week-dropdown-btn");
 const weekDropdownPanel = document.getElementById("week-dropdown-panel");
 const weekListEl = document.getElementById("week-list");
@@ -68,154 +70,896 @@ const selectedCountEl = document.getElementById("selected-count");
 const selectedChipsEl = document.getElementById("selected-chips");
 
 const chooseFileBtn = document.getElementById("choose-file");
+const fileInput = document.getElementById("file-input");
 const fileNameEl = document.getElementById("file-name");
+const fileSizeEl = document.getElementById("file-size");
 const uploadBtn = document.getElementById("upload-btn");
-const statusEl = document.getElementById("upload-status");
+const uploadProgressEl = document.getElementById("upload-progress");
+const uploadStatusEl = document.getElementById("upload-status");
 
 const uploadTableBody = document.querySelector("#uploadTable tbody");
+const searchInput = document.getElementById("search-quizzes");
+const filterWeekSelect = document.getElementById("filter-week");
 
+// === STATE VARIABLES ===
 let selectedWeeks = new Set();
 let selectedFile = null;
 let currentUser = null;
+let uploadedQuizzes = [];
 
-function buildWeekList(){
+// === INITIALIZATION FUNCTIONS ===
+function initializeUploadPage() {
+  buildWeekList();
+  updateUI();
+  setupEventListeners();
+  populateWeekFilter();
+  updateSelectedSummary();
+  
+  // Ensure dropdown starts hidden (same pattern as home admin)
+  if (weekDropdownPanel) {
+    weekDropdownPanel.classList.add("hidden");
+  }
+}
+
+function buildWeekList() {
+  if (!weekListEl) return;
+  
   weekListEl.innerHTML = "";
-  for (let i = 1; i <= WEEKS_COUNT; i++){
+  for (let i = 1; i <= WEEKS_COUNT; i++) {
     const row = document.createElement("label");
     row.className = "week-row";
-    row.innerHTML = `<input type="checkbox" data-week="${i}"> <span>Week ${i}</span>`;
+    row.innerHTML = `
+      <input type="checkbox" data-week="${i}"> 
+      <span>📚 Week ${i}</span>
+    `;
     weekListEl.appendChild(row);
   }
 }
-function updateUI(){
-  selectedCountEl.textContent = `(${selectedWeeks.size})`;
-  selectedChipsEl.innerHTML = "";
-  Array.from(selectedWeeks).sort((a,b)=>Number(a)-Number(b)).forEach(w=>{
-    const chip = document.createElement("span");
-    chip.className = "chip";
-    chip.innerHTML = `<span>Week ${w}</span><button data-week="${w}" aria-label="remove">✕</button>`;
-    selectedChipsEl.appendChild(chip);
+
+function populateWeekFilter() {
+  if (!filterWeekSelect) return;
+  
+  filterWeekSelect.innerHTML = '<option value="">All Weeks</option>';
+  for (let i = 1; i <= WEEKS_COUNT; i++) {
+    const option = document.createElement("option");
+    option.value = i;
+    option.textContent = `Week ${i}`;
+    filterWeekSelect.appendChild(option);
+  }
+}
+
+// === EVENT LISTENERS ===
+function setupEventListeners() {
+  // Week dropdown
+  weekDropdownBtn?.addEventListener("click", toggleWeekDropdown);
+  window.addEventListener("click", closeWeekDropdown);
+  weekListEl?.addEventListener("click", handleWeekRowClick);
+  weekListEl?.addEventListener("change", handleWeekCheckboxChange);
+  
+  // Week panel actions
+  selectAllBtn?.addEventListener("click", selectAllWeeks);
+  clearAllBtn?.addEventListener("click", clearAllWeeks);
+  doneWeeksBtn?.addEventListener("click", () => {
+    // Add visual feedback
+    if (doneWeeksBtn) {
+      doneWeeksBtn.textContent = "✅ Applied!";
+      doneWeeksBtn.style.background = "linear-gradient(135deg, #10B981, #059669)";
+      
+      setTimeout(() => {
+        doneWeeksBtn.textContent = "✅ Done";
+        doneWeeksBtn.style.background = "";
+      }, 1000);
+    }
+    
+    // Close dropdown
+    weekDropdownPanel?.classList.add("hidden");
+    
+    // Optional: Show notification
+    if (selectedWeeks.size > 0) {
+      console.log(`${selectedWeeks.size} week(s) selected successfully!`);
+    }
   });
-  uploadBtn.disabled = !(selectedWeeks.size && selectedFile && currentUser);
+  
+  // Chip removal
+  selectedChipsEl?.addEventListener("click", handleChipRemoval);
+  
+  // File selection
+  chooseFileBtn?.addEventListener("click", triggerFileSelection);
+  fileInput?.addEventListener("change", handleFileSelection);
+  
+  // Upload
+  uploadBtn?.addEventListener("click", handleUpload);
+  
+  // Quick actions
+  document.getElementById("refresh-data")?.addEventListener("click", refreshData);
+  document.getElementById("clear-all-data")?.addEventListener("click", clearAllData);
+  document.getElementById("export-data")?.addEventListener("click", exportData);
+  document.getElementById("upload-help")?.addEventListener("click", showUploadHelp);
+  
+  // Table controls
+  searchInput?.addEventListener("input", filterTable);
+  filterWeekSelect?.addEventListener("change", filterTable);
+  document.getElementById("refresh-table")?.addEventListener("click", refreshTable);
+  document.getElementById("export-table")?.addEventListener("click", exportTable);
+  
+  // Auth state
+  onAuthStateChanged(auth, handleAuthStateChange);
 }
 
-buildWeekList();
-updateUI();
+// === WEEK SELECTION FUNCTIONS ===
+function toggleWeekDropdown(e) {
+  e.stopPropagation();
+  weekDropdownPanel?.classList.toggle("hidden");
+}
 
-/* dropdown behaviour */
-weekDropdownBtn?.addEventListener("click", (e)=>{ e.stopPropagation(); weekDropdownPanel.classList.toggle("hidden"); });
-window.addEventListener("click", ()=> weekDropdownPanel?.classList.add("hidden"));
+function closeWeekDropdown(e) {
+  // If called from Done button (no event) or from window click
+  if (!e || (weekDropdownPanel && 
+      !weekDropdownPanel.contains(e.target) && 
+      !weekDropdownBtn.contains(e.target))) {
+    weekDropdownPanel.classList.add("hidden");
+  }
+}
 
-weekListEl?.addEventListener("click", (e)=>{
-  const lab = e.target.closest(".week-row");
-  if (!lab) return;
-  const cb = lab.querySelector("input[type=checkbox]");
-  cb.checked = !cb.checked;
-  cb.dispatchEvent(new Event("change", { bubbles:true }));
-});
+function handleWeekRowClick(e) {
+  const row = e.target.closest(".week-row");
+  if (!row) return;
+  
+  const checkbox = row.querySelector("input[type=checkbox]");
+  if (e.target !== checkbox) {
+    checkbox.checked = !checkbox.checked;
+    checkbox.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+}
 
-weekListEl?.addEventListener("change", (e)=>{
-  const cb = e.target;
-  const wk = cb.dataset.week;
-  if (!wk) return;
-  if (cb.checked) selectedWeeks.add(wk); else selectedWeeks.delete(wk);
+function handleWeekCheckboxChange(e) {
+  const checkbox = e.target;
+  const week = checkbox.dataset.week;
+  if (!week) return;
+  
+  const row = checkbox.closest('.week-row');
+  
+  if (checkbox.checked) {
+    selectedWeeks.add(week);
+    row.classList.add('selected');
+  } else {
+    selectedWeeks.delete(week);
+    row.classList.remove('selected');
+  }
+  
   updateUI();
-});
+  updateSelectedSummary();
+}
 
-/* panel shortcuts */
-selectAllBtn?.addEventListener("click", ()=>{
-  selectedWeeks = new Set(); for (let i=1;i<=WEEKS_COUNT;i++) selectedWeeks.add(String(i));
-  weekListEl.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = true);
-  updateUI();
-});
-clearAllBtn?.addEventListener("click", ()=>{
+function selectAllWeeks() {
   selectedWeeks.clear();
-  weekListEl.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
+  for (let i = 1; i <= WEEKS_COUNT; i++) {
+    selectedWeeks.add(String(i));
+  }
+  
+  weekListEl?.querySelectorAll("input[type=checkbox]").forEach(cb => {
+    cb.checked = true;
+    cb.closest('.week-row').classList.add('selected');
+  });
   updateUI();
-});
-doneWeeksBtn?.addEventListener("click", ()=> weekDropdownPanel.classList.add("hidden"));
-
-/* chip remove */
-selectedChipsEl?.addEventListener("click", (e)=>{
-  const btn = e.target.closest("button[data-week]");
-  if (!btn) return;
-  const wk = btn.dataset.week;
-  selectedWeeks.delete(wk);
-  const cb = weekListEl.querySelector(`input[data-week="${wk}"]`);
-  if (cb) cb.checked = false;
-  updateUI();
-});
-
-/* auth state */
-onAuthStateChanged(auth, user => {
-  currentUser = user;
-  uploadBtn.disabled = !(selectedWeeks.size && selectedFile && currentUser);
-});
-
-/* choose file */
-chooseFileBtn?.addEventListener("click", ()=>{
-  const inp = document.createElement("input");
-  inp.type = "file";
-  inp.accept = ".pdf,.docx,.txt";
-  inp.onchange = ()=> {
-    selectedFile = inp.files[0] || null;
-    fileNameEl.textContent = selectedFile ? selectedFile.name : "No file chosen";
-    uploadBtn.disabled = !(selectedWeeks.size && selectedFile && currentUser);
-  };
-  inp.click();
-});
-
-/* add row to table */
-function addQuizRow(quiz){
-  uploadTableBody.querySelectorAll(".empty-row").forEach(r=>r.remove());
-  const tr = document.createElement("tr");
-  const created = quiz.createdAt || new Date().toLocaleString();
-  tr.innerHTML = `
-    <td>${(quiz.weeks||[]).join(", ")}</td>
-    <td>${quiz.title || "Quiz"}</td>
-    <td>${quiz.sourceFileName || "-"}</td>
-    <td>${created}</td>
-    <td>${(quiz.questions||[]).length}</td>
-    <td><a href="admin-quizzes.html">Open</a></td>
-  `;
-  uploadTableBody.prepend(tr);
+  updateSelectedSummary();
 }
 
-/* upload handler */
-uploadBtn?.addEventListener("click", async ()=>{
-  if (!currentUser) return alert("Not authenticated as admin.");
-  if (!selectedFile) return alert("Choose a file first.");
-  if (!selectedWeeks.size) return alert("Select at least one week.");
+function clearAllWeeks() {
+  selectedWeeks.clear();
+  weekListEl?.querySelectorAll("input[type=checkbox]").forEach(cb => {
+    cb.checked = false;
+    cb.closest('.week-row').classList.remove('selected');
+  });
+  updateUI();
+  updateSelectedSummary();
+}
 
-  uploadBtn.disabled = true;
-  statusEl.textContent = "Uploading…";
+function updateSelectedSummary() {
+  const summaryEl = document.getElementById('selected-summary');
+  if (!summaryEl) return;
+  
+  const count = selectedWeeks.size;
+  if (count === 0) {
+    summaryEl.textContent = "No weeks selected";
+    summaryEl.classList.remove('has-selection');
+  } else if (count === 1) {
+    summaryEl.textContent = "1 week selected";
+    summaryEl.classList.add('has-selection');
+  } else {
+    summaryEl.textContent = `${count} weeks selected`;
+    summaryEl.classList.add('has-selection');
+  }
+}
 
+function handleChipRemoval(e) {
+  const button = e.target.closest("button[data-week]");
+  if (!button) return;
+  
+  const week = button.dataset.week;
+  selectedWeeks.delete(week);
+  
+  const checkbox = weekListEl?.querySelector(`input[data-week="${week}"]`);
+  if (checkbox) {
+    checkbox.checked = false;
+    checkbox.closest('.week-row').classList.remove('selected');
+  }
+  
+  updateUI();
+  updateSelectedSummary();
+}
+
+// === FILE HANDLING ===
+function triggerFileSelection() {
+  fileInput?.click();
+}
+
+function handleFileSelection(e) {
+  const file = e.target.files[0];
+  selectedFile = file;
+  
+  if (file) {
+    fileNameEl.textContent = file.name;
+    fileNameEl.classList.add("selected");
+    fileSizeEl.textContent = formatFileSize(file.size);
+  } else {
+    fileNameEl.textContent = "No file selected";
+    fileNameEl.classList.remove("selected");
+    fileSizeEl.textContent = "";
+  }
+  
+  updateUI();
+}
+
+function formatFileSize(bytes) {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+}
+
+// === UPLOAD HANDLING ===
+async function handleUpload() {
+  if (!currentUser) {
+    showNotification("❌ Not authenticated as admin", "error");
+    return;
+  }
+  
+  if (!selectedFile) {
+    showNotification("📁 Please select a file first", "warning");
+    return;
+  }
+  
+  if (selectedWeeks.size === 0) {
+    showNotification("📅 Please select at least one week", "warning");
+    return;
+  }
+  
+  // Show processing modal
+  showProcessingModal();
+  
   try {
     const idToken = await currentUser.getIdToken(true);
-    const form = new FormData();
-    form.append("file", selectedFile);
-    form.append("weeks", JSON.stringify(Array.from(selectedWeeks)));
-
-    const res = await fetch(`${API_BASE}/api/upload-notes`, {
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    formData.append("weeks", JSON.stringify(Array.from(selectedWeeks)));
+    
+    // Update processing steps
+    updateProcessingStep(1, "Reading file content...");
+    
+    const response = await fetch(`${API_BASE}/api/upload-notes`, {
       method: "POST",
-      headers: { "Authorization": "Bearer " + idToken },
-      body: form
+      headers: { 
+        "Authorization": "Bearer " + idToken 
+      },
+      body: formData
     });
-
-    const data = await res.json().catch(()=>null);
-    if (!res.ok) {
+    
+    updateProcessingStep(2, "Analyzing with GPT-4...");
+    
+    const data = await response.json().catch(() => null);
+    
+    if (!response.ok) {
       throw new Error(data?.error || data?.detail || "Upload failed");
     }
+    
+    updateProcessingStep(3, "Generating questions...");
+    
+    // Simulate some processing time for better UX
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    updateProcessingStep(4, "Finalizing quiz...");
+    
+    // Add quiz to table
+    const quiz = data?.quiz || {
+      weeks: Array.from(selectedWeeks),
+      title: data?.title || selectedFile.name.replace(/\.[^/.]+$/, ""),
+      sourceFileName: selectedFile.name,
+      questions: data?.questions || [],
+      createdAt: new Date().toISOString(),
+      status: "active"
+    };
+    
+    addQuizToTable(quiz);
+    uploadedQuizzes.push(quiz);
+    
+    // Success feedback
+    setTimeout(() => {
+      hideProcessingModal();
+      showSuccessModal(quiz, selectedFile.name);
+      resetUploadForm();
+      updateStatsCards();
+    }, 1000);
+    
+  } catch (error) {
+    console.error("Upload error:", error);
+    hideProcessingModal();
+    showNotification("❌ Upload error: " + (error.message || error), "error");
+  }
+}
 
-    // add to table using returned quiz if provided
-    const quiz = data?.quiz || { weeks: Array.from(selectedWeeks), title: data?.title || selectedFile.name, sourceFileName: selectedFile.name, questions: data?.questions || [] };
-    addQuizRow(quiz);
-    alert("Quiz generated: " + (data.quizId || ""));
-  } catch (err) {
-    console.error(err);
-    alert("Upload error: " + (err.message || err));
-  } finally {
-    uploadBtn.disabled = false;
-    statusEl.textContent = "";
+// === PROCESSING MODAL ===
+function showProcessingModal() {
+  const modal = document.getElementById("modal-upload-processing");
+  if (modal) {
+    modal.style.display = "flex";
+    resetProcessingSteps();
+  }
+}
+
+function hideProcessingModal() {
+  const modal = document.getElementById("modal-upload-processing");
+  if (modal) {
+    modal.style.display = "none";
+  }
+}
+
+function resetProcessingSteps() {
+  for (let i = 1; i <= 4; i++) {
+    const step = document.getElementById(`step-${i}`);
+    if (step) step.classList.remove("active");
+  }
+  
+  const progressFill = document.getElementById("processing-progress-fill");
+  if (progressFill) progressFill.style.width = "0%";
+  
+  const processingText = document.getElementById("processing-text");
+  if (processingText) processingText.textContent = "Starting AI analysis...";
+}
+
+function updateProcessingStep(stepNumber, text) {
+  // Activate current step
+  const currentStep = document.getElementById(`step-${stepNumber}`);
+  if (currentStep) currentStep.classList.add("active");
+  
+  // Deactivate previous step
+  if (stepNumber > 1) {
+    const prevStep = document.getElementById(`step-${stepNumber - 1}`);
+    if (prevStep) prevStep.classList.remove("active");
+  }
+  
+  // Update progress bar
+  const progressFill = document.getElementById("processing-progress-fill");
+  if (progressFill) {
+    progressFill.style.width = `${(stepNumber / 4) * 100}%`;
+  }
+  
+  // Update text
+  const processingText = document.getElementById("processing-text");
+  if (processingText) processingText.textContent = text;
+}
+
+// === TABLE MANAGEMENT ===
+function addQuizToTable(quiz) {
+  if (!uploadTableBody) return;
+  
+  // Remove empty state if exists
+  const emptyRow = uploadTableBody.querySelector(".empty-row");
+  if (emptyRow) emptyRow.remove();
+  
+  const row = document.createElement("tr");
+  const createdDate = new Date(quiz.createdAt || Date.now()).toLocaleDateString();
+  const questionCount = quiz.questions?.length || 0;
+  
+  row.innerHTML = `
+    <td class="col-week">📅 ${(quiz.weeks || []).join(", ")}</td>
+    <td class="col-title">📚 ${quiz.title || "Untitled Quiz"}</td>
+    <td class="col-source">📄 ${quiz.sourceFileName || "-"}</td>
+    <td class="col-created">⏰ ${createdDate}</td>
+    <td class="col-questions">${questionCount}</td>
+    <td class="col-status">
+      <span class="status-badge ${quiz.status || 'active'}">${quiz.status || 'Active'}</span>
+    </td>
+    <td class="col-actions">
+      <div class="action-buttons">
+        <a href="admin-quizzes.html?id=${quiz.id || ''}" class="action-btn view">👁️ View</a>
+        <button class="action-btn edit" onclick="editQuiz('${quiz.id || ''}')">✏️ Edit</button>
+        <button class="action-btn delete" onclick="deleteQuiz('${quiz.id || ''}')">🗑️ Delete</button>
+      </div>
+    </td>
+  `;
+  
+  uploadTableBody.insertBefore(row, uploadTableBody.firstChild);
+}
+
+function filterTable() {
+  const searchTerm = searchInput?.value.toLowerCase() || "";
+  const selectedWeek = filterWeekSelect?.value || "";
+  
+  const rows = uploadTableBody?.querySelectorAll("tr:not(.empty-row)") || [];
+  
+  rows.forEach(row => {
+    const title = row.querySelector(".col-title")?.textContent.toLowerCase() || "";
+    const weeks = row.querySelector(".col-week")?.textContent || "";
+    
+    const matchesSearch = title.includes(searchTerm);
+    const matchesWeek = !selectedWeek || weeks.includes(selectedWeek);
+    
+    row.style.display = (matchesSearch && matchesWeek) ? "" : "none";
+  });
+}
+
+// === UI UPDATE FUNCTIONS ===
+function updateUI() {
+  // Update selected count
+  if (selectedCountEl) {
+    selectedCountEl.textContent = `(${selectedWeeks.size})`;
+  }
+  
+  // Update selected chips
+  if (selectedChipsEl) {
+    selectedChipsEl.innerHTML = "";
+    const sortedWeeks = Array.from(selectedWeeks).sort((a, b) => Number(a) - Number(b));
+    
+    sortedWeeks.forEach(week => {
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      chip.innerHTML = `
+        <span>Week ${week}</span>
+        <button class="remove-chip" data-week="${week}" aria-label="Remove week ${week}">✕</button>
+      `;
+      selectedChipsEl.appendChild(chip);
+    });
+  }
+  
+  // Update upload button state
+  if (uploadBtn) {
+    uploadBtn.disabled = !(selectedWeeks.size > 0 && selectedFile && currentUser);
+  }
+}
+
+function resetUploadForm() {
+  // Clear weeks
+  selectedWeeks.clear();
+  weekListEl?.querySelectorAll("input[type=checkbox]").forEach(cb => {
+    cb.checked = false;
+  });
+  
+  // Clear file
+  selectedFile = null;
+  if (fileInput) fileInput.value = "";
+  if (fileNameEl) {
+    fileNameEl.textContent = "No file selected";
+    fileNameEl.classList.remove("selected");
+  }
+  if (fileSizeEl) fileSizeEl.textContent = "";
+  
+  updateUI();
+}
+
+function updateStatsCards() {
+  // Update total files
+  const totalFilesEl = document.getElementById("total-files");
+  if (totalFilesEl) {
+    totalFilesEl.textContent = uploadedQuizzes.length;
+  }
+  
+  // Update generated quizzes
+  const generatedQuizzesEl = document.getElementById("generated-quizzes");
+  if (generatedQuizzesEl) {
+    generatedQuizzesEl.textContent = uploadedQuizzes.length;
+  }
+  
+  // Update processing status
+  const processingStatusEl = document.getElementById("processing-status");
+  if (processingStatusEl) {
+    processingStatusEl.textContent = "Ready";
+  }
+  
+  // Update storage used (approximate)
+  const storageUsedEl = document.getElementById("storage-used");
+  if (storageUsedEl) {
+    const totalSize = uploadedQuizzes.reduce((sum, quiz) => sum + (quiz.fileSize || 0), 0);
+    storageUsedEl.textContent = Math.round(totalSize / (1024 * 1024)) || "-";
+  }
+  
+  // Update badges
+  const uploadsBadge = document.getElementById("uploads-badge");
+  if (uploadsBadge) {
+    uploadsBadge.textContent = uploadedQuizzes.length;
+  }
+  
+  const quizCountBadge = document.getElementById("quiz-count-badge");
+  if (quizCountBadge) {
+    quizCountBadge.textContent = uploadedQuizzes.length;
+  }
+}
+
+// === AUTH HANDLING ===
+function handleAuthStateChange(user) {
+  currentUser = user;
+  updateUI();
+  
+  if (!user) {
+    uploadStatusEl.textContent = "Please login as admin";
+  } else {
+    uploadStatusEl.textContent = "Ready to upload";
+  }
+}
+
+// === DATA LOADING ===
+async function loadExistingQuizzes() {
+  try {
+    // This would typically fetch from your API
+    // For now, we'll use local storage or empty array
+    const stored = localStorage.getItem("uploaded-quizzes");
+    uploadedQuizzes = stored ? JSON.parse(stored) : [];
+    
+    // Populate table
+    if (uploadTableBody) {
+      if (uploadedQuizzes.length === 0) {
+        uploadTableBody.innerHTML = `
+          <tr class="empty-row">
+            <td colspan="7" class="empty-state">
+              <div class="empty-content">
+                <div class="empty-icon">🎯</div>
+                <h4>No Generated Quizzes Yet</h4>
+                <p>Upload course materials above to automatically generate AI-powered quizzes</p>
+                <button class="btn-primary small" onclick="document.getElementById('choose-file').click()">
+                  📤 Upload First File
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      } else {
+        uploadTableBody.innerHTML = "";
+        uploadedQuizzes.forEach(quiz => addQuizToTable(quiz));
+      }
+    }
+    
+    updateStatsCards();
+  } catch (error) {
+    console.error("Error loading quizzes:", error);
+  }
+}
+
+// === GLOBAL FUNCTIONS (for onclick handlers) ===
+window.editQuiz = function(quizId) {
+  showNotification("✏️ Edit feature coming soon...", "info");
+};
+
+window.deleteQuiz = function(quizId) {
+  // Use custom confirmation modal instead of browser confirm
+  showConfirmationModal(
+    "🗑️ Delete Quiz",
+    "Are you sure you want to delete this quiz? This action cannot be undone.",
+    "danger"
+  ).then((confirmed) => {
+    if (confirmed) {
+      uploadedQuizzes = uploadedQuizzes.filter(quiz => quiz.id !== quizId);
+      localStorage.setItem("uploaded-quizzes", JSON.stringify(uploadedQuizzes));
+      loadExistingQuizzes();
+      showNotification("✅ Quiz deleted successfully!", "success");
+    }
+  });
+};
+
+window.viewQuiz = viewQuiz;
+window.uploadAnother = uploadAnother;
+window.closeSuccessModal = closeSuccessModal;
+
+// === QUICK ACTIONS FUNCTIONALITY ===
+document.addEventListener("DOMContentLoaded", function() {
+  // Quick Actions event listeners
+  const refreshBtn = document.getElementById("refresh-data");
+  const clearAllBtn = document.getElementById("clear-all-data");
+  const exportBtn = document.getElementById("export-data");
+  const helpBtn = document.getElementById("upload-help");
+
+  if (refreshBtn) {
+    refreshBtn.addEventListener("click", handleRefreshData);
+  }
+  if (clearAllBtn) {
+    clearAllBtn.addEventListener("click", handleClearAllData);
+  }
+  if (exportBtn) {
+    exportBtn.addEventListener("click", handleExportData);
+  }
+  if (helpBtn) {
+    helpBtn.addEventListener("click", handleUploadHelp);
+  }
+});
+
+// Quick Actions handlers
+async function handleRefreshData() {
+  showNotification('🔄 Refreshing upload data...', 'info');
+  
+  try {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // Reload quizzes and update stats
+    await loadExistingQuizzes();
+    updateStatsCards();
+    
+    showNotification('✅ Upload data refreshed successfully', 'success');
+  } catch (error) {
+    showNotification('❌ Failed to refresh data: ' + error.message, 'error');
+  }
+}
+
+async function handleClearAllData() {
+  // Show confirmation modal
+  const confirmed = await showConfirmationModal(
+    '🗑️ Clear All Data',
+    'Are you sure you want to delete all uploaded quizzes? This action cannot be undone.',
+    'warning'
+  );
+  
+  if (confirmed) {
+    showNotification('🧹 Clearing all upload data...', 'warning');
+    
+    try {
+      // Clear data
+      uploadedQuizzes = [];
+      localStorage.removeItem("uploaded-quizzes");
+      
+      // Update UI
+      await loadExistingQuizzes();
+      updateStatsCards();
+      
+      showNotification('✅ All upload data cleared successfully', 'success');
+    } catch (error) {
+      showNotification('❌ Failed to clear data: ' + error.message, 'error');
+    }
+  }
+}
+
+async function handleExportData() {
+  showNotification('📊 Preparing export...', 'info');
+  
+  try {
+    // Simulate export preparation
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Create export data
+    const exportData = {
+      exportDate: new Date().toISOString(),
+      totalQuizzes: uploadedQuizzes.length,
+      quizzes: uploadedQuizzes.map(quiz => ({
+        id: quiz.id,
+        title: quiz.title,
+        weeks: quiz.weeks,
+        questions: quiz.questions?.length || 0,
+        sourceFile: quiz.sourceFileName,
+        createdAt: quiz.createdAt,
+        status: quiz.status
+      }))
+    };
+    
+    // Create download
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", `quiz-export-${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+    
+    showNotification('✅ Export completed successfully', 'success');
+  } catch (error) {
+    showNotification('❌ Export failed: ' + error.message, 'error');
+  }
+}
+
+function handleUploadHelp() {
+  showHelpModal();
+}
+
+// === NOTIFICATION SYSTEM ===
+function showNotification(message, type = 'info') {
+  // Remove existing notifications
+  const existingNotifications = document.querySelectorAll('.admin-notification');
+  existingNotifications.forEach(notification => notification.remove());
+  
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = `admin-notification notification-${type}`;
+  notification.innerHTML = `
+    <div class="notification-content">
+      <span class="notification-icon">${getNotificationIcon(type)}</span>
+      <span class="notification-message">${message}</span>
+      <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+    </div>
+  `;
+  
+  // Add exact styles from home-admin
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(5, 15, 25, 0.9);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 10px;
+    padding: 15px 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    max-width: 400px;
+    animation: slideInRight 0.3s ease;
+    font-family: 'Poppins', sans-serif;
+    color: #FFFFFF;
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // Auto remove after 5 seconds
+  setTimeout(() => {
+    if (notification.parentElement) {
+      notification.remove();
+    }
+  }, 5000);
+}
+
+function getNotificationIcon(type) {
+  const icons = {
+    info: 'ℹ️',
+    success: '✅',
+    warning: '⚠️',
+    error: '❌'
+  };
+  return icons[type] || '📢';
+}
+
+// === CONFIRMATION MODAL ===
+function showConfirmationModal(title, message, type = 'warning') {
+  return new Promise((resolve) => {
+    // Remove existing modal
+    const existingModal = document.getElementById('confirmation-modal');
+    if (existingModal) {
+      existingModal.remove();
+    }
+    
+    // Create modal
+    const modal = document.createElement('div');
+    modal.id = 'confirmation-modal';
+    modal.className = 'modal';
+    modal.innerHTML = `
+      <div class="modal-content confirmation-content">
+        <div class="confirmation-header">
+          <div class="confirmation-icon ${type}">
+            ${type === 'warning' ? '⚠️' : type === 'danger' ? '🚨' : 'ℹ️'}
+          </div>
+          <h3>${title}</h3>
+        </div>
+        <div class="confirmation-body">
+          <p>${message}</p>
+        </div>
+        <div class="confirmation-actions">
+          <button class="btn-confirmation cancel" onclick="resolveConfirmation(false)">Cancel</button>
+          <button class="btn-confirmation confirm ${type}" onclick="resolveConfirmation(true)">Confirm</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.style.display = 'flex';
+    
+    // Store resolve function globally
+    window.resolveConfirmation = (result) => {
+      modal.remove();
+      delete window.resolveConfirmation;
+      resolve(result);
+    };
+    
+    // Close on outside click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        window.resolveConfirmation(false);
+      }
+    });
+  });
+}
+
+// === HELP MODAL ===
+function showHelpModal() {
+  // Remove existing modal
+  const existingModal = document.getElementById('help-modal');
+  if (existingModal) {
+    existingModal.remove();
+  }
+  
+  // Create modal
+  const modal = document.createElement('div');
+  modal.id = 'help-modal';
+  modal.className = 'modal';
+  modal.innerHTML = `
+    <div class="modal-content help-content">
+      <div class="help-header">
+        <div class="help-icon">❓</div>
+        <h3>Upload Help & Guidelines</h3>
+        <button class="close-btn" onclick="document.getElementById('help-modal').remove()">×</button>
+      </div>
+      <div class="help-body">
+        <div class="help-section">
+          <h4>📤 Supported File Types</h4>
+          <ul>
+            <li><strong>PDF</strong> - Lecture notes, textbooks, research papers</li>
+            <li><strong>DOCX</strong> - Word documents, assignments</li>
+            <li><strong>TXT</strong> - Plain text files, code documentation</li>
+          </ul>
+        </div>
+        
+        <div class="help-section">
+          <h4>🎯 Best Practices</h4>
+          <ul>
+            <li>Use clear, well-structured content for better quiz generation</li>
+            <li>Select appropriate weeks to organize your quizzes</li>
+            <li>Ensure file size is under 10MB for optimal processing</li>
+            <li>Include detailed topic information in your documents</li>
+          </ul>
+        </div>
+        
+        <div class="help-section">
+          <h4>⚡ Quick Actions</h4>
+          <ul>
+            <li><strong>Refresh</strong> - Reload all quiz data and update statistics</li>
+            <li><strong>Clear All</strong> - Remove all uploaded quizzes (with confirmation)</li>
+            <li><strong>Export</strong> - Download quiz data as JSON file</li>
+            <li><strong>Help</strong> - Show this help dialog</li>
+          </ul>
+        </div>
+        
+        <div class="help-section">
+          <h4>🔧 Troubleshooting</h4>
+          <ul>
+            <li>If upload fails, check your internet connection</li>
+            <li>Large files may take longer to process</li>
+            <li>Contact admin if processing takes more than 5 minutes</li>
+            <li>Clear browser cache if experiencing issues</li>
+          </ul>
+        </div>
+      </div>
+      <div class="help-footer">
+        <button class="btn-primary" onclick="document.getElementById('help-modal').remove()">Got It!</button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  modal.style.display = 'flex';
+  
+  // Close on outside click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  });
+}
+
+// === MODAL CLOSE EVENTS ===
+document.addEventListener("click", (e) => {
+  if (e.target.classList.contains("modal")) {
+    hideProcessingModal();
+    hideSuccessModal();
+  }
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    hideProcessingModal();
+    hideSuccessModal();
   }
 });

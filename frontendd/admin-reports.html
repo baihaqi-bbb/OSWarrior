@@ -1,24 +1,47 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Admin — Reports</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OSWarrior Admin - Reports & Analytics</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/navbar-shared.css">
   <link rel="stylesheet" href="css/home-admin.css" />
   <link rel="stylesheet" href="css/admin-reports.css" />
+  <link rel="stylesheet" href="css/profile-navbar.css">
   <link rel="stylesheet" href="css/profile-dropdown.css" />
+  <link rel="stylesheet" href="css/responsive-utilities.css" />
 </head>
 <body class="home-admin">
-  <div class="navbar">
-    <h1>Reports</h1>
-    <div class="navbar-right">
+  <!-- Navbar - Same as home admin -->
+  <div class="navbar" style="background: rgba(5, 15, 25, 0.95) !important; padding: 15px 30px !important; display: flex !important; justify-content: space-between !important; align-items: center !important; border-bottom: 2px solid rgba(0, 255, 255, 0.6) !important; backdrop-filter: blur(25px) !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; z-index: 1000 !important; box-shadow: 0 2px 15px rgba(0, 255, 255, 0.3) !important; height: 70px !important; min-height: 70px !important; max-height: 70px !important;">
+    <div class="navbar-left" style="display: flex !important; align-items: center !important; gap: 20px !important;">
+      <img src="image/os-warrior-logo.png" alt="OS Warrior" class="navbar-logo" style="height: 55px !important; width: auto !important; filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.7)) !important; transition: all 0.3s ease !important;">
+      <h1 style="color: #00FFFF !important; font-size: 1.8rem !important; font-weight: 700 !important; margin: 0 !important; text-shadow: 0 0 15px rgba(0, 255, 255, 0.6) !important; font-family: 'Orbitron', monospace !important; letter-spacing: 1px !important; transition: all 0.3s ease !important;">📊 Reports & Analytics</h1>
+    </div>
+    <div class="navbar-right" style="display: flex !important; align-items: center !important; flex-shrink: 0 !important; overflow: visible !important; position: relative !important;">
       <div class="profile-container" id="profile-toggle">
         <span id="username-navbar">Admin</span>
         <img id="profile-img" class="profile-img" src="image/default-profile.png" alt="Profile"/>
+        
+        <!-- Profile Dropdown - Inside profile container for proper positioning -->
         <div id="profile-dropdown" class="profile-dropdown hidden">
           <a id="view-profile" href="profile.html">👤 View Profile</a>
           <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
+
+          <!-- 🧰 Quick Settings Section -->
           <div class="settings-section">
+            <p class="settings-title">⚙️ Quick Settings</p>
+            <button id="toggle-theme">🌗 Dark / Light Mode</button>
+            <button id="change-avatar">🖼️ Change Avatar</button>
+            <button id="edit-name">✏️ Edit Name</button>
+          </div>
+
+          <button id="logout-btn">🚪 Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
             <p class="settings-title">⚙️ Quick Settings</p>
             <button id="toggle-theme">🌗 Dark / Light Mode</button>
           </div>

@@ -1,90 +1,370 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Admin — Upload Notes</title>
-  <link rel="stylesheet" href="css/home-admin.css" />
-  <link rel="stylesheet" href="css/admin-upload.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OSWarrior Admin - Content Upload</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/navbar-shared.css">
+  <link rel="stylesheet" href="css/home-admin.css">
+  <link rel="stylesheet" href="css/profile-navbar.css">
   <link rel="stylesheet" href="css/profile-dropdown.css" />
+  <link rel="stylesheet" href="css/admin-upload.css" />
+  <link rel="stylesheet" href="css/responsive-utilities.css" />
 </head>
 <body class="home-admin">
-  <div class="navbar">
-    <h1>Upload Notes & Generate Questions</h1>
+  <!-- Navbar - Same as home admin -->
+  <div class="navbar" style="background: rgba(5, 15, 25, 0.95) !important; padding: 15px 30px !important; display: flex !important; justify-content: space-between !important; align-items: center !important; border-bottom: 2px solid rgba(0, 255, 255, 0.6) !important; backdrop-filter: blur(25px) !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; z-index: 1000 !important; box-shadow: 0 2px 15px rgba(0, 255, 255, 0.3) !important; height: 70px !important; min-height: 70px !important; max-height: 70px !important;">
+    <div class="navbar-left" style="display: flex !important; align-items: center !important; gap: 20px !important;">
+      <img src="image/os-warrior-logo.png" alt="OS Warrior" class="navbar-logo" style="height: 55px !important; width: auto !important; filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.7)) !important; transition: all 0.3s ease !important;">
+      <h1 style="color: #00FFFF !important; font-size: 1.8rem !important; font-weight: 700 !important; margin: 0 !important; text-shadow: 0 0 15px rgba(0, 255, 255, 0.6) !important; font-family: 'Orbitron', monospace !important; letter-spacing: 1px !important; transition: all 0.3s ease !important;">📤 Content Upload</h1>
+    </div>
+    <div class="navbar-right" style="display: flex !important; align-items: center !important; flex-shrink: 0 !important; overflow: visible !important; position: relative !important;">
+      <div class="profile-container" id="profile-toggle">
+        <span id="username-navbar">Admin</span>
+        <img id="profile-img" class="profile-img" src="image/default-profile.png" alt="Profile"/>
+        
+        <!-- Profile Dropdown - Inside profile container for proper positioning -->
+        <div id="profile-dropdown" class="profile-dropdown hidden">
+          <a id="view-profile" href="profile.html">👤 View Profile</a>
+          <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
 
-    <!-- profile container (sama sebijik seperti yang digunakan di home-admin.js) -->
-    <div class="profile-container">
-      <span class="profile-name" id="username-navbar">Admin</span>
-      <img id="profile-img" class="profile-img" src="image/default-profile.png" alt="Profile"/>
-      <div id="profile-dropdown" class="profile-dropdown" role="menu" aria-hidden="true">
-        <a id="view-profile" href="profile.html">👤 View Profile</a>
-        <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
-        <div class="sep"></div>
-        <button id="toggle-theme">🌗 Toggle theme</button>
-        <button id="change-avatar">🖼️ Change avatar</button>
-        <button id="edit-name">✏️ Edit name</button>
-        <div class="sep"></div>
-        <button id="logout-btn">🚪 Logout</button>
+          <!-- 🧰 Quick Settings Section -->
+          <div class="settings-section">
+            <p class="settings-title">⚙️ Quick Settings</p>
+            <button id="toggle-theme">🌗 Dark / Light Mode</button>
+            <button id="change-avatar">🖼️ Change Avatar</button>
+            <button id="edit-name">✏️ Edit Name</button>
+          </div>
+
+          <button id="logout-btn">🚪 Logout</button>
+        </div>
       </div>
     </div>
-    <!-- end profile container -->
   </div>
 
-  <main style="padding:20px; max-width:1000px; margin:auto">
-    <section class="card upload-card" style="padding:18px; border-radius:12px;">
-      <label class="label-muted">Select weeks (choose one or more)</label>
+  <!-- Quick Stats Overview -->
+  <section class="stats-dashboard">
+    <div class="stats-container">
+      <div class="stat-card" id="upload-stats-card">
+        <div class="stat-icon">📁</div>
+        <div class="stat-content">
+          <h3>Total Files</h3>
+          <div class="stat-number" id="total-files">-</div>
+          <div class="stat-change neutral" id="files-change">Uploaded files</div>
+        </div>
+      </div>
+      
+      <div class="stat-card" id="quiz-generated-card">
+        <div class="stat-icon">🧩</div>
+        <div class="stat-content">
+          <h3>Generated Quizzes</h3>
+          <div class="stat-number" id="generated-quizzes">-</div>
+          <div class="stat-change positive" id="quizzes-generated-change">AI Generated</div>
+        </div>
+      </div>
+      
+      <div class="stat-card" id="processing-card">
+        <div class="stat-icon">⚡</div>
+        <div class="stat-content">
+          <h3>Processing</h3>
+          <div class="stat-number" id="processing-status">Ready</div>
+          <div class="stat-change neutral" id="processing-change">System status</div>
+        </div>
+      </div>
+      
+      <div class="stat-card" id="storage-card">
+        <div class="stat-icon">💾</div>
+        <div class="stat-content">
+          <h3>Storage Used</h3>
+          <div class="stat-number" id="storage-used">-</div>
+          <div class="stat-change neutral" id="storage-change">MB used</div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-      <div style="display:flex;gap:12px;align-items:center;margin-top:8px;">
-        <div class="dropdown" id="week-dropdown">
-          <button id="week-dropdown-btn" class="dropdown-btn">Select weeks <span id="selected-count">(0)</span></button>
-          <div id="week-dropdown-panel" class="dropdown-panel hidden" role="listbox" aria-multiselectable="true">
-            <div class="panel-actions">
-              <button id="select-all" class="btn">All</button>
-              <button id="clear-all" class="btn ghost">Clear</button>
+  <!-- Main Upload Content -->
+  <section class="admin-modules">
+    <h2>📤 Upload & Generate Content</h2>
+    <div class="upload-main-container">
+      <!-- Upload Form Card -->
+      <div class="module-card upload-form-card">
+        <div class="module-header">
+          <span class="module-icon">📄</span>
+          <div class="module-badge" id="uploads-badge">0</div>
+        </div>
+        <div class="module-content">
+          <h3>Upload Course Materials</h3>
+          <p>Upload lecture notes, PDFs, or text files to automatically generate AI-powered quizzes using GPT-4.</p>
+          
+          <!-- Week Selection -->
+          <div class="upload-form-section">
+            <label class="upload-label">📅 Select Week(s)</label>
+            <div class="week-selection-container">
+              <div class="dropdown" id="week-dropdown">
+                <button id="week-dropdown-btn" class="dropdown-btn cyber-btn">
+                  <span>📅 Select weeks</span>
+                  <span id="selected-count" class="count-badge">(0)</span>
+                </button>
+                <div id="week-dropdown-panel" class="dropdown-panel hidden">
+                  <div class="panel-header">
+                    <h4>📚 Course Weeks</h4>
+                    <div class="panel-actions">
+                      <button id="select-all" class="btn-sm primary">Select All</button>
+                      <button id="clear-all" class="btn-sm secondary">Clear</button>
+                    </div>
+                  </div>
+                  <div id="week-list" class="week-list"></div>
+                  <div class="panel-footer">
+                    <div class="selected-summary" id="selected-summary">No weeks selected</div>
+                    <button id="done-weeks" class="btn-primary">✅ Done</button>
+                  </div>
+                </div>
+              </div>
+              <div id="selected-chips" class="weeks-selected"></div>
             </div>
-            <div id="week-list" class="week-list" aria-live="polite"></div>
-            <div style="display:flex;justify-content:flex-end;margin-top:10px">
-              <button id="done-weeks" class="btn primary">Done</button>
+          </div>
+
+          <!-- File Upload -->
+          <div class="upload-form-section">
+            <label class="upload-label">📁 Select File</label>
+            <div class="file-upload-container">
+              <input type="file" id="file-input" class="file-input" accept=".pdf,.txt,.docx,.md" hidden>
+              <button id="choose-file" class="file-choose-btn cyber-btn">
+                <span class="btn-icon">📁</span>
+                <span>Choose File</span>
+              </button>
+              <div class="file-info">
+                <span id="file-name" class="file-name">No file selected</span>
+                <span id="file-size" class="file-size"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Upload Button -->
+          <div class="upload-form-section">
+            <div class="upload-action-container">
+              <button id="upload-btn" class="upload-btn-main" disabled>
+                <span class="btn-icon">🚀</span>
+                <span>Upload & Generate Quiz</span>
+                <span class="btn-subtitle">Powered by GPT-4</span>
+              </button>
+              <div class="upload-status-container">
+                <div id="upload-progress" class="progress-bar hidden">
+                  <div class="progress-fill"></div>
+                </div>
+                <span id="upload-status" class="upload-status">Ready to upload</span>
+              </div>
             </div>
           </div>
         </div>
-
-        <div id="selected-chips" class="weeks-selected" aria-live="polite"></div>
       </div>
 
-      <div style="display:flex;gap:12px;align-items:center;margin:18px 0;">
-        <button id="choose-file" class="btn">Choose file</button>
-        <span id="file-name" class="muted">No file chosen</span>
-      </div>
-
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:18px;">
-        <button id="upload-btn" class="btn primary" disabled>Upload & Generate (GPT-4)</button>
-        <span id="upload-status" class="muted" style="margin-left:10px"></span>
-      </div>
-
-      <!-- Generated quizzes table -->
-      <div class="upload-table-card">
-        <h3 class="muted" style="margin:0 0 12px 0">Generated quizzes</h3>
-        <div class="table-responsive">
-          <table class="upload-table" id="uploadTable" aria-live="polite">
-            <thead>
-              <tr>
-                <th style="width:130px">Weeks</th>
-                <th>Title</th>
-                <th style="width:160px">Source file</th>
-                <th style="width:140px">Created</th>
-                <th style="width:90px">Q</th>
-                <th style="width:110px">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="empty-row"><td colspan="6" class="muted" style="text-align:center;padding:18px">No generated quizzes yet</td></tr>
-            </tbody>
-          </table>
+      <!-- Quick Actions Panel -->
+      <div class="module-card quick-actions-card">
+        <div class="module-header">
+          <span class="module-icon">⚡</span>
+        </div>
+        <div class="module-content">
+          <h3>Quick Actions</h3>
+          <div class="quick-actions-grid">
+            <button class="action-btn-small info" id="refresh-data">
+              <span class="action-icon">🔄</span>
+              <span>Refresh</span>
+            </button>
+            <button class="action-btn-small warning" id="clear-all-data">
+              <span class="action-icon">🗑️</span>
+              <span>Clear All</span>
+            </button>
+            <button class="action-btn-small success" id="export-data">
+              <span class="action-icon">📊</span>
+              <span>Export</span>
+            </button>
+            <button class="action-btn-small emergency" id="upload-help">
+              <span class="action-icon">❓</span>
+              <span>Help</span>
+            </button>
+          </div>
+          
+          <div class="upload-tips">
+            <h4>📋 Upload Tips</h4>
+            <ul>
+              <li>💡 Supported formats: PDF, TXT, DOCX, MD</li>
+              <li>📏 Max file size: 10MB</li>
+              <li>🔤 Best quality with clear, structured text</li>
+              <li>⚡ AI processing takes 30-60 seconds</li>
+            </ul>
+          </div>
         </div>
       </div>
-    </section>
-  </main>
+    </div>
+  </section>
 
+  <!-- Generated Quizzes Table -->
+  <section class="admin-modules">
+    <h2>🎯 Generated Quizzes</h2>
+    <div class="modules-grid single-column">
+      <div class="module-card generated-quizzes-card">
+        <div class="module-header">
+          <span class="module-icon">🎯</span>
+          <div class="module-badge quiz-badge" id="quiz-count-badge">0</div>
+        </div>
+        <div class="module-content">
+          <h3>Quiz Library</h3>
+          <p>All AI-generated quizzes from uploaded content. Click to preview, edit, or manage quiz settings.</p>
+          
+          <!-- Table Controls -->
+          <div class="table-controls">
+            <div class="table-filters">
+              <input type="text" id="search-quizzes" class="search-input" placeholder="🔍 Search quizzes...">
+              <select id="filter-week" class="filter-select">
+                <option value="">All Weeks</option>
+              </select>
+            </div>
+            <div class="table-actions">
+              <button class="btn-sm primary" id="refresh-table">🔄 Refresh</button>
+              <button class="btn-sm secondary" id="export-table">📊 Export</button>
+            </div>
+          </div>
+
+          <!-- Generated Quizzes Table -->
+          <div class="table-container">
+            <div class="table-responsive">
+              <table class="upload-table modern-table" id="uploadTable">
+                <thead>
+                  <tr>
+                    <th class="col-week">📅 Week</th>
+                    <th class="col-title">📚 Quiz Title</th>
+                    <th class="col-source">📄 Source File</th>
+                    <th class="col-created">⏰ Created</th>
+                    <th class="col-questions">❓ Questions</th>
+                    <th class="col-status">📊 Status</th>
+                    <th class="col-actions">⚡ Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="empty-row">
+                    <td colspan="7" class="empty-state">
+                      <div class="empty-content">
+                        <div class="empty-icon">🎯</div>
+                        <h4>No Generated Quizzes Yet</h4>
+                        <p>Upload course materials above to automatically generate AI-powered quizzes</p>
+                        <button class="btn-primary small" onclick="document.getElementById('choose-file').click()">
+                          📤 Upload First File
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal Edit Name -->
+  <div id="modal-edit-name" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>✏️ Edit Admin Name</h3>
+      <input type="text" id="input-new-name" placeholder="Enter your admin name" maxlength="20">
+      <div class="modal-actions">
+        <button id="save-name-btn" class="btn-action">💾 Save</button>
+        <button id="cancel-name-btn" class="btn-action btn-cancel">❌ Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Change Avatar -->
+  <div id="modal-change-avatar" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>🖼️ Change Avatar</h3>
+      <input type="text" id="input-avatar-url" placeholder="Paste image URL or leave empty for default">
+      <div class="modal-actions">
+        <button id="save-avatar-btn" class="btn-action">💾 Save</button>
+        <button id="cancel-avatar-btn" class="btn-action btn-cancel">❌ Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Processing Modal -->
+  <div id="modal-upload-processing" class="modal" style="display:none;">
+    <div class="modal-content processing-modal">
+      <div class="processing-animation">
+        <div class="processing-icon">🚀</div>
+      </div>
+      <h3>🤖 AI Processing Your Content</h3>
+      <div class="processing-steps">
+        <div class="step active" id="step-1">
+          <span class="step-icon">📄</span>
+          <span>Reading file content...</span>
+        </div>
+        <div class="step" id="step-2">
+          <span class="step-icon">🧠</span>
+          <span>Analyzing with GPT-4...</span>
+        </div>
+        <div class="step" id="step-3">
+          <span class="step-icon">❓</span>
+          <span>Generating questions...</span>
+        </div>
+        <div class="step" id="step-4">
+          <span class="step-icon">✅</span>
+          <span>Finalizing quiz...</span>
+        </div>
+      </div>
+      <div class="processing-progress">
+        <div class="progress-bar">
+          <div class="progress-fill" id="processing-progress-fill"></div>
+        </div>
+        <span id="processing-text">Starting AI analysis...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Popup Modal -->
+  <div id="modal-success" class="modal success-modal" style="display:none;">
+    <div class="modal-content success-content">
+      <div class="success-animation">
+        <div class="success-icon">🎉</div>
+        <div class="success-particles">
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+        </div>
+      </div>
+      <h3 id="success-title">🎯 Quiz Generated Successfully!</h3>
+      <div class="success-details">
+        <div class="success-item">
+          <span class="success-label">📚 Quiz Title:</span>
+          <span id="success-quiz-title">AI-Generated Quiz</span>
+        </div>
+        <div class="success-item">
+          <span class="success-label">❓ Questions:</span>
+          <span id="success-question-count">0</span>
+        </div>
+        <div class="success-item">
+          <span class="success-label">📅 Weeks:</span>
+          <span id="success-weeks">-</span>
+        </div>
+        <div class="success-item">
+          <span class="success-label">📄 Source:</span>
+          <span id="success-source-file">-</span>
+        </div>
+      </div>
+      <div class="success-actions">
+        <button id="view-quiz-btn" class="btn-success primary">👁️ View Quiz</button>
+        <button id="upload-another-btn" class="btn-success secondary">📤 Upload Another</button>
+        <button id="close-success-btn" class="btn-success ghost">✕ Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
   <script type="module" src="js/home-admin.js"></script>
   <script type="module" src="js/admin-upload.js"></script>
 </body>
