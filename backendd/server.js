@@ -57,38 +57,52 @@ if (process.env.DISABLE_FIREBASE === "true") {
   useFirestore = false;
 } else {
   try {
-    const envPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-    const candidatePaths = [
-      envPath,
-      path.join(process.cwd(), "firebase-service-account.json"),
-      path.join(process.cwd(), "serviceAccountKey.json"),
-      path.join(process.cwd(), "service-account.json")
-    ].filter(Boolean);
-  let found = null;
-  for (const p of candidatePaths) {
-    if (p && fs.existsSync(p)) { found = p; break; }
-  }
-  if (found) {
-    const sa = JSON.parse(fs.readFileSync(found, "utf8"));
-    admin.initializeApp({ credential: admin.credential.cert(sa) });
-    db = admin.firestore();
-    useFirestore = true;
-    console.log("✅ Firebase Admin initialized — using Firestore (", found, ")");
-  } else {
-    try {
-      admin.initializeApp();
+    // Try environment variable first
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+      console.log("🔑 Using Firebase service account from environment variable");
+      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+      admin.initializeApp({ 
+        credential: admin.credential.cert(serviceAccount),
+        projectId: serviceAccount.project_id || process.env.FIREBASE_PROJECT_ID
+      });
       db = admin.firestore();
       useFirestore = true;
-      console.log("✅ Firebase Admin initialized — using application default credentials");
-    } catch (e) {
-      console.log("⚠️ Firebase credentials not found — using local DB");
-      useFirestore = false;
+      console.log("✅ Firebase Admin initialized — using environment service account");
+    } else {
+      // Try local files
+      const envPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+      const candidatePaths = [
+        envPath,
+        path.join(process.cwd(), "firebase-service-account.json"),
+        path.join(process.cwd(), "serviceAccountKey.json"),
+        path.join(process.cwd(), "service-account.json")
+      ].filter(Boolean);
+      let found = null;
+      for (const p of candidatePaths) {
+        if (p && fs.existsSync(p)) { found = p; break; }
+      }
+      if (found) {
+        const sa = JSON.parse(fs.readFileSync(found, "utf8"));
+        admin.initializeApp({ credential: admin.credential.cert(sa) });
+        db = admin.firestore();
+        useFirestore = true;
+        console.log("✅ Firebase Admin initialized — using Firestore (", found, ")");
+      } else {
+        try {
+          admin.initializeApp();
+          db = admin.firestore();
+          useFirestore = true;
+          console.log("✅ Firebase Admin initialized — using application default credentials");
+        } catch (e) {
+          console.log("⚠️ Firebase credentials not found — using local DB");
+          useFirestore = false;
+        }
+      }
     }
+  } catch (e) {
+    console.warn("⚠️ Firebase init failed — falling back to local DB:", e?.message || e);
+    useFirestore = false;
   }
-} catch (e) {
-  console.warn("⚠️ Firebase init failed — falling back to local DB:", e?.message || e);
-  useFirestore = false;
-}
 }
 
 // ensure local data folder
