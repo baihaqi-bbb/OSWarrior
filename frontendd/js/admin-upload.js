@@ -373,6 +373,9 @@ async function handleUpload() {
     // Update processing steps
     updateProcessingStep(1, "Reading file content...");
     
+    // Give user time to see the reading step
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
     console.log("Uploading to:", `${API_BASE}/api/upload-notes`);
     console.log("File:", selectedFile.name, selectedFile.size, "bytes");
     console.log("Weeks:", Array.from(selectedWeeks));
@@ -389,6 +392,9 @@ async function handleUpload() {
     });
     
     updateProcessingStep(2, "Analyzing with GPT-4...");
+    
+    // Give user time to see the analyzing step
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
     const data = await response.json().catch(() => null);
     
