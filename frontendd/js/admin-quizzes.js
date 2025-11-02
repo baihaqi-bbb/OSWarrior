@@ -1,16 +1,82 @@
-// Simple admin manage quizzes UI (uses /api/quizzes endpoints)
+// Enhanced admin manage quizzes UI with cyberpunk styling and notifications
 const API_BASE = "https://oswarrior-backend.onrender.com";
 
-// global modal state
+// Global state
 let currentEditingId = null;
 let modalMode = "view"; // "view" | "edit" | "create"
-
-// client-side cache + debounce + simple filter
 let quizzesCache = [];
+
+// Enhanced notification system - EXACT COPY from home-admin.js
+function showNotification(message, type = 'info') {
+  // Remove existing notifications
+  const existingNotifications = document.querySelectorAll('.admin-notification');
+  existingNotifications.forEach(notification => notification.remove());
+  
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = `admin-notification notification-${type}`;
+  notification.innerHTML = `
+    <div class="notification-content">
+      <span class="notification-icon">${getNotificationIcon(type)}</span>
+      <span class="notification-message">${message}</span>
+      <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+    </div>
+  `;
+  
+  // Add styles - EXACT COPY from home-admin
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-glow);
+    border-radius: 10px;
+    padding: 15px 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    max-width: 400px;
+    animation: slideInRight 0.3s ease;
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // Auto remove after 5 seconds
+  setTimeout(() => {
+    if (notification.parentElement) {
+      notification.remove();
+    }
+  }, 5000);
+}
+
+function getNotificationIcon(type) {
+  const icons = {
+    info: 'ℹ️',
+    success: '✅',
+    warning: '⚠️',
+    error: '❌'
+  };
+  return icons[type] || '📢';
+}
+
+// Enhanced loading state management
+function setLoadingState(element, isLoading) {
+  if (isLoading) {
+    element.classList.add('loading');
+    element.style.pointerEvents = 'none';
+  } else {
+    element.classList.remove('loading');
+    element.style.pointerEvents = 'auto';
+  }
+}
+
+// Debounce utility
 function debounce(fn, wait = 200) {
   let t;
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
 }
+
+// Enhanced search filter
 function applySearchFilter(term) {
   term = String(term || "").trim().toLowerCase();
   if (!term) return quizzesCache.slice();
@@ -69,22 +135,39 @@ async function authHeaders() {
   return { "Content-Type": "application/json" };
 }
 
-// replace loadQuizzes to fill client cache
-async function loadQuizzes() {
-  const headers = await authHeaders();
-  // Add cache-busting parameter to ensure fresh data
-  const timestamp = Date.now();
-  const res = await fetch(`${API_BASE}/api/quizzes?_t=${timestamp}`, { headers });
-  if (!res.ok) {
-    console.error("Failed loading quizzes", await res.text().catch(()=>""));
+// Enhanced loadQuizzes with better feedback
+async function loadQuizzes(showSuccessNotification = true) {
+  try {
+    const table = document.querySelector("#quizzesTable");
+    if (table) setLoadingState(table, true);
+    
+    const headers = await authHeaders();
+    const timestamp = Date.now();
+    const res = await fetch(`${API_BASE}/api/quizzes?_t=${timestamp}`, { headers });
+    
+    if (!res.ok) {
+      throw new Error(`Failed to load quizzes: ${res.status} ${res.statusText}`);
+    }
+    
+    const list = await res.json();
+    quizzesCache = Array.isArray(list) ? list : [];
+    renderTable(quizzesCache);
+    
+    if (showSuccessNotification) {
+      showNotification(`🎯 Loaded ${quizzesCache.length} quiz${quizzesCache.length !== 1 ? 'es' : ''}`, 'success');
+    }
+    return quizzesCache;
+    
+  } catch (err) {
+    console.error("Failed loading quizzes", err);
+    showNotification(`Failed to load quizzes: ${err.message}`, 'error');
     quizzesCache = [];
     renderTable([]);
     return [];
+  } finally {
+    const table = document.querySelector("#quizzesTable");
+    if (table) setLoadingState(table, false);
   }
-  const list = await res.json();
-  quizzesCache = Array.isArray(list) ? list : [];
-  renderTable(quizzesCache);
-  return quizzesCache;
 }
 
 // helper: return user-friendly week label (prefer numeric 1..14, else show original)
@@ -219,30 +302,40 @@ function ensureQuizFormExists() {
   if ($el("quizTitle")) return; // already present
 
   modalBody.innerHTML = `
-    <div id="quizForm" style="min-width:320px">
-      <label>Title</label>
-      <input id="quizTitle" type="text" style="width:100%;padding:8px;margin:6px 0" />
+    <div id="quizForm">
+      <div class="form-group">
+        <label>Quiz Title</label>
+        <input id="quizTitle" type="text" placeholder="Enter quiz title..." />
+      </div>
 
-      <label>Description</label>
-      <textarea id="quizDesc" style="width:100%;height:72px;padding:8px;margin:6px 0"></textarea>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="quizDesc" placeholder="Enter quiz description..."></textarea>
+      </div>
 
-      <label>Week</label>
-      <select id="quizWeek" style="width:160px;padding:6px;margin:6px 0"></select>
-
-      <label style="display:inline-flex;align-items:center;gap:8px;margin-top:6px">
-        <input id="quizPublish" type="checkbox" />
-        <span> Publish immediately (visible to users)</span>
-      </label>
-
-      <div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0">
-        <strong>Questions</strong>
-        <div style="display:flex;gap:8px">
-          <button id="addQuestionBtn" type="button">+ Add question</button>
-          <button id="resetQuestionsBtn" type="button">Reset</button>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Week</label>
+          <select id="quizWeek"></select>
+        </div>
+        
+        <div class="form-group">
+          <label style="display:flex;align-items:center;gap:8px;margin-top:20px">
+            <input id="quizPublish" type="checkbox" />
+            <span style="color:#E2E8F0;font-size:13px">Publish immediately</span>
+          </label>
         </div>
       </div>
 
-      <div id="questionsList" style="display:flex;flex-direction:column;gap:12px"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:30px 0 20px 0;padding-bottom:15px;border-bottom:1px solid rgba(0,255,255,0.2)">
+        <h3 style="margin:0;color:#00FFFF;font-family:'Orbitron',monospace;font-size:18px">📝 Questions</h3>
+        <div style="display:flex;gap:12px">
+          <button id="addQuestionBtn" type="button" style="padding:8px 16px;background:linear-gradient(135deg,#00AA00,#008800);border:1px solid #00FF00;color:white;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600">+ Add Question</button>
+          <button id="resetQuestionsBtn" type="button" style="padding:8px 16px;background:linear-gradient(135deg,#FF6600,#DD4400);border:1px solid #FF8800;color:white;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600">Reset All</button>
+        </div>
+      </div>
+
+      <div id="questionsList" style="display:flex;flex-direction:column;gap:20px"></div>
     </div>
   `.trim();
 
@@ -291,38 +384,89 @@ function populateQuizForm(q) {
   if (list.children.length === 0) list.appendChild(renderQuestionBlock({}, 0));
 }
 
-// unified render table
+// Enhanced render table with cyberpunk styling
 function renderTable(list) {
   const tbody = document.querySelector("#quizzesTable tbody");
   if (!tbody) return;
   tbody.innerHTML = "";
-  list.forEach(q => {
-    const weekLabel = parseWeekLabel(q);
+  
+  if (list.length === 0) {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(q.id || q.quizId || "")}</td>
+      <td colspan="7" style="text-align:center;padding:40px;color:rgba(0,255,255,0.6);font-style:italic;">
+        🔍 No quizzes found. Create your first quiz to get started!
+      </td>
+    `;
+    tbody.appendChild(tr);
+    return;
+  }
+  
+  list.forEach(q => {
+    const weekLabel = parseWeekLabel(q);
+    const publishedStatus = q.published ? 
+      `<span class="status-published">✅ Published</span>` : 
+      `<span class="status-draft">📝 Draft</span>`;
+    
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${escapeHtml(q.id || q.quizId || "")}</td>
       <td>${escapeHtml(q.title || "(untitled)")}</td>
       <td>${escapeHtml(q.createdBy || q.owner || "")}</td>
       <td>${escapeHtml(weekLabel)}</td>
-      <td>${q.published ? "Yes" : "No"}</td>
-      <td>${Array.isArray(q.questions) ? q.questions.length : "-"}</td>
+      <td>${publishedStatus}</td>
+      <td><span style="color:#DDA0DD;font-weight:600;">${Array.isArray(q.questions) ? q.questions.length : "0"}</span></td>
       <td>
-        <button class="btn-view" data-id="${escapeHtml(q.id||q.quizId)}">View</button>
-        <button class="btn-edit" data-id="${escapeHtml(q.id||q.quizId)}">Edit</button>
-        <button class="btn-pub" data-id="${escapeHtml(q.id||q.quizId)}">${q.published ? "Unpublish" : "Publish"}</button>
-        <button class="btn-reg" data-id="${escapeHtml(q.id||q.quizId)}">Regenerate</button>
-        <button class="btn-del" data-id="${escapeHtml(q.id||q.quizId)}" style="color:#c00">Delete</button>
+        <div class="table-actions">
+          <button class="btn-view" data-id="${escapeHtml(q.id||q.quizId)}" title="View Quiz">👁️ View</button>
+          <button class="btn-edit" data-id="${escapeHtml(q.id||q.quizId)}" title="Edit Quiz">✏️ Edit</button>
+          <button class="btn-pub" data-id="${escapeHtml(q.id||q.quizId)}" title="${q.published ? 'Unpublish Quiz' : 'Publish Quiz'}">${q.published ? "📤 Unpub" : "🌐 Pub"}</button>
+          <button class="btn-reg" data-id="${escapeHtml(q.id||q.quizId)}" title="Regenerate Questions">🔄 Regen</button>
+          <button class="btn-del" data-id="${escapeHtml(q.id||q.quizId)}" title="Delete Quiz">🗑️ Del</button>
+        </div>
       </td>
     `;
     tbody.appendChild(tr);
   });
 
-  // use the button element itself to read dataset.id (avoid e.target issues)
-  document.querySelectorAll(".btn-view").forEach(b => b.addEventListener("click", () => viewQuiz(b.dataset.id)));
-  document.querySelectorAll(".btn-edit").forEach(b => b.addEventListener("click", () => editQuiz(b.dataset.id)));
-  document.querySelectorAll(".btn-pub").forEach(b => b.addEventListener("click", () => togglePublish(b.dataset.id)));
-  document.querySelectorAll(".btn-reg").forEach(b => b.addEventListener("click", () => regenerateQuiz(b.dataset.id)));
-  document.querySelectorAll(".btn-del").forEach(b => b.addEventListener("click", () => deleteQuiz(b.dataset.id)));
+  // Enhanced event listeners with loading states
+  document.querySelectorAll(".btn-view").forEach(b => {
+    b.addEventListener("click", () => {
+      b.classList.add("loading");
+      viewQuiz(b.dataset.id).finally(() => b.classList.remove("loading"));
+    });
+  });
+  
+  document.querySelectorAll(".btn-edit").forEach(b => {
+    b.addEventListener("click", () => {
+      b.classList.add("loading");
+      editQuiz(b.dataset.id).finally(() => b.classList.remove("loading"));
+    });
+  });
+  
+  document.querySelectorAll(".btn-pub").forEach(b => {
+    b.addEventListener("click", () => {
+      b.classList.add("loading");
+      togglePublish(b.dataset.id).finally(() => b.classList.remove("loading"));
+    });
+  });
+  
+  document.querySelectorAll(".btn-reg").forEach(b => {
+    b.addEventListener("click", () => {
+      if (confirm("🔄 Are you sure you want to regenerate this quiz? This will replace all existing questions.")) {
+        b.classList.add("loading");
+        regenerateQuiz(b.dataset.id).finally(() => b.classList.remove("loading"));
+      }
+    });
+  });
+  
+  document.querySelectorAll(".btn-del").forEach(b => {
+    b.addEventListener("click", () => {
+      if (confirm("🗑️ Are you sure you want to delete this quiz? This action cannot be undone.")) {
+        b.classList.add("loading");
+        deleteQuiz(b.dataset.id).finally(() => b.classList.remove("loading"));
+      }
+    });
+  });
 }
 
 // render one editable question block (human-friendly)
@@ -335,33 +479,48 @@ function renderQuestionBlock(q = {}, idx) {
   const answerIndex = (typeof q.answerIndex === "number") ? q.answerIndex : 0;
 
   wrapper.innerHTML = `
-    <div style="border:1px solid #e6e6e6;padding:10px;border-radius:8px;background:#fff;">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <strong>Question ${idx+1}</strong>
-        <button type="button" class="remove-question" style="background:transparent;color:#c00;border:0">Remove</button>
+    <div class="question-item">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
+        <h4 style="margin:0;color:#00DDFF;font-family:'Orbitron',monospace;font-size:16px">❓ Question ${idx+1}</h4>
+        <button type="button" class="btn-remove-question">Remove</button>
       </div>
-      <div style="margin-top:8px">
-        <textarea class="q-text" style="width:100%;height:64px;padding:8px">${escapeHtml(text)}</textarea>
+      
+      <div class="form-group">
+        <label>Question Text</label>
+        <textarea class="q-text" placeholder="Enter your question here...">${escapeHtml(text)}</textarea>
       </div>
-      <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
-        ${choices.map((c,i)=>`
-          <label style="display:flex;align-items:center;gap:8px">
-            <input type="radio" name="answer-${idx}" value="${i}" ${i===answerIndex ? "checked":""}/>
-            <input class="choice-input" type="text" value="${escapeHtml(c)}" style="flex:1;padding:6px"/>
-          </label>`).join("")}
+      
+      <div class="form-group">
+        <label>Answer Options (Click the radio button to select the correct answer)</label>
+        <div style="background:rgba(0,100,200,0.2);padding:10px;border-radius:8px;margin-bottom:10px;border-left:4px solid #00FFFF">
+          <small style="color:#B0E0FF;font-size:12px">💡 <strong>How to set correct answer:</strong> Fill in all 4 options, then click the radio button (●) next to the CORRECT answer</small>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
+          ${choices.map((c,i)=>`
+            <div class="option-group">
+              <input type="radio" name="answer-${idx}" value="${i}" ${i===answerIndex ? "checked":""} id="answer-${idx}-${i}"/>
+              <label for="answer-${idx}-${i}" style="margin:0;color:#00FFFF;font-size:14px;min-width:60px;font-weight:700">Option ${String.fromCharCode(65+i)}</label>
+              <input class="choice-input" type="text" value="${escapeHtml(c)}" placeholder="Enter option ${String.fromCharCode(65+i)} text..." style="flex:1"/>
+            </div>`).join("")}
+        </div>
       </div>
     </div>
   `.trim();
 
-  wrapper.querySelector(".remove-question").addEventListener("click", () => {
+  wrapper.querySelector(".btn-remove-question").addEventListener("click", () => {
     wrapper.remove();
     // renumber labels
     document.querySelectorAll("#questionsList .question-block").forEach((b,i)=> {
-      b.querySelector("strong").textContent = "Question " + (i+1);
+      b.querySelector("h4").textContent = `❓ Question ${i+1}`;
       b.dataset.idx = String(i);
-      // update radio names
+      // update radio names and IDs
       const radios = b.querySelectorAll('input[type="radio"]');
-      radios.forEach((r,ri) => r.name = `answer-${i}`);
+      radios.forEach((r,ri) => {
+        r.name = `answer-${i}`;
+        r.id = `answer-${i}-${ri}`;
+        const label = r.nextElementSibling;
+        if (label) label.setAttribute('for', `answer-${i}-${ri}`);
+      });
     });
   });
 
@@ -774,7 +933,7 @@ function setModalButtonHandler(buttonId, handler) {
 
 // --- Place this block at the VERY END of the file, after all functions (createNewQuiz, editQuiz, viewQuiz, saveQuizEdits, togglePublish, deleteQuiz, regenerateQuiz) ---
 
-// Expose functions to window and start initial load (moved to file end)
+// Enhanced initialization with cyberpunk welcome message
 window.loadQuizzes = loadQuizzes;
 window.createNewQuiz = createNewQuiz;
 window.editQuiz = editQuiz;
@@ -784,9 +943,122 @@ window.togglePublish = togglePublish;
 window.deleteQuiz = deleteQuiz;
 window.regenerateQuiz = regenerateQuiz;
 
-// call loadQuizzes once DOM ready (only once)
+// Enhanced DOM ready handler
 if (document.readyState === "loading") {
-  window.addEventListener("DOMContentLoaded", () => { loadQuizzes(); });
+  window.addEventListener("DOMContentLoaded", initializeQuizManager);
 } else {
-  loadQuizzes();
+  initializeQuizManager();
+}
+
+async function initializeQuizManager() {
+  // Show welcome notification
+  showNotification("🚀 Quiz Management System Initialized", 'info', 3000);
+  
+  // Setup enhanced search with debounce
+  const searchInput = document.getElementById("search");
+  if (searchInput) {
+    const debouncedSearch = debounce((term) => {
+      const filtered = applySearchFilter(term);
+      renderTable(filtered);
+      if (term && filtered.length === 0) {
+        showNotification(`🔍 No results found for "${term}"`, 'warning', 2000);
+      }
+    }, 300);
+    
+    searchInput.addEventListener("input", (e) => debouncedSearch(e.target.value));
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        e.target.value = "";
+        debouncedSearch("");
+      }
+    });
+  }
+  
+  // Setup refresh button with enhanced feedback
+  const refreshBtn = document.getElementById("btn-refresh");
+  if (refreshBtn) {
+    refreshBtn.addEventListener("click", async () => {
+      // Show initial refresh notification
+      showNotification('🔄 Refreshing quiz data...', 'info');
+      
+      setLoadingState(refreshBtn, true);
+      
+      try {
+        await loadQuizzes(false); // Don't show default success notification
+        
+        // Success notification after load completes
+        setTimeout(() => {
+          showNotification('✅ Quiz data refreshed successfully', 'success');
+        }, 1000);
+        
+      } catch (error) {
+        console.error('Refresh failed:', error);
+        showNotification('❌ Failed to refresh quiz data', 'error');
+      } finally {
+        setLoadingState(refreshBtn, false);
+      }
+    });
+  }
+  
+  // Enhanced modal controls
+  const modalBackdrop = document.getElementById("modalBackdrop");
+  const modalClose = document.getElementById("modalClose");
+  const modal = document.getElementById("quizModal");
+  
+  if (modalBackdrop) {
+    modalBackdrop.addEventListener("click", closeModal);
+  }
+  
+  if (modalClose) {
+    modalClose.addEventListener("click", closeModal);
+  }
+  
+  // Escape key to close modal
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal && modal.style.display !== "none") {
+      closeModal();
+    }
+  });
+  
+  // Load initial data
+  try {
+    await loadQuizzes();
+  } catch (err) {
+    showNotification("Failed to initialize quiz data", 'error');
+  }
+}
+
+function closeModal() {
+  const modal = document.getElementById("quizModal");
+  const backdrop = document.getElementById("modalBackdrop");
+  
+  if (modal) {
+    modal.style.display = "none";
+    modal.style.transform = "translate(-50%, -50%) scale(0.8)";
+    modal.style.opacity = "0";
+    setTimeout(() => {
+      modal.style.transform = "translate(-50%, -50%) scale(1)";
+      modal.style.opacity = "1";
+    }, 200);
+  }
+  
+  if (backdrop) backdrop.style.display = "none";
+  currentEditingId = null;
+  modalMode = "view";
+}
+
+function openModal() {
+  const modal = document.getElementById("quizModal");
+  const backdrop = document.getElementById("modalBackdrop");
+  
+  if (backdrop) backdrop.style.display = "block";
+  if (modal) {
+    modal.style.display = "block";
+    modal.style.transform = "translate(-50%, -50%) scale(0.8)";
+    modal.style.opacity = "0";
+    setTimeout(() => {
+      modal.style.transform = "translate(-50%, -50%) scale(1)";
+      modal.style.opacity = "1";
+    }, 50);
+  }
 }

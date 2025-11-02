@@ -43,37 +43,50 @@
     </div>
   </div>
 
-  <main style="padding:20px; max-width:1100px; margin:auto">
-    <div style="display:flex; gap:12px; margin-bottom:12px;">
-      <div class="search-wrap" style="flex:1; max-width:520px;">
-        <input id="search" placeholder="Search quizzes by title or id" />
+  <main>
+    <!-- 🔍 Enhanced Controls Section -->
+    <div class="controls-section">
+      <div class="search-wrap">
+        <input id="search" placeholder="🔍 Search quizzes by title, ID, or creator..." />
       </div>
-      <div style="margin-left:auto; display:flex; gap:8px;">
-        <button id="btn-new" onclick="(window.createNewQuiz || (()=>console.warn('createNewQuiz not ready')))()">Create New Quiz</button>
+      <div class="action-buttons">
+        <button id="btn-new" onclick="(window.createNewQuiz || (()=>console.warn('createNewQuiz not ready')))()">
+          ✨ Create New Quiz
+        </button>
+        <button id="btn-refresh" class="action-btn" onclick="(window.loadQuizzes || (()=>{}))()">
+          🔄 Refresh
+        </button>
       </div>
     </div>
 
+    <!-- 📊 Enhanced Cyberpunk Table Section -->
     <div class="table-responsive">
-      <table id="quizzesTable" class="users-table" style="width:100%;border-collapse:collapse">
+      <table id="quizzesTable" class="users-table">
         <thead>
           <tr>
-            <th>Quiz ID</th><th>Title</th><th>Created By</th><th>Week</th><th>Published</th><th>Questions</th><th>Actions</th>
+            <th>📋 Quiz ID</th>
+            <th>📝 Title</th>
+            <th>👤 Created By</th>
+            <th>📅 Week</th>
+            <th>🌐 Published</th>
+            <th>❓ Questions</th>
+            <th>⚡ Actions</th>
           </tr>
         </thead>
         <tbody></tbody>
       </table>
     </div>
 
-    <!-- modal: view / edit -->
+    <!-- 🎪 Enhanced Cyberpunk Modal -->
     <div id="quizModal" style="display:none;">
-      <button id="modalClose" style="float:right">Close</button>
-      <h2 id="modalTitle">Quiz</h2>
+      <button id="modalClose">✖</button>
+      <h2 id="modalTitle">🧩 Quiz Details</h2>
       <div id="modalBody" style="margin-top:12px;max-height:60vh;overflow:auto"></div>
-      <div style="margin-top:12px;">
-        <button id="modalSave">Save</button>
-        <button id="modalPublish">Toggle Publish</button>
-        <button id="modalRegenerate">Regenerate</button>
-        <button id="modalDelete" style="color:#c00">Delete</button>
+      <div class="modal-actions" style="margin-top:25px;">
+        <button id="modalSave">💾 Save</button>
+        <button id="modalPublish">🌐 Toggle Publish</button>
+        <button id="modalRegenerate">🔄 Regenerate</button>
+        <button id="modalDelete">🗑️ Delete</button>
       </div>
     </div>
 
