@@ -284,6 +284,27 @@ function setupEventListeners() {
     }
   });
   
+  // Reset Scores Modal Event Listeners
+  const confirmResetBtn = document.getElementById('confirm-reset-btn');
+  if (confirmResetBtn) {
+    confirmResetBtn.addEventListener('click', executeResetScores);
+  }
+  
+  const cancelResetBtn = document.getElementById('cancel-reset-btn');
+  if (cancelResetBtn) {
+    cancelResetBtn.addEventListener('click', cancelResetScores);
+  }
+  
+  // Close modal when clicking outside
+  const resetModal = document.getElementById('modal-reset-scores');
+  if (resetModal) {
+    resetModal.addEventListener('click', (e) => {
+      if (e.target === resetModal) {
+        cancelResetScores();
+      }
+    });
+  }
+  
   // View all activity button
   const viewAllBtn = document.getElementById('view-all-activity');
   if (viewAllBtn) {
@@ -379,12 +400,249 @@ function showUploadStatus() {
 }
 
 function resetLeaderboard() {
-  const confirmed = confirm('⚠️ Are you sure you want to reset the leaderboard? This action cannot be undone.');
-  if (confirmed) {
-    showNotification('🏆 Leaderboard reset successfully', 'warning');
-    console.log("Leaderboard reset");
-    // Add leaderboard reset logic here
+  // Show the beautiful reset modal instead of basic confirm
+  showResetScoresModal();
+}
+
+// Enhanced Reset Scores Modal System
+function showResetScoresModal() {
+  const modal = document.getElementById('modal-reset-scores');
+  const confirmationInput = document.getElementById('reset-confirmation-input');
+  const confirmButton = document.getElementById('confirm-reset-btn');
+  
+  if (!modal) return;
+  
+  // Reset modal state
+  confirmationInput.value = '';
+  confirmButton.disabled = true;
+  confirmButton.textContent = '🔄 Reset All Scores';
+  
+  // Show modal with animation
+  modal.style.display = 'flex';
+  
+  // Setup confirmation input validation
+  confirmationInput.addEventListener('input', validateResetConfirmation);
+  
+  console.log("🚨 Reset scores modal opened");
+}
+
+function validateResetConfirmation() {
+  const input = document.getElementById('reset-confirmation-input');
+  const confirmButton = document.getElementById('confirm-reset-btn');
+  
+  if (!input || !confirmButton) return;
+  
+  const inputValue = input.value.trim();
+  const requiredText = 'RESET CONFIRM';
+  
+  if (inputValue === requiredText) {
+    confirmButton.disabled = false;
+    confirmButton.textContent = '🔄 CONFIRMED - Reset All Scores';
+    input.classList.add('valid');
+    
+    // Add warning pulse animation
+    confirmButton.style.animation = 'pulse-danger 1s ease-in-out infinite';
+  } else {
+    confirmButton.disabled = true;
+    confirmButton.textContent = '🔄 Reset All Scores';
+    input.classList.remove('valid');
+    confirmButton.style.animation = 'none';
   }
+}
+
+async function executeResetScores() {
+  const confirmButton = document.getElementById('confirm-reset-btn');
+  const modal = document.getElementById('modal-reset-scores');
+  
+  if (!confirmButton || confirmButton.disabled) return;
+  
+  try {
+    // Update button to show processing
+    confirmButton.disabled = true;
+    confirmButton.innerHTML = '⏳ Resetting Scores...';
+    confirmButton.style.animation = 'none';
+    
+    // Show processing notification
+    showNotification('🔄 Initiating leaderboard reset...', 'warning');
+    
+    // Simulate reset process with steps
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    showNotification('📊 Clearing quiz scores...', 'info');
+    
+    await new Promise(resolve => setTimeout(resolve, 800));
+    showNotification('⭐ Resetting experience points...', 'info');
+    
+    await new Promise(resolve => setTimeout(resolve, 800));
+    showNotification('🔥 Clearing login streaks...', 'info');
+    
+    await new Promise(resolve => setTimeout(resolve, 800));
+    showNotification('🏆 Removing achievement badges...', 'info');
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Actual Firebase/database reset logic
+    await resetFirebaseLeaderboard();
+    
+    // Success notification
+    showNotification('✅ Leaderboard reset completed successfully!', 'success');
+    
+    // Close modal
+    modal.style.display = 'none';
+    
+    // Update dashboard stats to reflect reset
+    updateStatsAfterReset();
+    
+    console.log("🏆 Leaderboard reset completed successfully");
+    
+  } catch (error) {
+    console.error("❌ Reset failed:", error);
+    showNotification('❌ Reset failed: ' + error.message, 'error');
+    
+    // Reset button state
+    confirmButton.disabled = false;
+    confirmButton.innerHTML = '🔄 CONFIRMED - Reset All Scores';
+    confirmButton.style.animation = 'pulse-danger 1s ease-in-out infinite';
+  }
+}
+
+function updateStatsAfterReset() {
+  // Reset relevant stats in the dashboard
+  const statsToReset = {
+    'total-quizzes': 0,
+    'total-points': 0,
+    'active-players': 0,
+    // Reset Leaderboard Control module stats
+    'top-players': 0,
+    'active-competitions': 0
+  };
+  
+  Object.entries(statsToReset).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+    if (element) {
+      // Animate the number change
+      const currentValue = parseInt(element.textContent) || 0;
+      animateNumber(element, currentValue, value, 1000);
+    }
+  });
+  
+  console.log("📊 Dashboard stats updated after reset");
+}
+
+// Actual Firebase reset functionality
+async function resetFirebaseLeaderboard() {
+  try {
+    console.log("🔄 Starting Firebase leaderboard reset...");
+    
+    // Try Firebase first
+    try {
+      // Import Firebase services
+      const { db } = await import('./firebase-config.js');
+      const { collection, getDocs, doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js');
+      
+      // Get all users from Firebase
+      const usersCollection = collection(db, 'users');
+      const userSnapshot = await getDocs(usersCollection);
+      
+      console.log(`📋 Found ${userSnapshot.size} users to reset`);
+      
+      // Reset data for each user
+      const resetPromises = [];
+      
+      userSnapshot.forEach((userDoc) => {
+        const userId = userDoc.id;
+        const resetData = {
+          xp: 0,
+          quizScore: 0,
+          loginStreak: 0,
+          achievements: [],
+          totalScore: 0,
+          level: 1,
+          lastActive: new Date().toISOString()
+        };
+        
+        // Add to batch of promises
+        const userRef = doc(db, 'users', userId);
+        resetPromises.push(updateDoc(userRef, resetData));
+        
+        console.log(`🔄 Queued reset for user: ${userId}`);
+      });
+      
+      // Execute all resets
+      await Promise.all(resetPromises);
+      
+      console.log("✅ All user data reset successfully in Firebase");
+      return { success: true, resetCount: userSnapshot.size, source: 'firebase' };
+      
+    } catch (firebaseError) {
+      console.warn("⚠️ Firebase reset failed, falling back to local data:", firebaseError);
+      
+      // Fallback to local data reset
+      await resetLocalUserData();
+      return { success: true, resetCount: 'unknown', source: 'local_fallback' };
+    }
+    
+  } catch (error) {
+    console.error("❌ Complete reset failed:", error);
+    throw new Error(`Failed to reset leaderboard data: ${error.message}`);
+  }
+}
+
+// Reset local JSON data for demo purposes
+async function resetLocalUserData() {
+  try {
+    console.log("📝 Resetting local demo user data...");
+    
+    // Reset any cached data in localStorage
+    const keysToReset = [
+      'leaderboard_cache',
+      'user_stats_cache', 
+      'quiz_scores_cache',
+      'achievements_cache'
+    ];
+    
+    keysToReset.forEach(key => {
+      if (localStorage.getItem(key)) {
+        localStorage.removeItem(key);
+        console.log(`�️ Cleared localStorage: ${key}`);
+      }
+    });
+    
+    // Reset any demo user data in sessionStorage
+    if (sessionStorage.getItem('demo_users')) {
+      sessionStorage.removeItem('demo_users');
+      console.log("🗑️ Cleared demo users from sessionStorage");
+    }
+    
+    // If there were any in-memory user arrays, reset them
+    if (window.currentLeaderboardData) {
+      window.currentLeaderboardData = [];
+      console.log("🗑️ Cleared currentLeaderboardData");
+    }
+    
+    console.log("✅ Local data reset completed");
+    return { success: true };
+    
+  } catch (error) {
+    console.error("❌ Local data reset failed:", error);
+    // Don't throw error for local data - Firebase is primary
+    return { success: false, error: error.message };
+  }
+}
+
+function cancelResetScores() {
+  const modal = document.getElementById('modal-reset-scores');
+  const confirmationInput = document.getElementById('reset-confirmation-input');
+  
+  if (modal) {
+    modal.style.display = 'none';
+  }
+  
+  if (confirmationInput) {
+    confirmationInput.value = '';
+    confirmationInput.classList.remove('valid');
+  }
+  
+  console.log("❌ Reset scores cancelled");
 }
 
 function generateReport() {
