@@ -359,7 +359,7 @@
       <div class="success-actions">
         <button id="view-quiz-btn" class="btn-success primary">👁️ View Quiz</button>
         <button id="upload-another-btn" class="btn-success secondary">📤 Upload Another</button>
-        <button id="close-success-btn" class="btn-success ghost">✕ Close</button>
+        <button id="close-success-btn" class="btn-success ghost" onclick="window.forceCloseModal ? window.forceCloseModal() : (document.getElementById('modal-success').style.display='none')">✕ Close</button>
       </div>
     </div>
   </div>

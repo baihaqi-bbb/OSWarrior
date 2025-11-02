@@ -1,8 +1,10 @@
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { auth } from './firebase-config.js';
 
-const auth = getAuth();
 const WEEKS_COUNT = 14;
-const API_BASE = "https://api.oswarrior.com"; // production API subdomain
+
+// Use consistent API base URL like other pages
+const API_BASE = "https://oswarrior-backend.onrender.com";
 
 // === SUCCESS MODAL ===
 function showSuccessModal(quiz, sourceFileName) {
@@ -11,9 +13,9 @@ function showSuccessModal(quiz, sourceFileName) {
     // Update success details
     document.getElementById("success-title").textContent = "🎉 Quiz Generated Successfully!";
     document.getElementById("success-quiz-title").textContent = quiz.title || "Untitled Quiz";
-    document.getElementById("success-questions").textContent = quiz.questions?.length || "0";
+    document.getElementById("success-question-count").textContent = quiz.questions?.length || "0";
     document.getElementById("success-weeks").textContent = quiz.weeks || "Not specified";
-    document.getElementById("success-source").textContent = sourceFileName || "Unknown";
+    document.getElementById("success-source-file").textContent = sourceFileName || "Unknown";
     
     modal.style.display = "flex";
     
@@ -25,12 +27,32 @@ function showSuccessModal(quiz, sourceFileName) {
 }
 
 function hideSuccessModal() {
+  console.log("🔹 hideSuccessModal called");
   const modal = document.getElementById("modal-success");
   if (modal) {
+    console.log("🔹 Modal found, hiding...");
+    console.log("Current display:", modal.style.display);
+    console.log("Has show class:", modal.classList.contains("show"));
+    
+    // Remove show class
     modal.classList.remove("show");
+    
+    // Force hide immediately
+    modal.style.display = "none";
+    console.log("🔹 Modal hidden immediately");
+    
+    // Also remove any potential conflicting styles
+    modal.style.visibility = "hidden";
+    modal.style.opacity = "0";
+    
+    // Reset after animation time
     setTimeout(() => {
-      modal.style.display = "none";
-    }, 300);
+      modal.style.visibility = "";
+      modal.style.opacity = "";
+      console.log("🔹 Modal styles reset");
+    }, 350);
+  } else {
+    console.log("❌ Success modal not found");
   }
 }
 
@@ -49,6 +71,7 @@ function uploadAnother() {
 }
 
 function closeSuccessModal() {
+  console.log("🔸 closeSuccessModal called");
   hideSuccessModal();
 }
 
@@ -171,19 +194,19 @@ function setupEventListeners() {
   uploadBtn?.addEventListener("click", handleUpload);
   
   // Quick actions
-  document.getElementById("refresh-data")?.addEventListener("click", refreshData);
-  document.getElementById("clear-all-data")?.addEventListener("click", clearAllData);
-  document.getElementById("export-data")?.addEventListener("click", exportData);
-  document.getElementById("upload-help")?.addEventListener("click", showUploadHelp);
+  document.getElementById("refresh-data")?.addEventListener("click", handleRefreshData);
+  document.getElementById("clear-all-data")?.addEventListener("click", handleClearAllData);
+  document.getElementById("export-data")?.addEventListener("click", handleExportData);
+  document.getElementById("upload-help")?.addEventListener("click", handleUploadHelp);
   
   // Table controls
   searchInput?.addEventListener("input", filterTable);
   filterWeekSelect?.addEventListener("change", filterTable);
-  document.getElementById("refresh-table")?.addEventListener("click", refreshTable);
-  document.getElementById("export-table")?.addEventListener("click", exportTable);
+  document.getElementById("refresh-table")?.addEventListener("click", handleRefreshData);
+  document.getElementById("export-table")?.addEventListener("click", handleExportData);
   
   // Auth state
-  onAuthStateChanged(auth, handleAuthStateChange);
+  // (onAuthStateChanged already called above in handleAuthStateChange setup)
 }
 
 // === WEEK SELECTION FUNCTIONS ===
@@ -340,19 +363,28 @@ async function handleUpload() {
   showProcessingModal();
   
   try {
-    const idToken = await currentUser.getIdToken(true);
+    // Get auth headers without putting token in FormData
+    const authHeaders = await getAuthHeaders();
+    
     const formData = new FormData();
-    formData.append("file", selectedFile);
+    formData.append("file", selectedFile);  // Ensure field name is "file"
     formData.append("weeks", JSON.stringify(Array.from(selectedWeeks)));
     
     // Update processing steps
     updateProcessingStep(1, "Reading file content...");
     
+    console.log("Uploading to:", `${API_BASE}/api/upload-notes`);
+    console.log("File:", selectedFile.name, selectedFile.size, "bytes");
+    console.log("Weeks:", Array.from(selectedWeeks));
+    
+    // Prepare headers for FormData request (don't set Content-Type, let browser set it)
+    const headers = {
+      "Authorization": authHeaders.Authorization
+    };
+    
     const response = await fetch(`${API_BASE}/api/upload-notes`, {
       method: "POST",
-      headers: { 
-        "Authorization": "Bearer " + idToken 
-      },
+      headers: headers,
       body: formData
     });
     
@@ -361,7 +393,7 @@ async function handleUpload() {
     const data = await response.json().catch(() => null);
     
     if (!response.ok) {
-      throw new Error(data?.error || data?.detail || "Upload failed");
+      throw new Error(data?.error || data?.detail || `HTTP ${response.status}: Upload failed`);
     }
     
     updateProcessingStep(3, "Generating questions...");
@@ -371,12 +403,15 @@ async function handleUpload() {
     
     updateProcessingStep(4, "Finalizing quiz...");
     
+    console.log("Upload response:", data);
+    
     // Add quiz to table
     const quiz = data?.quiz || {
+      id: data?.quizId || Date.now().toString(),
       weeks: Array.from(selectedWeeks),
-      title: data?.title || selectedFile.name.replace(/\.[^/.]+$/, ""),
+      title: data?.quiz?.title || selectedFile.name.replace(/\.[^/.]+$/, ""),
       sourceFileName: selectedFile.name,
-      questions: data?.questions || [],
+      questions: data?.quiz?.questions || [],
       createdAt: new Date().toISOString(),
       status: "active"
     };
@@ -384,18 +419,32 @@ async function handleUpload() {
     addQuizToTable(quiz);
     uploadedQuizzes.push(quiz);
     
+    // Save to localStorage for persistence
+    localStorage.setItem("uploaded-quizzes", JSON.stringify(uploadedQuizzes));
+    
     // Success feedback
     setTimeout(() => {
       hideProcessingModal();
       showSuccessModal(quiz, selectedFile.name);
       resetUploadForm();
       updateStatsCards();
+      showNotification("🎉 Quiz generated successfully!", "success");
     }, 1000);
     
   } catch (error) {
     console.error("Upload error:", error);
     hideProcessingModal();
-    showNotification("❌ Upload error: " + (error.message || error), "error");
+    
+    let errorMessage = "Upload failed";
+    if (error.message.includes('fetch')) {
+      errorMessage = "Connection failed. Please check if server is running.";
+    } else if (error.message.includes('OpenAI')) {
+      errorMessage = "AI processing failed. Please try again.";
+    } else {
+      errorMessage = error.message || error;
+    }
+    
+    showNotification("❌ " + errorMessage, "error");
   }
 }
 
@@ -593,18 +642,58 @@ function handleAuthStateChange(user) {
   
   if (!user) {
     uploadStatusEl.textContent = "Please login as admin";
+    showNotification("❌ Please login as admin to upload content", "warning");
   } else {
     uploadStatusEl.textContent = "Ready to upload";
+    console.log("✅ Admin authenticated:", user.email);
   }
+}
+
+// Initialize auth state listener
+onAuthStateChanged(auth, handleAuthStateChange);
+
+// Helper function to get auth headers (consistent with other admin pages)
+async function getAuthHeaders() {
+  try {
+    if (currentUser) {
+      const token = await currentUser.getIdToken(true);
+      return { 
+        "Authorization": "Bearer " + token,
+        "Content-Type": "application/json"
+      };
+    }
+  } catch (e) {
+    console.error("Failed to get auth token:", e);
+  }
+  return { "Content-Type": "application/json" };
 }
 
 // === DATA LOADING ===
 async function loadExistingQuizzes() {
   try {
-    // This would typically fetch from your API
-    // For now, we'll use local storage or empty array
-    const stored = localStorage.getItem("uploaded-quizzes");
-    uploadedQuizzes = stored ? JSON.parse(stored) : [];
+    console.log("📊 Loading existing quizzes...");
+    
+    // Try to fetch from API first (consistent with other admin pages)
+    try {
+      const authHeaders = await getAuthHeaders();
+      const response = await fetch(`${API_BASE}/api/quizzes`, { 
+        headers: authHeaders,
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const apiQuizzes = await response.json();
+        console.log("✅ Loaded quizzes from API:", apiQuizzes.length);
+        uploadedQuizzes = Array.isArray(apiQuizzes) ? apiQuizzes : [];
+      } else {
+        throw new Error(`API returned ${response.status}`);
+      }
+    } catch (apiError) {
+      console.warn("⚠️ API fetch failed, using localStorage:", apiError.message);
+      // Fallback to localStorage
+      const stored = localStorage.getItem("uploaded-quizzes");
+      uploadedQuizzes = stored ? JSON.parse(stored) : [];
+    }
     
     // Populate table
     if (uploadTableBody) {
@@ -632,6 +721,9 @@ async function loadExistingQuizzes() {
     updateStatsCards();
   } catch (error) {
     console.error("Error loading quizzes:", error);
+    showNotification("⚠️ Failed to load existing quizzes", "warning");
+    uploadedQuizzes = [];
+    updateStatsCards();
   }
 }
 
@@ -660,27 +752,21 @@ window.viewQuiz = viewQuiz;
 window.uploadAnother = uploadAnother;
 window.closeSuccessModal = closeSuccessModal;
 
-// === QUICK ACTIONS FUNCTIONALITY ===
-document.addEventListener("DOMContentLoaded", function() {
-  // Quick Actions event listeners
-  const refreshBtn = document.getElementById("refresh-data");
-  const clearAllBtn = document.getElementById("clear-all-data");
-  const exportBtn = document.getElementById("export-data");
-  const helpBtn = document.getElementById("upload-help");
+// Test function for manual debugging
+window.testCloseModal = function() {
+  console.log("🧪 Testing modal close...");
+  closeSuccessModal();
+};
 
-  if (refreshBtn) {
-    refreshBtn.addEventListener("click", handleRefreshData);
-  }
-  if (clearAllBtn) {
-    clearAllBtn.addEventListener("click", handleClearAllData);
-  }
-  if (exportBtn) {
-    exportBtn.addEventListener("click", handleExportData);
-  }
-  if (helpBtn) {
-    helpBtn.addEventListener("click", handleUploadHelp);
-  }
-});
+// Force close modal (for emergency debugging)
+window.forceCloseModal = function() {
+  console.log("🚨 Force closing all modals...");
+  const modals = document.querySelectorAll('.modal');
+  modals.forEach(modal => {
+    modal.style.display = 'none';
+    modal.classList.remove('show');
+  });
+};
 
 // Quick Actions handlers
 async function handleRefreshData() {
@@ -951,15 +1037,101 @@ function showHelpModal() {
 
 // === MODAL CLOSE EVENTS ===
 document.addEventListener("click", (e) => {
+  // Only close modal if clicking on the modal backdrop, not the content
   if (e.target.classList.contains("modal")) {
-    hideProcessingModal();
-    hideSuccessModal();
+    const modalId = e.target.id;
+    
+    switch(modalId) {
+      case "modal-upload-processing":
+        // Don't allow closing processing modal by clicking outside
+        break;
+      case "modal-success":
+        hideSuccessModal();
+        break;
+      case "modal-edit-name":
+        e.target.style.display = "none";
+        break;
+      case "modal-change-avatar":
+        e.target.style.display = "none";
+        break;
+      default:
+        // Generic modal close
+        if (e.target.style.display !== "none") {
+          e.target.style.display = "none";
+        }
+    }
   }
 });
 
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
-    hideProcessingModal();
-    hideSuccessModal();
+    // Check which modals are open and close appropriately
+    const successModal = document.getElementById("modal-success");
+    const processingModal = document.getElementById("modal-upload-processing");
+    const editNameModal = document.getElementById("modal-edit-name");
+    const editAvatarModal = document.getElementById("modal-change-avatar");
+    
+    if (successModal && successModal.style.display === "flex") {
+      hideSuccessModal();
+    } else if (editNameModal && editNameModal.style.display !== "none") {
+      editNameModal.style.display = "none";
+    } else if (editAvatarModal && editAvatarModal.style.display !== "none") {
+      editAvatarModal.style.display = "none";
+    }
+    // Don't close processing modal with Escape key
+  }
+});
+
+// Add close button handlers after DOM is loaded
+document.addEventListener("DOMContentLoaded", () => {
+  // Success modal close button
+  const closeSuccessBtn = document.getElementById("close-success-btn");
+  if (closeSuccessBtn) {
+    closeSuccessBtn.addEventListener("click", closeSuccessModal);
+  }
+  
+  // Upload another button
+  const uploadAnotherBtn = document.getElementById("upload-another-btn");
+  if (uploadAnotherBtn) {
+    uploadAnotherBtn.addEventListener("click", uploadAnother);
+  }
+  
+  // View quiz button
+  const viewQuizBtn = document.getElementById("view-quiz-btn");
+  if (viewQuizBtn) {
+    viewQuizBtn.addEventListener("click", () => {
+      // Implement view quiz functionality
+      closeSuccessModal();
+      showNotification("🎯 Quiz view feature coming soon...", "info");
+    });
+  }
+  
+  // Edit name modal handlers
+  const cancelNameBtn = document.getElementById("cancel-name-btn");
+  if (cancelNameBtn) {
+    cancelNameBtn.addEventListener("click", () => {
+      const modal = document.getElementById("modal-edit-name");
+      if (modal) modal.style.display = "none";
+    });
+  }
+  
+  // Edit avatar modal handlers
+  const cancelAvatarBtn = document.getElementById("cancel-avatar-btn");
+  if (cancelAvatarBtn) {
+    cancelAvatarBtn.addEventListener("click", () => {
+      const modal = document.getElementById("modal-change-avatar");
+      if (modal) modal.style.display = "none";
+    });
+  }
+  
+  // Close processing modal on outside click
+  const processingModal = document.getElementById("modal-upload-processing");
+  if (processingModal) {
+    processingModal.addEventListener("click", (e) => {
+      if (e.target === processingModal) {
+        // Don't allow closing processing modal by clicking outside
+        // hideProcessingModal();
+      }
+    });
   }
 });

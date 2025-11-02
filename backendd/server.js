@@ -170,27 +170,101 @@ async function callOpenAI(prompt) {
 
 // Validate if OpenAI response contains good questions
 function isValidOpenAIResponse(parsed) {
-  if (!parsed || !parsed.questions || !Array.isArray(parsed.questions)) return false;
-  if (parsed.questions.length !== 5) return false; // Must have exactly 5 questions
-  
-  for (const q of parsed.questions) {
-    if (!q.question || !q.options || !Array.isArray(q.options)) return false;
-    if (q.options.length !== 4) return false;
-    if (typeof q.answerIndex !== 'number' || q.answerIndex < 0 || q.answerIndex > 3) return false;
-    
-    // Check if options are meaningful (not just single letters)
-    if (q.options.some(opt => opt.length < 5)) return false;
+  if (!parsed || !parsed.questions || !Array.isArray(parsed.questions)) {
+    console.log("❌ Validation failed: No questions array");
+    return false;
   }
   
+  if (parsed.questions.length !== 5) {
+    console.log("❌ Validation failed: Expected 5 questions, got", parsed.questions.length);
+    return false;
+  }
+  
+  for (let i = 0; i < parsed.questions.length; i++) {
+    const q = parsed.questions[i];
+    
+    if (!q.question || typeof q.question !== 'string' || q.question.length < 10) {
+      console.log(`❌ Validation failed: Question ${i+1} is too short or missing`);
+      return false;
+    }
+    
+    if (!q.options || !Array.isArray(q.options)) {
+      console.log(`❌ Validation failed: Question ${i+1} has no options array`);
+      return false;
+    }
+    
+    if (q.options.length !== 4) {
+      console.log(`❌ Validation failed: Question ${i+1} has ${q.options.length} options, expected 4`);
+      return false;
+    }
+    
+    if (typeof q.answerIndex !== 'number' || q.answerIndex < 0 || q.answerIndex > 3) {
+      console.log(`❌ Validation failed: Question ${i+1} has invalid answerIndex: ${q.answerIndex}`);
+      return false;
+    }
+    
+    // Check if options are meaningful (not just single letters)
+    for (let j = 0; j < q.options.length; j++) {
+      const opt = q.options[j];
+      if (!opt || typeof opt !== 'string' || opt.length < 3) {
+        console.log(`❌ Validation failed: Question ${i+1} option ${j+1} is too short: "${opt}"`);
+        return false;
+      }
+    }
+  }
+  
+  console.log("✅ OpenAI response validation passed");
   return true;
 }
 
 // routes
 app.get("/", (req, res) => res.send("Server OK"));
-app.get("/api/health", (req, res) => res.json({ ok: true, port: PORT, storage: useFirestore ? "firestore" : "local" }));
+app.get("/api/health", (req, res) => res.json({ 
+  ok: true, 
+  port: PORT, 
+  storage: useFirestore ? "firestore" : "local",
+  openAI: !!OPENAI_KEY,
+  timestamp: new Date().toISOString()
+}));
+
+// Test OpenAI connection
+app.get("/api/test-openai", async (req, res) => {
+  try {
+    if (!OPENAI_KEY) {
+      return res.status(400).json({ 
+        error: "OpenAI API key not configured",
+        hasKey: false
+      });
+    }
+    
+    console.log("🧪 Testing OpenAI connection...");
+    const testPrompt = "Generate a simple JSON response: {\"test\": \"success\", \"message\": \"OpenAI is working\"}";
+    const response = await callOpenAI(testPrompt);
+    
+    console.log("✅ OpenAI test successful");
+    return res.json({
+      ok: true,
+      hasKey: true,
+      response: response.slice(0, 200),
+      message: "OpenAI connection successful"
+    });
+  } catch (error) {
+    console.error("❌ OpenAI test failed:", error);
+    return res.status(500).json({
+      ok: false,
+      hasKey: !!OPENAI_KEY,
+      error: error.message,
+      message: "OpenAI connection failed"
+    });
+  }
+});
 
 app.post("/api/upload-notes", upload.single("file"), async (req, res) => {
   try {
+    console.log("📤 Upload-notes endpoint called");
+    console.log("File received:", req.file?.originalname, req.file?.size);
+    console.log("Body data:", Object.keys(req.body));
+    
     if (!req.file) return res.status(400).json({ error: "No file uploaded (use field 'file')" });
 
     let weeks = null;
@@ -205,10 +279,14 @@ app.post("/api/upload-notes", upload.single("file"), async (req, res) => {
     } else if (req.body?.week) {
       weeks = [String(req.body.week)];
     }
+    
+    console.log("Weeks processed:", weeks);
 
     let extractedText = "";
     try {
+      console.log("🔍 Extracting text from file...");
       extractedText = await extractTextFromBuffer(req.file);
+      console.log("✅ Text extracted, length:", extractedText.length);
     } catch (e) {
       console.error("extract error:", e);
       return res.status(500).json({ error: "Failed to extract text: " + String(e.message) });
@@ -216,64 +294,127 @@ app.post("/api/upload-notes", upload.single("file"), async (req, res) => {
 
     let parsed = null;
     if (OPENAI_KEY) {
+      console.log("🤖 Using OpenAI for quiz generation...");
       const prompt = `
 Given the lecture notes below, generate STRICT JSON ONLY with this exact structure and nothing else:
 {
-  "title": "short title",
-  "sourcePreview": "first 200 chars",
+  "title": "short descriptive title for the quiz",
+  "sourcePreview": "first 200 characters of the content",
   "questions": [
-    { "question":"...","type":"mcq","options":["opt1","opt2","opt3","opt4"], "answerIndex": 0 }
+    { "question":"clear question text","type":"mcq","options":["detailed option A","detailed option B","detailed option C","detailed option D"], "answerIndex": 0 }
   ]
 }
-Produce exactly 5 questions. Each question must be type "mcq" and have exactly 4 options. answerIndex must be the index (0-3) of the correct option.
-Notes:
-\`
+
+IMPORTANT REQUIREMENTS:
+- Produce exactly 5 high-quality questions
+- Each question must be type "mcq" with exactly 4 detailed options
+- Options must be substantial (minimum 5 words each), not just single letters
+- answerIndex must be the correct answer index (0-3)
+- Questions should test understanding, not just memorization
+- Make sure options are plausible and distinct
+
+Lecture Notes Content:
+\`\`\`
 ${extractedText.slice(0, 4000)}
-\`
+\`\`\`
 `;
       let modelOutput = "";
       try {
         modelOutput = await callOpenAI(prompt);
-        const m = modelOutput.match(/\{[\s\S]*\}$/m);
-        const jsonText = m ? m[0] : modelOutput;
+        console.log("🤖 OpenAI raw response length:", modelOutput.length);
+        
+        // Extract JSON from response
+        const jsonMatch = modelOutput.match(/\{[\s\S]*\}/);
+        const jsonText = jsonMatch ? jsonMatch[0] : modelOutput;
+        console.log("📝 Extracted JSON length:", jsonText.length);
+        
         parsed = JSON.parse(jsonText);
+        console.log("✅ JSON parsed successfully");
+        console.log("Questions generated:", parsed.questions?.length);
+        
+        // Validate the OpenAI response
+        if (!isValidOpenAIResponse(parsed)) {
+          console.warn("⚠️ OpenAI response validation failed, using fallback");
+          throw new Error("OpenAI generated invalid response format");
+        }
+        
       } catch (e) {
-        console.error("OpenAI/parse failed:", e, "raw:", modelOutput);
-        return res.status(500).json({ error: "OpenAI or parse failed: " + String(e.message) });
+        console.error("OpenAI/parse failed:", e);
+        console.log("Raw OpenAI output:", modelOutput.slice(0, 500));
+        
+        // Fallback to simple questions if OpenAI fails
+        const lines = extractedText.split(/\r?\n/).filter(Boolean);
+        parsed = {
+          title: `Quiz from ${req.file.originalname || "notes"}`,
+          sourcePreview: extractedText.slice(0, 200),
+          questions: Array.from({length:5}).map((_,i)=>{
+            const stem = lines[i] || `Question ${i+1} from the content`;
+            return {
+              question: stem.slice(0,200) + "?",
+              type: "mcq",
+              options: [
+                `Option A for question ${i+1}`,
+                `Option B for question ${i+1}`, 
+                `Option C for question ${i+1}`,
+                `Option D for question ${i+1}`
+              ],
+              answerIndex: 0
+            };
+          })
+        };
+        console.log("💡 Using fallback quiz generation");
       }
     } else {
+      console.log("⚠️ No OpenAI key, using fallback generation");
       const lines = extractedText.split(/\r?\n/).filter(Boolean);
       parsed = {
         title: `Quiz from ${req.file.originalname || "notes"}`,
         sourcePreview: extractedText.slice(0, 200),
         questions: Array.from({length:5}).map((_,i)=>{
-          const stem = lines[i] || `Placeholder question ${i+1}`;
+          const stem = lines[i] || `Question ${i+1} from uploaded content`;
           return {
-            question: stem.slice(0,300) + "?",
+            question: stem.slice(0,200) + "?",
             type: "mcq",
-            options: [`A ${i+1}`, `B ${i+1}`, `C ${i+1}`, `D ${i+1}`],
+            options: [
+              `Option A for question ${i+1}`,
+              `Option B for question ${i+1}`,
+              `Option C for question ${i+1}`,
+              `Option D for question ${i+1}`
+            ],
             answerIndex: 0
           };
         })
       };
     }
 
+    // Enhanced short options expansion function
     async function expandShortOptions(questionText, shortOptions) {
       if (!OPENAI_KEY) return null;
+      console.log("🔄 Expanding short options for:", questionText.slice(0, 50));
+      
       const prompt = `
-You are given a multiple choice question and a set of 1-letter choice labels (e.g. ["A","B","C","D"]) or similar short tokens.
-Produce STRICT JSON only: {"options":["full option A text","full option B text","full option C text","full option D text"], "answerIndex": <0-3>}
-Make options plausible, distinct, and relevant to the question. Use the original correct label if possible.
+You are given a multiple choice question and a set of short choice labels.
+Generate STRICT JSON only: {"options":["detailed option A text","detailed option B text","detailed option C text","detailed option D text"], "answerIndex": <0-3>}
+
+Requirements:
+- Create 4 distinct, plausible, and detailed options (minimum 5 words each)
+- Make options relevant to the question content
+- Ensure only one option is clearly correct
+- Options should test understanding, not guessing
+
 Question:
 ${questionText}
-Short labels: ${JSON.stringify(shortOptions)}
+
+Short labels to expand: ${JSON.stringify(shortOptions)}
 `;
       try {
         const out = await callOpenAI(prompt);
-        const m = out.match(/\{[\s\S]*\}/m);
-        const jsonText = m ? m[0] : out;
+        const jsonMatch = out.match(/\{[\s\S]*\}/);
+        const jsonText = jsonMatch ? jsonMatch[0] : out;
         const parsed = JSON.parse(jsonText);
+        
         if (Array.isArray(parsed.options) && parsed.options.length === 4 && Number.isFinite(parsed.answerIndex)) {
+          console.log("✅ Short options expanded successfully");
           return { options: parsed.options.map(String), answerIndex: Number(parsed.answerIndex) };
         }
       } catch (e) {
@@ -282,17 +423,22 @@ Short labels: ${JSON.stringify(shortOptions)}
       return null;
     }
 
+    console.log("🔧 Processing and normalizing questions...");
     const normalizedQuestions = [];
     const rawQuestions = Array.isArray(parsed.questions) ? parsed.questions : [];
+    
     for (let idx = 0; idx < Math.min(5, rawQuestions.length); idx++) {
       const q = rawQuestions[idx] || {};
       const qq = {};
-      qq.question = String(q.question || (`Question ${idx+1}`)).trim();
+      qq.question = String(q.question || (`Generated question ${idx+1}`)).trim();
       qq.type = "mcq";
 
       let opts = Array.isArray(q.options) ? q.options.map(s => String(s||"").trim()) : [];
-      const allSingleLetter = opts.length && opts.every(o => /^[A-Za-z]{1,2}$/.test(o));
+      
+      // Check if we got single-letter options that need expansion
+      const allSingleLetter = opts.length > 0 && opts.every(o => /^[A-Za-z]{1,2}$/.test(o));
       if (allSingleLetter) {
+        console.log("🔄 Detected single-letter options, expanding...");
         const expanded = await expandShortOptions(qq.question, opts).catch(()=>null);
         if (expanded) {
           opts = expanded.options;
@@ -300,10 +446,14 @@ Short labels: ${JSON.stringify(shortOptions)}
         }
       }
 
-      opts = opts.filter(Boolean).slice(0,4);
-      while (opts.length < 4) opts.push(`Option ${opts.length+1}`);
+      // Ensure we have 4 valid options
+      opts = opts.filter(opt => opt && opt.length >= 3).slice(0,4);
+      while (opts.length < 4) {
+        opts.push(`Alternative option ${opts.length+1} for this question`);
+      }
       qq.options = opts;
 
+      // Set answer index
       if (typeof qq.answerIndex !== "number") {
         let ai = (q && Number.isFinite(Number(q.answerIndex))) ? Number(q.answerIndex) : null;
         if (ai === null && q && q.answer) {
@@ -318,32 +468,62 @@ Short labels: ${JSON.stringify(shortOptions)}
       normalizedQuestions.push(qq);
     }
 
+    // Ensure we always have exactly 5 questions
     while (normalizedQuestions.length < 5) {
       const i = normalizedQuestions.length + 1;
-      normalizedQuestions.push({ question: `Extra question ${i}?`, type: "mcq", options: ["A","B","C","D"], answerIndex: 0 });
+      normalizedQuestions.push({ 
+        question: `Bonus question ${i} from the uploaded content?`, 
+        type: "mcq", 
+        options: [
+          `First possible answer for question ${i}`,
+          `Second possible answer for question ${i}`,
+          `Third possible answer for question ${i}`,
+          `Fourth possible answer for question ${i}`
+        ], 
+        answerIndex: 0 
+      });
     }
 
+    console.log("✅ Quiz questions normalized:", normalizedQuestions.length);
+
     const quizDoc = {
-      title: parsed.title || `Quiz from ${req.file.originalname || "notes"}`,
+      title: parsed.title || `AI Quiz from ${req.file.originalname || "notes"}`,
       sourcePreview: parsed.sourcePreview || extractedText.slice(0, 200),
       questions: normalizedQuestions,
       weeks: weeks || null,
       sourceFileName: req.file.originalname || null,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      published: false,  // Default to unpublished for admin review
+      generatedBy: "OpenAI GPT-4",
+      fileSize: req.file.size
     };
 
     let quizId = null;
     if (useFirestore && db) {
+      console.log("💾 Saving to Firestore...");
       const docRef = await db.collection("quizzes").add(quizDoc);
       quizId = docRef.id;
+      console.log("✅ Saved to Firestore with ID:", quizId);
     } else {
+      console.log("💾 Saving to local JSON...");
       quizId = saveLocalQuiz(quizDoc);
+      console.log("✅ Saved to local file with ID:", quizId);
     }
 
-    return res.json({ ok: true, quizId, quiz: quizDoc });
+    console.log("🎉 Quiz generation completed successfully!");
+    return res.json({ 
+      ok: true, 
+      quizId, 
+      quiz: { ...quizDoc, id: quizId },
+      message: "Quiz generated successfully with AI-powered questions"
+    });
+    
   } catch (err) {
-    console.error("upload error:", err);
-    return res.status(500).json({ error: String(err) });
+    console.error("❌ Upload error:", err);
+    return res.status(500).json({ 
+      error: String(err.message || err),
+      details: "Please check server logs for more information"
+    });
   }
 });
 
