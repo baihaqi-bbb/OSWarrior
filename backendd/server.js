@@ -1404,6 +1404,62 @@ app.get("/api/reports", async (req, res) => {
   }
 });
 
+// Get user quiz attempts for achievements
+app.get("/api/user/:userId/quiz-attempts", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    if (useFirestore && db) {
+      const snap = await db.collection("results").where("userId", "==", userId).get();
+      const attempts = [];
+      snap.forEach(doc => {
+        const data = doc.data();
+        attempts.push({
+          id: doc.id,
+          userId: data.userId,
+          score: Number(data.score || 0),
+          total: Number(data.total || 0),
+          percentage: data.total > 0 ? Math.round((data.score / data.total) * 100) : 0,
+          week: data.week,
+          quizId: data.quizId,
+          timestamp: data.createdAt,
+          createdAt: data.createdAt
+        });
+      });
+      return res.json(attempts);
+    } else {
+      const resultsPath = path.join(process.cwd(), "data", "results.json");
+      let results = [];
+      if (fs.existsSync(resultsPath)) {
+        try { 
+          results = JSON.parse(fs.readFileSync(resultsPath, "utf8") || "[]"); 
+        } catch { 
+          results = []; 
+        }
+      }
+      
+      const userAttempts = results
+        .filter(r => r.userId === userId)
+        .map(r => ({
+          id: r.id,
+          userId: r.userId,
+          score: Number(r.score || 0),
+          total: Number(r.total || 0),
+          percentage: r.total > 0 ? Math.round((r.score / r.total) * 100) : 0,
+          week: r.week,
+          quizId: r.quizId,
+          timestamp: r.createdAt,
+          createdAt: r.createdAt
+        }));
+        
+      return res.json(userAttempts);
+    }
+  } catch (err) {
+    console.error("/api/user/:userId/quiz-attempts error:", err);
+    return res.status(500).json({ error: String(err) });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
