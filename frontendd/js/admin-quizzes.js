@@ -582,8 +582,8 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // initial load AFTER DOM ready
-  loadQuizzes();
+  // initial load AFTER DOM ready (without success notification)
+  loadQuizzes(false);
 });
 
 // create flow (friendly form)
@@ -951,8 +951,8 @@ if (document.readyState === "loading") {
 }
 
 async function initializeQuizManager() {
-  // Show welcome notification
-  showNotification("🚀 Quiz Management System Initialized", 'info', 3000);
+  // Initialize quiz management system silently
+  // showNotification("🚀 Quiz Management System Initialized", 'info', 3000);
   
   // Setup enhanced search with debounce
   const searchInput = document.getElementById("search");
@@ -1020,9 +1020,9 @@ async function initializeQuizManager() {
     }
   });
   
-  // Load initial data
+  // Load initial data silently
   try {
-    await loadQuizzes();
+    await loadQuizzes(false);
   } catch (err) {
     showNotification("Failed to initialize quiz data", 'error');
   }
