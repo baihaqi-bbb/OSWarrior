@@ -1,7 +1,7 @@
 // ===== View Profile Script =====
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 // ===== Firebase Config =====
 const firebaseConfig = {
@@ -34,8 +34,8 @@ const profileXP = document.getElementById('profile-xp');
 const profileAchievements = document.getElementById('profile-achievements');
 const profilePicture = document.getElementById('profile-picture');
 const backBtn = document.querySelector('.btn-back');
-const editNameBtn = document.getElementById('edit-name');
-const changeAvatarBtn = document.getElementById('change-avatar');
+const editNameBtn = document.getElementById('profile-edit-name');
+const changeAvatarBtn = document.getElementById('profile-change-avatar');
 
 // Modal Elements
 const modalName = document.getElementById('modal-name');
@@ -145,11 +145,31 @@ modalNameSave?.addEventListener('click', async () => {
   if (!newName) return;
 
   try {
+    // Update Firebase Auth profile
     await updateProfile(currentUser, { displayName: newName });
     profileName.textContent = newName;
 
+    // Update navbar if it exists
+    const usernameNavbar = document.getElementById("username-navbar");
+    if (usernameNavbar) usernameNavbar.textContent = newName;
+
+    // Update or create Firestore document
     const docRef = doc(db, "users", currentUser.uid);
-    await updateDoc(docRef, { name: newName });
+    try {
+      await updateDoc(docRef, { name: newName });
+    } catch (firestoreError) {
+      // If document doesn't exist, create it
+      if (firestoreError.code === 'not-found') {
+        await setDoc(docRef, { 
+          name: newName,
+          email: currentUser.email,
+          uid: currentUser.uid,
+          createdAt: new Date()
+        });
+      } else {
+        throw firestoreError;
+      }
+    }
 
     modalName.classList.add('hidden');
     alert("Nama berjaya dikemaskini!");
@@ -177,11 +197,33 @@ modalAvatarSave?.addEventListener('click', async () => {
   if (!newAvatar) return;
 
   try {
+    // Update Firebase Auth profile
     await updateProfile(currentUser, { photoURL: newAvatar });
     profilePicture.src = newAvatar;
 
+    // Update navbar if it exists
+    const profileImgNavbar = document.getElementById("profile-img-navbar");
+    if (profileImgNavbar) profileImgNavbar.src = newAvatar;
+
+    // Update or create Firestore document
     const docRef = doc(db, "users", currentUser.uid);
-    await updateDoc(docRef, { avatar: newAvatar });
+    try {
+      await updateDoc(docRef, { avatar: newAvatar, photoURL: newAvatar });
+    } catch (firestoreError) {
+      // If document doesn't exist, create it
+      if (firestoreError.code === 'not-found') {
+        await setDoc(docRef, { 
+          avatar: newAvatar,
+          photoURL: newAvatar,
+          name: currentUser.displayName || currentUser.email?.split('@')[0] || "Warrior",
+          email: currentUser.email,
+          uid: currentUser.uid,
+          createdAt: new Date()
+        });
+      } else {
+        throw firestoreError;
+      }
+    }
 
     modalAvatar.classList.add('hidden');
     alert("Avatar berjaya dikemaskini!");
@@ -192,3 +234,28 @@ modalAvatarSave?.addEventListener('click', async () => {
 });
 
 modalAvatarCancel?.addEventListener('click', () => modalAvatar.classList.add('hidden'));
+
+// ===== Close Modal on Outside Click =====
+modalName?.addEventListener('click', (e) => {
+  if (e.target === modalName) {
+    modalName.classList.add('hidden');
+  }
+});
+
+modalAvatar?.addEventListener('click', (e) => {
+  if (e.target === modalAvatar) {
+    modalAvatar.classList.add('hidden');
+  }
+});
+
+// ===== Close Modal on Escape Key =====
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (!modalName.classList.contains('hidden')) {
+      modalName.classList.add('hidden');
+    }
+    if (!modalAvatar.classList.contains('hidden')) {
+      modalAvatar.classList.add('hidden');
+    }
+  }
+});
