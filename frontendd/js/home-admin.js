@@ -1,3 +1,146 @@
+// === User Management & Quiz Management Counter Functions ===
+function updateActiveUsersCount(count) {
+  const el = document.getElementById('active-users');
+  if (el) el.textContent = (typeof count === 'number' && !isNaN(count)) ? count : '-';
+}
+
+function updateSuspendedUsersCount(count) {
+  const el = document.getElementById('suspended-users');
+  if (el) el.textContent = (typeof count === 'number' && !isNaN(count)) ? count : '-';
+}
+
+function updatePublishedQuizzesCount(count) {
+  const el = document.getElementById('published-quizzes');
+  if (el) el.textContent = (typeof count === 'number' && !isNaN(count)) ? count : '-';
+}
+
+function updateDraftQuizzesCount(count) {
+  const el = document.getElementById('draft-quizzes');
+  if (el) el.textContent = (typeof count === 'number' && !isNaN(count)) ? count : '-';
+}
+
+// Call these on page load to sync values (fetch from API, fallback to localStorage)
+document.addEventListener('DOMContentLoaded', () => {
+  (async () => {
+    // User Management: fetch users from API
+    let users = [];
+    try {
+      const response = await fetch('https://oswarrior-backend.onrender.com/api/users', { credentials: 'include' });
+      if (response.ok) {
+        const apiUsers = await response.json();
+        users = Array.isArray(apiUsers) ? apiUsers : [];
+      } else {
+        throw new Error(`API returned ${response.status}`);
+      }
+    } catch (apiError) {
+      // Fallback to localStorage (if any)
+      const stored = localStorage.getItem('users');
+      users = stored ? JSON.parse(stored) : [];
+    }
+    updateActiveUsersCount(users.filter(u => u.status === 'active').length);
+    updateSuspendedUsersCount(users.filter(u => u.status === 'suspended').length);
+
+    // Quiz Management: fetch quizzes from API
+    let quizzes = [];
+    try {
+      const response = await fetch('https://oswarrior-backend.onrender.com/api/quizzes', { credentials: 'include' });
+      if (response.ok) {
+        const apiQuizzes = await response.json();
+        quizzes = Array.isArray(apiQuizzes) ? apiQuizzes : [];
+      } else {
+        throw new Error(`API returned ${response.status}`);
+      }
+    } catch (apiError) {
+      // Fallback to localStorage (if any)
+      const stored = localStorage.getItem('uploaded-quizzes');
+      quizzes = stored ? JSON.parse(stored) : [];
+    }
+    updatePublishedQuizzesCount(quizzes.filter(q => q.published === true).length);
+    updateDraftQuizzesCount(quizzes.filter(q => !q.published).length);
+  })();
+});
+// === Content Upload Counter Functions (REAL DATA) ===
+function updateUploadedFilesCount(count) {
+  const el = document.getElementById('uploaded-files');
+  if (el) el.textContent = (typeof count === 'number' && !isNaN(count)) ? count : '-';
+}
+
+function updateGeneratedQuizzesCount(count) {
+  const el = document.getElementById('generated-quizzes');
+  if (el) el.textContent = (typeof count === 'number' && !isNaN(count)) ? count : '-';
+}
+
+// Call these on page load to sync values (fetch from API, fallback to localStorage)
+document.addEventListener('DOMContentLoaded', () => {
+  (async () => {
+    let uploadedQuizzes = [];
+    try {
+      const response = await fetch('https://oswarrior-backend.onrender.com/api/quizzes', { credentials: 'include' });
+      if (response.ok) {
+        const apiQuizzes = await response.json();
+        uploadedQuizzes = Array.isArray(apiQuizzes) ? apiQuizzes : [];
+      } else {
+        throw new Error(`API returned ${response.status}`);
+      }
+    } catch (apiError) {
+      // Fallback to localStorage
+      const stored = localStorage.getItem('uploaded-quizzes');
+      uploadedQuizzes = stored ? JSON.parse(stored) : [];
+    }
+    updateUploadedFilesCount(uploadedQuizzes.length);
+    updateGeneratedQuizzesCount(uploadedQuizzes.length);
+  })();
+});
+// === Analytics & Reports Counter Functions ===
+function updateReportsCount(count) {
+  const el = document.getElementById('available-reports');
+  if (el) el.textContent = (typeof count === 'number' && !isNaN(count)) ? count : '-';
+}
+
+function updateExportsCount(count) {
+  const el = document.getElementById('recent-exports');
+  if (el) el.textContent = (typeof count === 'number' && !isNaN(count)) ? count : '-';
+}
+
+// Call these on page load to sync values
+document.addEventListener('DOMContentLoaded', () => {
+  // Fetch report count from API (same as exportReport logic)
+  const q = new URLSearchParams();
+  q.set('type', 'summary');
+  const RELATIVE = [
+    `/api/reports?${q}`,
+    `/api/admin/reports?${q}`,
+    `/api/v1/reports?${q}`
+  ];
+  const ABS_HOSTS = [
+    window.BACKEND_BASE || null,
+    "https://oswarrior-backend.onrender.com"
+  ].filter(Boolean);
+  const CANDIDATES = [
+    ...ABS_HOSTS.flatMap(h => RELATIVE.map(p => `${h}${p.startsWith('/')?p:''}${p}`)),
+    ...RELATIVE
+  ].filter((v,i,a) => a.indexOf(v) === i);
+  (async () => {
+    let data = null;
+    for (const url of CANDIDATES) {
+      try {
+        const res = await fetch(url, { credentials: 'include' });
+        if (res.ok) {
+          data = await res.json();
+          break;
+        }
+      } catch {}
+    }
+    if (data && data.rows) {
+      updateReportsCount(data.rows.length);
+    } else {
+      updateReportsCount('-');
+    }
+    // Exports count from localStorage
+    let exportCount = Number(localStorage.getItem('reportExportCount') || 0);
+    updateExportsCount(exportCount);
+  })();
+});
 // filepath: [home-admin.js](http://_vscodecontentref_/3)
 // Import Firebase SDK
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
@@ -178,34 +321,18 @@ function updateModuleBadges() {
     'reports-badge': 12,
     'audit-badge': Math.floor(Math.random() * 50) + 10
   };
-  
+
+  // Update badge numbers
   Object.entries(badges).forEach(([id, value]) => {
-    const element = document.getElementById(id);
-    if (element) element.textContent = value;
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
   });
-  
-  // Update module stats
-  const moduleStats = {
-    'active-users': adminData.stats.activeUsers,
-    'suspended-users': adminData.stats.suspendedUsers,
-    'published-quizzes': adminData.stats.publishedQuizzes,
-    'draft-quizzes': adminData.stats.draftQuizzes,
-    'uploaded-files': Math.floor(Math.random() * 100) + 50,
-    'generated-quizzes': adminData.stats.totalQuizzes,
-    'top-players': Math.min(adminData.stats.activeUsers, 10),
-    'active-competitions': 3,
-    'available-reports': 12,
-    'recent-exports': 5,
-    'recent-events': Math.floor(Math.random() * 200) + 100,
-    'active-alerts': Math.floor(Math.random() * 5)
-  };
-  
-  Object.entries(moduleStats).forEach(([id, value]) => {
-    const element = document.getElementById(id);
-    if (element) element.textContent = value;
-  });
-  
-  console.log("🏷️ Module badges updated");
+
+  // Update active and suspended user counts in User Management card
+  const activeUsersEl = document.getElementById('active-users');
+  const suspendedUsersEl = document.getElementById('suspended-users');
+  if (activeUsersEl) activeUsersEl.textContent = adminData.stats.activeUsers;
+  if (suspendedUsersEl) suspendedUsersEl.textContent = adminData.stats.suspendedUsers;
 }
 
 // Animate number counting
@@ -273,9 +400,58 @@ function setupEventListeners() {
     'create-quick-quiz': createQuickQuiz,
     'upload-status': showUploadStatus,
     'reset-leaderboard': resetLeaderboard,
-    'generate-report': generateReport,
+    'export-report': exportReport,
     'export-logs': exportLogs
   };
+// Export CSV handler for Analytics & Reports
+function exportReport() {
+  showNotification('📋 Exporting analytics report...', 'info');
+  // Use robust candidate API logic (same as admin-reports.js)
+  const q = new URLSearchParams();
+  q.set('type', 'summary');
+  const RELATIVE = [
+    `/api/reports?${q}`,
+    `/api/admin/reports?${q}`,
+    `/api/v1/reports?${q}`
+  ];
+  const ABS_HOSTS = [
+    window.BACKEND_BASE || null,
+    "https://oswarrior-backend.onrender.com"
+  ].filter(Boolean);
+  const CANDIDATES = [
+    ...ABS_HOSTS.flatMap(h => RELATIVE.map(p => `${h}${p.startsWith('/')?p:''}${p}`)),
+    ...RELATIVE
+  ].filter((v,i,a) => a.indexOf(v) === i);
+  (async () => {
+    let data = null;
+    for (const url of CANDIDATES) {
+      try {
+        const res = await fetch(url, { credentials: 'include' });
+        if (res.ok) {
+          data = await res.json();
+          break;
+        }
+      } catch {}
+    }
+    if (data && data.meta && data.rows) {
+      const columns = data.meta.columns || [];
+      const rows = data.rows || [];
+      const out = [columns.join(","), ...rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(","))].join("\n");
+      const blob = new Blob([out], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "report.csv"; document.body.appendChild(a); a.click();
+      a.remove(); URL.revokeObjectURL(url);
+      let exportCount = Number(localStorage.getItem('reportExportCount') || 0) + 1;
+      localStorage.setItem('reportExportCount', exportCount);
+      const recentExportsEl = document.getElementById('recent-exports');
+      if (recentExportsEl) recentExportsEl.textContent = exportCount;
+      showNotification('✅ Analytics report exported as CSV', 'success');
+    } else {
+      showNotification('❌ Failed to export: No data', 'error');
+    }
+  })();
+}
   
   Object.entries(moduleButtons).forEach(([id, handler]) => {
     const button = document.getElementById(id);

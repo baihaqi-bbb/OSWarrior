@@ -14,45 +14,50 @@
 </head>
 <body class="home-admin">
   <!-- Navbar - Same as home admin -->
-  <div class="navbar" style="background: rgba(5, 15, 25, 0.95) !important; padding: 15px 30px !important; display: flex !important; justify-content: space-between !important; align-items: center !important; border-bottom: 2px solid rgba(0, 255, 255, 0.6) !important; backdrop-filter: blur(25px) !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; z-index: 1000 !important; box-shadow: 0 2px 15px rgba(0, 255, 255, 0.3) !important; height: 70px !important; min-height: 70px !important; max-height: 70px !important;">
-    <div class="navbar-left" style="display: flex !important; align-items: center !important; gap: 20px !important;">
-      <img src="image/os-warrior-logo.png" alt="OS Warrior" class="navbar-logo" style="height: 55px !important; width: auto !important; filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.7)) !important; transition: all 0.3s ease !important;">
-      <h1 style="color: #00FFFF !important; font-size: 1.8rem !important; font-weight: 700 !important; margin: 0 !important; text-shadow: 0 0 15px rgba(0, 255, 255, 0.6) !important; font-family: 'Orbitron', monospace !important; letter-spacing: 1px !important; transition: all 0.3s ease !important;">📊 Reports & Analytics</h1>
+  <div class="navbar" style="position:relative;">
+    <div class="navbar-left">
+      <img src="image/os-warrior-logo.png" alt="OS Warrior" class="navbar-logo">
+      <h1>Reports &amp; Analytics</h1>
     </div>
-    <div class="navbar-right" style="display: flex !important; align-items: center !important; flex-shrink: 0 !important; overflow: visible !important; position: relative !important;">
+    <div class="navbar-right">
       <div class="profile-container" id="profile-toggle">
-        <span id="username-navbar">Admin</span>
-        <img id="profile-img" class="profile-img" src="image/default-profile.png" alt="Profile"/>
-        
-        <!-- Profile Dropdown - Inside profile container for proper positioning -->
+        <span id="username-navbar" style="color:#00ffff;font-family:'Orbitron',monospace;font-size:1.1rem;margin-right:10px;">atiq baihaqi</span>
+        <img id="profile-img" class="profile-img" src="image/default-profile.png" alt="Profile" style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid #00ffff;box-shadow:0 0 8px #00ffff80;">
         <div id="profile-dropdown" class="profile-dropdown hidden">
           <a id="view-profile" href="profile.html">👤 View Profile</a>
           <a id="view-achievements" href="achievement.html">🏆 Achievements</a>
-
-          <!-- 🧰 Quick Settings Section -->
           <div class="settings-section">
             <p class="settings-title">⚙️ Quick Settings</p>
             <button id="toggle-theme">🌗 Dark / Light Mode</button>
             <button id="change-avatar">🖼️ Change Avatar</button>
             <button id="edit-name">✏️ Edit Name</button>
           </div>
-
           <button id="logout-btn">🚪 Logout</button>
         </div>
       </div>
     </div>
   </div>
-            <p class="settings-title">⚙️ Quick Settings</p>
-            <button id="toggle-theme">🌗 Dark / Light Mode</button>
-          </div>
-          <button id="logout-btn">🚪 Logout</button>
-        </div>
+  <div style="height:4px;width:100vw;background:linear-gradient(90deg,#00fff7 0%,#00bfff 100%);box-shadow:0 0 16px #00fff7a0;filter:blur(0.2px);margin-bottom:0;"></div>
+
+
+
+
+  <main class="reports-main" style="max-width:1100px;margin:60px auto 0 auto;padding:0 24px 32px 24px;">
+    <!-- Page Header -->
+    <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+      <div>
+        <h1 style="font-family:'Orbitron',monospace;font-size:2rem;color:#00fff7;text-shadow:0 0 12px #00fff7cc;margin-bottom:4px;">📊 Reports & Analytics</h1>
+        <p style="color:#b0e0ff;font-size:1.1rem;">Generate, view, and export analytics for users, quizzes, and system activity.</p>
+      </div>
+      <div class="summary-card" style="background:rgba(0,255,255,0.04);border-radius:14px;padding:18px 32px;box-shadow:0 0 12px #00fff733;display:flex;flex-direction:column;align-items:center;min-width:180px;">
+        <div style="font-family:'Orbitron',monospace;font-size:1.1rem;color:#b0e0ff;">Total Reports</div>
+        <div id="available-reports" style="font-size:2.2rem;color:#00fff7;font-family:'Orbitron',monospace;font-weight:700;">-</div>
+        <div style="font-family:'Orbitron',monospace;font-size:1.1rem;color:#b0e0ff;margin-top:8px;">Exports: <span id="recent-exports" style="color:#00fff7;font-weight:700;">-</span></div>
       </div>
     </div>
-  </div>
 
-  <main class="reports-main" style="max-width:1100px;margin:20px auto;padding:0 16px;">
-    <div class="reports-controls">
+    <!-- Reports Controls -->
+    <div class="reports-controls" style="margin-bottom:24px;">
       <div class="controls-left">
         <label>From <input type="date" id="r-from"></label>
         <label>To <input type="date" id="r-to"></label>
@@ -63,27 +68,81 @@
         </select>
         <button id="r-generate" class="btn">Generate</button>
       </div>
-
       <div class="controls-right">
         <button id="r-export" class="btn outline">Export CSV</button>
         <button id="r-refresh" class="btn">Refresh</button>
       </div>
     </div>
 
-    <section class="reports-chart">
-      <h2 id="reports-title">Report</h2>
-      <canvas id="reportsCanvas" width="900" height="300"></canvas>
+    <!-- Chart Section -->
+    <section class="reports-chart" style="margin-bottom:32px;">
+      <h2 id="reports-title" style="color:#00fff7;font-family:'Orbitron',monospace;font-size:1.3rem;margin-bottom:18px;text-shadow:0 0 12px #00fff799;">Report</h2>
+      <canvas id="reportsCanvas" width="900" height="300" style="background:rgba(0,255,255,0.03);border-radius:12px;box-shadow:0 0 16px #00fff733;"></canvas>
     </section>
 
-    <section class="reports-table">
-      <table id="reportsTable" aria-label="Reports table">
+    <!-- Table Section -->
+    <section class="reports-table" style="margin-bottom:32px;">
+      <table id="reportsTable" aria-label="Reports table" style="background:rgba(0,255,255,0.01);border-radius:10px;box-shadow:0 0 8px #00fff722;">
         <thead><tr id="reportsHead"><th>Loading...</th></tr></thead>
         <tbody></tbody>
       </table>
     </section>
-
     <div id="r-status" class="status"></div>
+
   </main>
+
+  <!-- Modal Edit Name -->
+  <div id="modal-edit-name" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>✏️ Edit Admin Name</h3>
+      <input type="text" id="input-new-name" placeholder="Enter your admin name" maxlength="20">
+      <div class="modal-actions">
+        <button id="save-name-btn" class="btn-action">💾 Save</button>
+        <button id="cancel-name-btn" class="btn-action btn-cancel">❌ Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Change Avatar -->
+  <div id="modal-change-avatar" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>🖼️ Change Avatar</h3>
+      <input type="text" id="input-avatar-url" placeholder="Paste image URL or leave empty for default">
+      <div class="modal-actions">
+        <button id="save-avatar-btn" class="btn-action">💾 Save</button>
+        <button id="cancel-avatar-btn" class="btn-action btn-cancel">❌ Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Reset Scores -->
+  <div id="modal-reset-scores" class="modal" style="display:none;">
+    <div class="modal-content reset-modal">
+      <div class="modal-icon">⚠️</div>
+      <h3>🔄 Complete Leaderboard Reset</h3>
+      <div class="warning-message">
+        <p><strong>⚠️ CRITICAL ACTION WARNING!</strong></p>
+        <p>This will permanently reset <strong>ALL</strong> user data:</p>
+        <ul class="reset-list">
+          <li>📊 Quiz Scores & Rankings</li>
+          <li>⭐ Experience Points (XP)</li>
+          <li>🔥 Login Streaks & Achievements</li>
+          <li>📈 All Progress Statistics</li>
+        </ul>
+        <div class="danger-highlight">
+          <p class="danger-text">⚠️ IRREVERSIBLE - Affects ALL users!</p>
+        </div>
+      </div>
+      <div class="confirmation-section">
+        <p>Type <strong>"RESET CONFIRM"</strong> to proceed:</p>
+        <input type="text" id="reset-confirmation-input" placeholder="Type RESET CONFIRM here..." autocomplete="off">
+      </div>
+      <div class="modal-actions">
+        <button id="confirm-reset-btn" class="btn-action btn-danger" disabled>🔄 Reset Everything</button>
+        <button id="cancel-reset-btn" class="btn-action btn-cancel">❌ Cancel</button>
+      </div>
+    </div>
+  </div>
 
   <!-- shared admin behaviour -->
   <script type="module" src="js/home-admin.js"></script>

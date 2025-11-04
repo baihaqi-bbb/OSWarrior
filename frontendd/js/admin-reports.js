@@ -1,3 +1,83 @@
+// --- Summary Card Functionality (GLOBAL SCOPE) ---
+var availableReportsEl = document.getElementById("available-reports");
+var recentExportsEl = document.getElementById("recent-exports");
+let exportCount = Number(localStorage.getItem('reportExportCount') || 0);
+function getTotalReports(reportData) {
+  if (reportData && Array.isArray(reportData.rows)) return reportData.rows.length;
+  return 0;
+}
+function updateSummaryStats(reportData) {
+  if (availableReportsEl) availableReportsEl.textContent = getTotalReports(reportData);
+  if (recentExportsEl) recentExportsEl.textContent = exportCount;
+}
+
+// === Notification System (EXACT COPY from home-admin.js) ===
+function showNotification(message, type = 'info') {
+  // Remove existing notifications
+  const existingNotifications = document.querySelectorAll('.admin-notification');
+  existingNotifications.forEach(notification => notification.remove());
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = `admin-notification notification-${type}`;
+  notification.innerHTML = `
+    <div class="notification-content">
+      <span class="notification-icon">${getNotificationIcon(type)}</span>
+      <span class="notification-message">${message}</span>
+      <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+    </div>
+  `;
+  // Add styles (EXACT COPY from home-admin.js)
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-glow);
+    border-radius: 10px;
+    padding: 15px 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    max-width: 400px;
+    animation: slideInRight 0.3s ease;
+    font-family: 'Orbitron', monospace;
+    color: #ffffff;
+  `;
+  document.body.appendChild(notification);
+  // Auto remove after 5 seconds
+  setTimeout(() => {
+    if (notification.parentElement) {
+      notification.remove();
+    }
+  }, 5000);
+}
+
+function getNotificationIcon(type) {
+  const icons = {
+    info: 'ℹ️',
+    success: '✅',
+    warning: '⚠️',
+    error: '❌'
+  };
+  return icons[type] || '📢';
+}
+
+// Add notification animation CSS if not present
+if (!document.querySelector('#notification-animations')) {
+  const style = document.createElement('style');
+  style.id = 'notification-animations';
+  style.textContent = `
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    .notification-content { display: flex; align-items: center; gap: 10px; color: var(--text-primary); }
+    .notification-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; margin-left: auto; }
+    .notification-close:hover { color: var(--text-primary); }
+  `;
+  document.head.appendChild(style);
+}
+
 // Simple reports page: fetch /api/reports?from=...&to=...&type=..., render chart & table, export CSV.
 // If backend missing, shows sample data.
 
@@ -116,7 +196,7 @@ function renderChart(chartData) {
 
 async function generateReports(from, to, type) {
   const status = STATUS("r-status");
-  status.textContent = "Generating…";
+  status.textContent = "";
   try {
     const data = await fetchReportsAPI(from, to, type);
     if (data && data.error) {
@@ -124,7 +204,9 @@ async function generateReports(from, to, type) {
       document.getElementById("reports-title").textContent = sample.meta.title;
       renderTable(sample.meta, sample.rows);
       renderChart(sample.chart);
-      status.textContent = "No backend: showing sample data";
+      status.textContent = "";
+      // Force update summary after all DOM rendering
+      requestAnimationFrame(() => updateSummaryStats({ meta: sample.meta, rows: sample.rows, chart: sample.chart }));
       return { meta: sample.meta, rows: sample.rows, chart: sample.chart };
     }
     // expected shape: { meta: { title, columns }, rows: [...], chart: { labels, values } }
@@ -134,8 +216,10 @@ async function generateReports(from, to, type) {
     document.getElementById("reports-title").textContent = meta.title || "Report";
     renderTable(meta, rows);
     if (chart) renderChart(chart);
-    status.textContent = `Loaded ${rows.length} rows`;
-    setTimeout(()=>{ if (status) status.textContent = ""; }, 1600);
+  status.textContent = "";
+    // Force update summary after all DOM rendering
+    requestAnimationFrame(() => updateSummaryStats({ meta, rows, chart }));
+  // No status message after loading
     return { meta, rows, chart };
   } catch (err) {
     console.error(err);
@@ -152,29 +236,64 @@ window.addEventListener("DOMContentLoaded", () => {
   const toEl = document.getElementById("r-to");
   const typeEl = document.getElementById("r-type");
 
+
+
   // initial sample render
-  generateReports(null, null, "summary");
+  generateReports(null, null, "summary").then(res => {
+    window.__lastReport = res;
+    updateSummaryStats(window.__lastReport);
+  });
 
   g?.addEventListener("click", async () => {
     const res = await generateReports(fromEl?.value, toEl?.value, typeEl?.value);
-    // store last for export
     window.__lastReport = res;
+    updateSummaryStats(window.__lastReport);
   });
 
   refresh?.addEventListener("click", async () => {
+    showNotification('🔄 Refreshing report data...', 'info');
+    // Remove status message immediately
+    const status = document.getElementById('r-status');
+    if (status) status.textContent = '';
+    // Actually refresh the report data
     const res = await generateReports(fromEl?.value, toEl?.value, typeEl?.value);
     window.__lastReport = res;
+    updateSummaryStats(window.__lastReport);
+    showNotification('✅ Report generated and ready for download', 'success');
   });
 
   exportBtn?.addEventListener("click", () => {
     const last = window.__lastReport;
+    function incExport(res) {
+      exportCount++;
+      localStorage.setItem('reportExportCount', exportCount);
+      updateSummaryStats(res);
+    }
     if (!last || !last.meta || !last.rows) {
-      // regenerate quickly then export
       generateReports(fromEl?.value, toEl?.value, typeEl?.value).then(res => {
-        if (res && res.meta && res.rows) downloadCSV("report.csv", res.meta.columns || [], res.rows || []);
+        if (res && res.meta && res.rows) {
+          downloadCSV("report.csv", res.meta.columns || [], res.rows || []);
+          incExport(res);
+        }
       });
       return;
     }
     downloadCSV("report.csv", last.meta.columns || [], last.rows || []);
+    incExport(last);
   });
+
+  // Make Generate New button download the report file
+  const generateBtn = document.getElementById("generate-report");
+  if (generateBtn) {
+    generateBtn.addEventListener("click", () => {
+      const last = window.__lastReport;
+      if (!last || !last.meta || !last.rows) {
+        generateReports(fromEl?.value, toEl?.value, typeEl?.value).then(res => {
+          if (res && res.meta && res.rows) downloadCSV("report.csv", res.meta.columns || [], res.rows || []);
+        });
+        return;
+      }
+      downloadCSV("report.csv", last.meta.columns || [], last.rows || []);
+    });
+  }
 });

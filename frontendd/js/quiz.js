@@ -356,3 +356,13 @@ style.textContent = `
   }
 `;
 document.head.appendChild(style);
+
+// Setup static week card click handlers (revert to previous behavior)
+document.addEventListener('DOMContentLoaded', () => {
+  // ...existing code...
+  // Setup all functionality
+  setupProfileDropdown();
+  setupWeekCards();
+  setupModals();
+  // ...existing code...
+});
