@@ -171,7 +171,7 @@ async function callOpenAI(prompt) {
         { role: "user", content: prompt }
       ],
       temperature: 0.2,
-      max_tokens: 1500
+      max_tokens: 4000
     })
   });
   if (!resp.ok) {
@@ -179,7 +179,21 @@ async function callOpenAI(prompt) {
     throw new Error(`OpenAI error ${resp.status}: ${t}`);
   }
   const j = await resp.json();
-  return j.choices?.[0]?.message?.content || "";
+  
+  // Check if response was truncated
+  const finishReason = j.choices?.[0]?.finish_reason;
+  const content = j.choices?.[0]?.message?.content || "";
+  
+  console.log("🔍 OpenAI finish_reason:", finishReason);
+  console.log("🔍 Response length:", content.length);
+  
+  if (finishReason === "length") {
+    console.warn("⚠️⚠️⚠️ CRITICAL: OpenAI response was TRUNCATED due to length!");
+    console.warn("This is why you're getting 5 questions instead of 10!");
+    console.warn("Need to increase max_tokens further or reduce prompt size");
+  }
+  
+  return content;
 }
 
 // Validate if OpenAI response contains good questions
@@ -189,8 +203,8 @@ function isValidOpenAIResponse(parsed) {
     return false;
   }
   
-  if (parsed.questions.length !== 5) {
-    console.log("❌ Validation failed: Expected 5 questions, got", parsed.questions.length);
+  if (parsed.questions.length !== 10) {
+    console.log("❌ Validation failed: Expected 10 questions, got", parsed.questions.length);
     return false;
   }
   
@@ -309,33 +323,40 @@ app.post("/api/upload-notes", upload.single("file"), async (req, res) => {
     let parsed = null;
     if (OPENAI_KEY) {
       console.log("🤖 Using OpenAI for quiz generation...");
-      const prompt = `
-Given the lecture notes below, generate STRICT JSON ONLY with this exact structure and nothing else:
+      const prompt = `Generate STRICT JSON ONLY. Return EXACTLY 10 questions.
+
 {
-  "title": "short descriptive title for the quiz",
-  "sourcePreview": "first 200 characters of the content",
+  "title": "quiz title",
+  "sourcePreview": "preview text",
   "questions": [
-    { "question":"clear question text","type":"mcq","options":["detailed option A","detailed option B","detailed option C","detailed option D"], "answerIndex": 0 }
+    {"question":"Q1","type":"mcq","options":["A","B","C","D"],"answerIndex":0},
+    {"question":"Q2","type":"mcq","options":["A","B","C","D"],"answerIndex":1},
+    {"question":"Q3","type":"mcq","options":["A","B","C","D"],"answerIndex":2},
+    {"question":"Q4","type":"mcq","options":["A","B","C","D"],"answerIndex":3},
+    {"question":"Q5","type":"mcq","options":["A","B","C","D"],"answerIndex":0},
+    {"question":"Q6","type":"mcq","options":["A","B","C","D"],"answerIndex":1},
+    {"question":"Q7","type":"mcq","options":["A","B","C","D"],"answerIndex":2},
+    {"question":"Q8","type":"mcq","options":["A","B","C","D"],"answerIndex":3},
+    {"question":"Q9","type":"mcq","options":["A","B","C","D"],"answerIndex":0},
+    {"question":"Q10","type":"mcq","options":["A","B","C","D"],"answerIndex":1}
   ]
 }
 
-IMPORTANT REQUIREMENTS:
-- Produce exactly 5 high-quality questions
-- Each question must be type "mcq" with exactly 4 detailed options
-- Options must be substantial (minimum 5 words each), not just single letters
-- answerIndex must be the correct answer index (0-3)
-- Questions should test understanding, not just memorization
-- Make sure options are plausible and distinct
-
-Lecture Notes Content:
+Create 10 MCQ questions from this content. Each option must be 5-10 words:
 \`\`\`
 ${extractedText.slice(0, 4000)}
 \`\`\`
 `;
+      
+      console.log("📏 Prompt length:", prompt.length, "characters");
+      console.log("📏 Estimated input tokens:", Math.ceil(prompt.length / 4));
+      
       let modelOutput = "";
       try {
+        console.log("📤 Sending request to OpenAI (model: gpt-4, max_tokens: 4000)");
         modelOutput = await callOpenAI(prompt);
         console.log("🤖 OpenAI raw response length:", modelOutput.length);
+        console.log("🤖 First 500 chars:", modelOutput.slice(0, 500));
         
         // Extract JSON from response
         const jsonMatch = modelOutput.match(/\{[\s\S]*\}/);
@@ -344,7 +365,13 @@ ${extractedText.slice(0, 4000)}
         
         parsed = JSON.parse(jsonText);
         console.log("✅ JSON parsed successfully");
-        console.log("Questions generated:", parsed.questions?.length);
+        console.log("⭐ Questions generated:", parsed.questions?.length);
+        console.log("⭐ Expected: 10 questions");
+        
+        if (parsed.questions?.length !== 10) {
+          console.warn("⚠️⚠️⚠️ WARNING: Got", parsed.questions?.length, "questions instead of 10!");
+          console.warn("This means OpenAI response was truncated or incomplete");
+        }
         
         // Validate the OpenAI response
         if (!isValidOpenAIResponse(parsed)) {
@@ -361,7 +388,7 @@ ${extractedText.slice(0, 4000)}
         parsed = {
           title: `Quiz from ${req.file.originalname || "notes"}`,
           sourcePreview: extractedText.slice(0, 200),
-          questions: Array.from({length:5}).map((_,i)=>{
+          questions: Array.from({length:10}).map((_,i)=>{
             const stem = lines[i] || `Question ${i+1} from the content`;
             return {
               question: stem.slice(0,200) + "?",
@@ -384,7 +411,7 @@ ${extractedText.slice(0, 4000)}
       parsed = {
         title: `Quiz from ${req.file.originalname || "notes"}`,
         sourcePreview: extractedText.slice(0, 200),
-        questions: Array.from({length:5}).map((_,i)=>{
+        questions: Array.from({length:10}).map((_,i)=>{
           const stem = lines[i] || `Question ${i+1} from uploaded content`;
           return {
             question: stem.slice(0,200) + "?",
@@ -441,7 +468,7 @@ Short labels to expand: ${JSON.stringify(shortOptions)}
     const normalizedQuestions = [];
     const rawQuestions = Array.isArray(parsed.questions) ? parsed.questions : [];
     
-    for (let idx = 0; idx < Math.min(5, rawQuestions.length); idx++) {
+    for (let idx = 0; idx < Math.min(10, rawQuestions.length); idx++) {
       const q = rawQuestions[idx] || {};
       const qq = {};
       qq.question = String(q.question || (`Generated question ${idx+1}`)).trim();
@@ -482,8 +509,8 @@ Short labels to expand: ${JSON.stringify(shortOptions)}
       normalizedQuestions.push(qq);
     }
 
-    // Ensure we always have exactly 5 questions
-    while (normalizedQuestions.length < 5) {
+    // Ensure we always have exactly 10 questions
+    while (normalizedQuestions.length < 10) {
       const i = normalizedQuestions.length + 1;
       normalizedQuestions.push({ 
         question: `Bonus question ${i} from the uploaded content?`, 
@@ -512,14 +539,38 @@ Short labels to expand: ${JSON.stringify(shortOptions)}
       fileSize: req.file.size
     };
 
+    console.log("📊 Quiz document prepared:");
+    console.log("- Title:", quizDoc.title);
+    console.log("- Questions count:", quizDoc.questions.length);
+    console.log("- Weeks:", quizDoc.weeks);
+    console.log("- useFirestore:", useFirestore);
+    console.log("- db object exists:", !!db);
+    
+    // DEBUG: Print first 3 questions to verify
+    console.log("🔍 First 3 questions preview:");
+    quizDoc.questions.slice(0, 3).forEach((q, i) => {
+      console.log(`  Q${i+1}: ${q.question.slice(0, 60)}...`);
+    });
+    console.log("🔍 TOTAL questions being saved:", quizDoc.questions.length);
+
     let quizId = null;
     if (useFirestore && db) {
       console.log("💾 Saving to Firestore...");
-      const docRef = await db.collection("quizzes").add(quizDoc);
-      quizId = docRef.id;
-      console.log("✅ Saved to Firestore with ID:", quizId);
+      console.log("💾 Saving", quizDoc.questions.length, "questions to Firestore");
+      try {
+        const docRef = await db.collection("quizzes").add(quizDoc);
+        quizId = docRef.id;
+        console.log("✅ Saved to Firestore with ID:", quizId);
+        console.log("✅ Document path: quizzes/" + quizId);
+      } catch (firestoreError) {
+        console.error("❌ Firestore save error:", firestoreError);
+        console.log("⚠️ Falling back to local JSON...");
+        quizId = saveLocalQuiz(quizDoc);
+        console.log("✅ Saved to local file with ID:", quizId);
+      }
     } else {
       console.log("💾 Saving to local JSON...");
+      console.log("Reason: useFirestore=" + useFirestore + ", db=" + !!db);
       quizId = saveLocalQuiz(quizDoc);
       console.log("✅ Saved to local file with ID:", quizId);
     }
@@ -542,7 +593,7 @@ Short labels to expand: ${JSON.stringify(shortOptions)}
 });
 
 // session store + quiz handlers (unchanged)
-const QUESTIONS_PER_QUIZ = 5;
+const QUESTIONS_PER_QUIZ = 10;
 const activeQuizzes = {};
 
 function shuffle(array) {
@@ -1461,5 +1512,10 @@ app.get("/api/user/:userId/quiz-attempts", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`\n${'='.repeat(60)}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`📦 Storage: ${useFirestore ? '✅ Firestore' : '⚠️ Local JSON'}`);
+  console.log(`🤖 OpenAI: ${OPENAI_KEY ? '✅ Configured' : '❌ Not configured'}`);
+  console.log(`🔥 Firebase Admin: ${db ? '✅ Initialized' : '❌ Not initialized'}`);
+  console.log(`${'='.repeat(60)}\n`);
 });
