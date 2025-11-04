@@ -1519,5 +1519,3 @@ app.listen(PORT, () => {
   console.log(`🔥 Firebase Admin: ${db ? '✅ Initialized' : '❌ Not initialized'}`);
   console.log(`${'='.repeat(60)}\n`);
 });
-/ /   F o r c e   r e s t a r t  
- 
