@@ -40,10 +40,99 @@
   </div>
 
 
-  <main class="logs-main" style="max-width:1100px;margin:100px auto 0 auto;padding:0 16px;">
-    <h2 style="color:#00ffff;font-family:'Orbitron',monospace;font-size:1.5rem;margin-bottom:24px;text-shadow:0 0 12px #00ffff99;">System Logs</h2>
-    <!-- Table or log content to be added here -->
-    <div class="logs-placeholder" style="color:#b0e0ff;text-align:center;padding:40px 0;opacity:0.7;">Log table coming soon...</div>
+  <main class="logs-main" style="max-width:1400px;margin:100px auto 0 auto;padding:0 24px;">
+    
+    <!-- Page Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;">
+      <div>
+        <h2 style="color:#00ffff;font-family:'Orbitron',monospace;font-size:2rem;margin:0 0 8px 0;text-shadow:0 0 15px #00ffff99;">🔍 Audit & System Logs</h2>
+        <p style="color:rgba(255,255,255,0.6);margin:0;font-size:0.95rem;">Monitor system events, user actions, and security logs</p>
+      </div>
+      <div style="display:flex;gap:12px;">
+        <button id="refresh-logs-btn" style="padding:10px 20px;background:rgba(0,255,255,0.1);border:1px solid #00ffff;color:#00ffff;border-radius:8px;cursor:pointer;font-weight:600;transition:all 0.3s;">
+          🔄 Refresh
+        </button>
+        <button id="export-logs-btn" style="padding:10px 20px;background:rgba(0,255,255,0.2);border:1px solid #00ffff;color:#00ffff;border-radius:8px;cursor:pointer;font-weight:600;transition:all 0.3s;">
+          📊 Export CSV
+        </button>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:200px;">
+        <label style="display:block;color:#00ffff;font-size:0.85rem;margin-bottom:6px;font-weight:600;">📅 Time Range</label>
+        <select id="time-filter" style="width:100%;padding:10px;background:rgba(0,30,60,0.6);border:1px solid rgba(0,255,255,0.4);color:#fff;border-radius:8px;font-size:14px;">
+          <option value="today">Today</option>
+          <option value="week" selected>This Week</option>
+          <option value="month">This Month</option>
+          <option value="all">All Time</option>
+        </select>
+      </div>
+      <div style="flex:1;min-width:200px;">
+        <label style="display:block;color:#00ffff;font-size:0.85rem;margin-bottom:6px;font-weight:600;">🏷️ Action Type</label>
+        <select id="action-filter" style="width:100%;padding:10px;background:rgba(0,30,60,0.6);border:1px solid rgba(0,255,255,0.4);color:#fff;border-radius:8px;font-size:14px;">
+          <option value="all">All Actions</option>
+          <option value="login">Login Events</option>
+          <option value="quiz">Quiz Actions</option>
+          <option value="user">User Changes</option>
+          <option value="admin">Admin Actions</option>
+        </select>
+      </div>
+      <div style="flex:2;min-width:300px;">
+        <label style="display:block;color:#00ffff;font-size:0.85rem;margin-bottom:6px;font-weight:600;">🔍 Search</label>
+        <input type="text" id="search-logs" placeholder="Search by user, action, or details..." style="width:100%;padding:10px;background:rgba(0,30,60,0.6);border:1px solid rgba(0,255,255,0.4);color:#fff;border-radius:8px;font-size:14px;">
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px;">
+      <div style="background:rgba(0,30,60,0.4);border:1px solid rgba(0,255,255,0.3);border-radius:12px;padding:20px;">
+        <div style="color:rgba(255,255,255,0.6);font-size:0.85rem;margin-bottom:8px;">Total Events</div>
+        <div id="total-events" style="color:#00ffff;font-size:2rem;font-weight:700;">-</div>
+      </div>
+      <div style="background:rgba(0,30,60,0.4);border:1px solid rgba(0,255,255,0.3);border-radius:12px;padding:20px;">
+        <div style="color:rgba(255,255,255,0.6);font-size:0.85rem;margin-bottom:8px;">Today's Activity</div>
+        <div id="today-activity" style="color:#00ffff;font-size:2rem;font-weight:700;">-</div>
+      </div>
+      <div style="background:rgba(0,30,60,0.4);border:1px solid rgba(0,255,255,0.3);border-radius:12px;padding:20px;">
+        <div style="color:rgba(255,255,255,0.6);font-size:0.85rem;margin-bottom:8px;">Active Users</div>
+        <div id="active-users-today" style="color:#00ffff;font-size:2rem;font-weight:700;">-</div>
+      </div>
+      <div style="background:rgba(0,30,60,0.4);border:1px solid rgba(0,255,255,0.3);border-radius:12px;padding:20px;">
+        <div style="color:rgba(255,255,255,0.6);font-size:0.85rem;margin-bottom:8px;">Last Updated</div>
+        <div id="last-updated" style="color:#00ffff;font-size:1.2rem;font-weight:600;">Just now</div>
+      </div>
+    </div>
+
+    <!-- Logs Table -->
+    <div style="background:rgba(0,20,40,0.6);border:1px solid rgba(0,255,255,0.3);border-radius:12px;overflow:hidden;">
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="background:rgba(0,255,255,0.1);border-bottom:2px solid rgba(0,255,255,0.5);">
+              <th style="padding:16px;text-align:left;color:#00ffff;font-weight:700;font-size:0.9rem;">⏰ Timestamp</th>
+              <th style="padding:16px;text-align:left;color:#00ffff;font-weight:700;font-size:0.9rem;">👤 User</th>
+              <th style="padding:16px;text-align:left;color:#00ffff;font-weight:700;font-size:0.9rem;">⚡ Action</th>
+              <th style="padding:16px;text-align:left;color:#00ffff;font-weight:700;font-size:0.9rem;">📝 Details</th>
+              <th style="padding:16px;text-align:left;color:#00ffff;font-weight:700;font-size:0.9rem;">🌐 IP Address</th>
+            </tr>
+          </thead>
+          <tbody id="logs-table-body">
+            <tr>
+              <td colspan="5" style="padding:60px;text-align:center;color:rgba(255,255,255,0.5);">
+                <div style="font-size:3rem;margin-bottom:16px;">🔄</div>
+                <div>Loading logs...</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div id="pagination-controls" style="display:flex;justify-content:center;gap:12px;margin-top:24px;padding:20px 0;"></div>
+
   </main>
 
   <!-- Modal Edit Name -->
@@ -100,6 +189,6 @@
   </div>
   <!-- use same admin dashboard script so dropdown/profile/auth behave identical -->
   <script type="module" src="js/home-admin.js"></script>
-  <script src="js/admin-logs.js"></script>
+  <script type="module" src="js/admin-logs.js"></script>
 </body>
 </html>

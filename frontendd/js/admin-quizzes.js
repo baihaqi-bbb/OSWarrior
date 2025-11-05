@@ -653,12 +653,16 @@ async function createNewQuiz() {
         <div style="margin-top:8px">
           <textarea class="q-text" style="width:100%;height:64px;padding:8px">${escapeHtml(qText)}</textarea>
         </div>
-        <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
-          ${opts.map((o,i)=>`
-            <label style="display:flex;align-items:center;gap:8px">
-              <input type="radio" name="answer-${idx}" value="${i}" ${i===answerIndex ? "checked":""}/>
-              <input class="choice-input" type="text" value="${escapeHtml(o)}" style="flex:1;padding:6px"/>
-            </label>`).join("")}
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+          ${opts.map((o,i)=>{
+            const optionLabel = String.fromCharCode(65 + i); // A, B, C, D
+            return `
+            <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:rgba(0,30,60,0.6);border:2px solid rgba(0,255,255,0.4);border-radius:10px">
+              <input type="radio" name="answer-${idx}" value="${i}" ${i===answerIndex ? "checked":""} style="width:20px;height:20px;cursor:pointer"/>
+              <span style="font-weight:700;color:#00FFFF;font-size:15px;min-width:80px;letter-spacing:1px">OPTION ${optionLabel}</span>
+              <input class="choice-input" type="text" placeholder="" value="${escapeHtml(o)}" style="flex:1;padding:12px 16px;font-size:15px;background:rgba(0,50,100,0.5);border:1px solid rgba(0,255,255,0.5);color:#fff;border-radius:8px;outline:none"/>
+            </div>`;
+          }).join("")}
         </div>
       `.trim();
 

@@ -123,20 +123,60 @@ async function redirectBasedOnRole(user) {
     const userDoc = await getDoc(userDocRef);
 
     let role = "user";
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    
     if (userDoc.exists()) {
-      role = userDoc.data().role || "user";
-      if (!userDoc.data().role) {
-        await setDoc(userDocRef, { ...userDoc.data(), role }, { merge: true });
+      const userData = userDoc.data();
+      role = userData.role || "user";
+      
+      // Calculate login streak
+      const lastLoginDate = userData.lastLogin ? new Date(userData.lastLogin).toISOString().split('T')[0] : null;
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      
+      let newStreak = userData.loginStreak || 0;
+      
+      if (lastLoginDate === today) {
+        // Already logged in today, keep streak
+        newStreak = userData.loginStreak || 1;
+      } else if (lastLoginDate === yesterdayStr) {
+        // Consecutive day login, increment streak
+        newStreak = (userData.loginStreak || 0) + 1;
+      } else {
+        // Streak broken or first login, reset to 1
+        newStreak = 1;
       }
+      
+      // Update user with new login data
+      await setDoc(userDocRef, {
+        ...userData,
+        role,
+        lastLogin: now.toISOString(),
+        loginCount: (userData.loginCount || 0) + 1,
+        loginStreak: newStreak
+      }, { merge: true });
+      
+      console.log(`✅ Login streak updated: ${newStreak} days`);
     } else {
+      // New user - create complete profile
       if (adminEmails.includes(user.email)) role = "admin";
       await setDoc(userDocRef, {
         email: user.email,
+        displayName: user.displayName || user.email?.split('@')[0] || "User",
         role,
         profileURL: user.photoURL || "",
+        photoURL: user.photoURL || "",
         lastLogin: new Date().toISOString(),
-        loginCount: 1
+        loginCount: 1,
+        loginStreak: 1,
+        xp: 0,
+        level: 1,
+        quizScore: 0,
+        achievements: []
       });
+      console.log('✅ New user created with initial values');
     }
 
     // Store user info in localStorage

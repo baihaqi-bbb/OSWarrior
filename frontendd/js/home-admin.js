@@ -255,29 +255,84 @@ async function loadAdminData() {
     adminData.stats.activeUsers = adminData.users.filter(user => !user.disabled && user.status !== 'suspended').length;
     adminData.stats.suspendedUsers = adminData.users.filter(user => user.disabled || user.status === 'suspended').length;
     
-    // Load quizzes data (from local data folder for now)
+    // Load quizzes data from Firestore
     try {
-      const response = await fetch('/data/quizzes.json');
-      if (response.ok) {
-        const quizzesData = await response.json();
-        adminData.quizzes = quizzesData || [];
-        adminData.stats.totalQuizzes = adminData.quizzes.length;
-        adminData.stats.publishedQuizzes = adminData.quizzes.filter(q => q.status === 'published').length;
-        adminData.stats.draftQuizzes = adminData.quizzes.filter(q => q.status === 'draft').length;
-      }
+      const quizzesSnapshot = await getDocs(collection(db, "quizzes"));
+      adminData.quizzes = [];
+      quizzesSnapshot.forEach((doc) => {
+        adminData.quizzes.push({ id: doc.id, ...doc.data() });
+      });
+      adminData.stats.totalQuizzes = adminData.quizzes.length;
+      adminData.stats.publishedQuizzes = adminData.quizzes.filter(q => q.published === true).length;
+      adminData.stats.draftQuizzes = adminData.quizzes.filter(q => !q.published).length;
+      console.log(`📊 Loaded ${adminData.stats.totalQuizzes} quizzes (${adminData.stats.publishedQuizzes} published)`);
     } catch (err) {
-      console.log("Could not load quizzes data:", err);
+      console.error("❌ Could not load quizzes data:", err);
       adminData.stats.totalQuizzes = 0;
+      adminData.stats.publishedQuizzes = 0;
     }
     
     // Simulate daily activity (you can replace with real data)
     adminData.stats.dailyActivity = Math.floor(Math.random() * 50) + 20;
     
+    // Calculate REAL system health based on services status
+    await calculateSystemHealth();
+    
     console.log("✅ Admin data loaded:", adminData);
     
   } catch (error) {
     console.error("❌ Error loading admin data:", error);
+    adminData.stats.systemHealth = 50; // Low health on error
   }
+}
+
+// Calculate real system health
+async function calculateSystemHealth() {
+  let healthScore = 100;
+  const checks = [];
+  
+  // Check 1: Firebase connection (already working if we got here)
+  checks.push({ name: 'Firebase', status: true, weight: 30 });
+  
+  // Check 2: Backend API availability
+  try {
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:4000'
+      : 'https://oswarrior-backend.onrender.com';
+    const response = await fetch(`${API_URL}/api/users`, { credentials: 'include' });
+    checks.push({ name: 'Backend API', status: response.ok, weight: 30 });
+    if (!response.ok) healthScore -= 30;
+  } catch (error) {
+    checks.push({ name: 'Backend API', status: false, weight: 30 });
+    healthScore -= 30;
+  }
+  
+  // Check 3: Data integrity - users exist
+  checks.push({ name: 'User Data', status: adminData.users.length > 0, weight: 20 });
+  if (adminData.users.length === 0) healthScore -= 20;
+  
+  // Check 4: Quiz data available
+  checks.push({ name: 'Quiz Data', status: adminData.quizzes.length > 0, weight: 20 });
+  if (adminData.quizzes.length === 0) healthScore -= 20;
+  
+  adminData.stats.systemHealth = Math.max(0, Math.min(100, healthScore));
+  
+  // Update health status text
+  const healthChangeEl = document.getElementById('health-change');
+  if (healthChangeEl) {
+    if (healthScore >= 95) {
+      healthChangeEl.textContent = 'All systems operational';
+      healthChangeEl.className = 'stat-change positive';
+    } else if (healthScore >= 70) {
+      healthChangeEl.textContent = 'Minor issues detected';
+      healthChangeEl.className = 'stat-change neutral';
+    } else {
+      healthChangeEl.textContent = 'System degraded';
+      healthChangeEl.className = 'stat-change negative';
+    }
+  }
+  
+  console.log('🏥 System Health:', healthScore + '%', checks);
 }
 
 // Initialize dashboard components
@@ -333,6 +388,9 @@ function updateModuleBadges() {
   const suspendedUsersEl = document.getElementById('suspended-users');
   if (activeUsersEl) activeUsersEl.textContent = adminData.stats.activeUsers;
   if (suspendedUsersEl) suspendedUsersEl.textContent = adminData.stats.suspendedUsers;
+  
+  // Update Leaderboard Management card stats - fetch from backend API
+  fetchLeaderboardStats();
 }
 
 // Animate number counting
@@ -375,6 +433,41 @@ function animateStatsCards() {
       card.style.transform = 'translateY(0)';
     }, index * 100);
   });
+}
+
+// Fetch leaderboard stats from backend API
+async function fetchLeaderboardStats() {
+  try {
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:4000'
+      : 'https://oswarrior-backend.onrender.com';
+    
+    // Fetch leaderboard data
+    const response = await fetch(`${API_URL}/api/leaderboard`);
+    if (!response.ok) throw new Error('Failed to fetch leaderboard');
+    
+    const data = await response.json();
+    
+    if (Array.isArray(data) && data.length > 0) {
+      // Get top scorer
+      const topScorer = data.reduce((prev, current) => 
+        (current.totalScore > prev.totalScore) ? current : prev
+      );
+      
+      const topPlayersEl = document.getElementById('top-players');
+      if (topPlayersEl) {
+        topPlayersEl.textContent = topScorer.username || 'No users';
+      }
+      
+      // Total participants
+      const activeCompetitionsEl = document.getElementById('active-competitions');
+      if (activeCompetitionsEl) {
+        activeCompetitionsEl.textContent = data.length;
+      }
+    }
+  } catch (error) {
+    console.error('❌ Error fetching leaderboard stats:', error);
+  }
 }
 
 // Setup event listeners for admin actions

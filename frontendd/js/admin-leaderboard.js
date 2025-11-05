@@ -107,86 +107,93 @@ function initializeEventListeners() {
 
 async function loadLeaderboardData() {
   try {
-    console.log('📊 Loading leaderboard data...');
+    console.log('📊 Loading leaderboard AND user data from BACKEND API...');
     showLoadingState();
     
-    // Debug Firebase connection
-    console.log('🔥 Firebase DB:', db);
-    console.log('🔥 Firebase Auth:', auth);
+    // Use SAME API as user leaderboard page
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:4000'
+      : 'https://oswarrior-backend.onrender.com';
     
-    // Get users collection - first get all users, then filter client-side
-    const usersRef = collection(db, 'users');
-    console.log('📋 Users collection reference:', usersRef);
+    // Fetch BOTH leaderboard scores AND full user data
+    console.log(`🔄 Fetching leaderboard scores...`);
+    const leaderboardResponse = await fetch(`${API_URL}/api/leaderboard`, {
+      credentials: 'include'
+    });
     
-    // Simple query - just get all users first to debug
-    console.log('🔍 Fetching users from Firebase...');
-    const querySnapshot = await getDocs(usersRef);
-    currentLeaderboardData = [];
+    if (!leaderboardResponse.ok) {
+      throw new Error(`Leaderboard API returned ${leaderboardResponse.status}`);
+    }
     
-    console.log(`🔍 Total users found in Firebase: ${querySnapshot.size}`);
+    const leaderboardData = await leaderboardResponse.json();
+    console.log(`✅ Leaderboard entries: ${leaderboardData?.length || 0}`);
     
-    if (querySnapshot.size === 0) {
-      console.warn('⚠️ No users found in Firebase collection "users"');
-      console.log('📝 Available collections might be different. Check Firebase console.');
-      console.log('💡 Possible collection names: "Users", "members", "students", etc.');
-      
-      // For now, show message and use fallback
-      showNotification('⚠️ No users found in Firebase "users" collection. Using demo data.', 'warning');
-      
-      // You can comment this out if you want to see empty state instead
-      loadDemoData();
+    if (!Array.isArray(leaderboardData) || leaderboardData.length === 0) {
+      console.warn('⚠️ No leaderboard data found');
+      showNotification('⚠️ No leaderboard data available yet. Complete some quizzes first!', 'warning');
+      showErrorState('No leaderboard data available. Complete some quizzes to see rankings!');
       return;
     }
     
-    querySnapshot.forEach((doc) => {
-      const userData = doc.data();
+    // Fetch full user data for additional info (XP, level, streak, etc)
+    console.log(`🔄 Fetching full user data...`);
+    const usersResponse = await fetch(`${API_URL}/api/users`, {
+      credentials: 'include'
+    });
+    
+    let usersMap = {};
+    if (usersResponse.ok) {
+      const usersData = await usersResponse.json();
+      console.log(`✅ User data entries: ${usersData?.users?.length || 0}`);
       
-      // Debug: Log each user with detailed field analysis
-      console.log(`👤 User ${doc.id} (${userData.displayName || userData.username}):`, {
-        deleted: userData.deleted,
-        quizScore: userData.quizScore,
-        quiz_score: userData.quiz_score,
-        totalQuizScore: userData.totalQuizScore,
-        experiencePoints: userData.experiencePoints,
-        xp: userData.xp,
-        experience: userData.experience,
-        loginStreak: userData.loginStreak,
-        streak: userData.streak,
-        totalScore: userData.totalScore,
-        score: userData.score,
-        achievements: userData.achievements?.length || 0
+      // Create map of userId -> user data for quick lookup
+      if (usersData.users) {
+        usersData.users.forEach(user => {
+          usersMap[user.userId] = user;
+        });
+      }
+    } else {
+      console.warn('⚠️ Could not fetch full user data, using leaderboard data only');
+    }
+    
+    currentLeaderboardData = [];
+    
+    // Combine leaderboard scores with full user data
+    leaderboardData.forEach((item) => {
+      const fullUserData = usersMap[item.userId] || {};
+      
+      console.log(`👤 User ${item.username || item.userId}:`, {
+        totalScore: item.totalScore,
+        totalAttempts: item.totalAttempts,
+        xp: fullUserData.xp,
+        level: fullUserData.level,
+        loginStreak: fullUserData.loginStreak
       });
       
-      // Filter out deleted users client-side
-      if (userData.deleted === true) {
-        console.log(`🗑️ Skipping deleted user: ${userData.displayName || userData.username}`);
-        return; // Skip deleted users
-      }
-      
-      // Calculate scores for debugging
-      const calculatedScore = calculateOverallScore(userData);
-      console.log(`🧮 Calculated score for ${userData.displayName || userData.username}: ${calculatedScore}`);
-      
-      // Enhanced user data with multiple field variations
+      // Combine leaderboard score with full user data
       const enhancedUserData = {
-        id: doc.id,
-        ...userData,
-        // Ensure username exists (fallback to displayName)
-        username: userData.username || userData.displayName || userData.email?.split('@')[0] || 'Anonymous',
-        displayName: userData.displayName || userData.username || 'Anonymous',
-        // Always recalculate overall score for consistency
-        totalScore: calculatedScore,
-        // Ensure all score fields exist with fallbacks
-        quizScore: userData.quizScore || userData.quiz_score || userData.totalQuizScore || 0,
-        experiencePoints: userData.xp || userData.experiencePoints || 0, // Database uses 'xp'
-        loginStreak: userData.loginStreak || userData.streak || 0
+        id: item.userId,
+        username: item.username || fullUserData.name || `User-${String(item.userId).slice(0, 6)}`,
+        displayName: item.username || fullUserData.name || 'Anonymous',
+        email: fullUserData.email || '',
+        photoURL: fullUserData.photoURL || 'image/default-profile.png',
+        // Leaderboard data
+        totalScore: item.totalScore || 0,
+        totalAttempts: item.totalAttempts || 0,
+        quizScore: item.totalScore || 0,
+        // Full user data
+        xp: fullUserData.xp || 0,
+        level: fullUserData.level || calculateUserLevel(fullUserData.xp || 0),
+        loginStreak: fullUserData.loginStreak || 0,
+        achievements: fullUserData.achievements || [],
+        lastActive: fullUserData.lastLogin || fullUserData.updatedAt || null
       };
       
-      console.log(`✨ Enhanced user data for ${userData.displayName || userData.username}:`, {
-        quizScore: enhancedUserData.quizScore,
-        experiencePoints: enhancedUserData.experiencePoints,
-        loginStreak: enhancedUserData.loginStreak,
-        totalScore: enhancedUserData.totalScore
+      console.log(`✨ Enhanced data for ${item.username}:`, {
+        totalScore: enhancedUserData.totalScore,
+        xp: enhancedUserData.xp,
+        level: enhancedUserData.level,
+        loginStreak: enhancedUserData.loginStreak
       });
       
       currentLeaderboardData.push(enhancedUserData);
@@ -218,95 +225,32 @@ async function loadLeaderboardData() {
     
   } catch (error) {
     console.error('❌ Error loading leaderboard:', error);
-    showErrorState('Failed to load leaderboard data');
+    showNotification(`❌ Failed to load leaderboard: ${error.message}`, 'error');
+    showErrorState(`Failed to load leaderboard data. Please check if backend server is running.`);
   }
 }
 
-// Demo data fallback function
-function loadDemoData() {
-  console.log('📝 Loading demo data as fallback...');
-  
-  // Demo users (from users.json structure)
-  const demoUsers = [
-    {
-      id: 'demo-user-1',
-      displayName: 'Ahmad Ali',
-      email: 'ahmad@example.com',
-      xp: 250,
-      level: 3,
-      quizScore: 850,
-      loginStreak: 7,
-      achievements: ['first_login', 'quiz_master', 'week_streak'],
-      joinedAt: '2024-01-01T00:00:00.000Z',
-      lastLoginAt: '2024-01-15T08:30:00.000Z'
-    },
-    {
-      id: 'demo-user-2',
-      displayName: 'Siti Sarah',
-      email: 'siti@example.com',
-      xp: 180,
-      level: 2,
-      quizScore: 420,
-      loginStreak: 3,
-      achievements: ['first_login', 'early_bird'],
-      joinedAt: '2024-01-02T00:00:00.000Z',
-      lastLoginAt: '2024-01-14T09:15:00.000Z'
-    },
-    {
-      id: 'demo-user-3',
-      displayName: 'Rahman Ibrahim',
-      email: 'rahman@example.com',
-      xp: 120,
-      level: 2,
-      quizScore: 280,
-      loginStreak: 1,
-      achievements: ['first_login'],
-      joinedAt: '2024-01-03T00:00:00.000Z',
-      lastLoginAt: '2024-01-13T10:00:00.000Z'
-    }
-  ];
-  
-  // Process demo users same way as Firebase users
-  currentLeaderboardData = demoUsers.map(userData => {
-    const calculatedScore = calculateOverallScore(userData);
-    
-    return {
-      id: userData.id,
-      ...userData,
-      username: userData.username || userData.displayName || userData.email?.split('@')[0] || 'Anonymous',
-      displayName: userData.displayName || userData.username || 'Anonymous',
-      totalScore: calculatedScore,
-      quizScore: userData.quizScore || 0,
-      experiencePoints: userData.xp || 0,
-      loginStreak: userData.loginStreak || 0
-    };
-  });
-  
-  console.log(`✅ Loaded ${currentLeaderboardData.length} demo users`);
-  
-  // Apply filters and render
-  applyTimeFilter();
-  sortLeaderboardData();
-  renderLeaderboard();
-  updateLeaderboardStats();
-  hideLoadingState();
-}
-
 function calculateOverallScore(userData) {
-  // Use actual field names from database
-  const quizScore = userData.quizScore || 0;
-  const xpPoints = userData.xp || 0; // Database uses 'xp' not 'experiencePoints'
-  const streakBonus = (userData.loginStreak || 0) * 10;
-  const achievementsBonus = (userData.achievements?.length || 0) * 50;
+  // Try multiple field names for score (different naming conventions)
+  const quizScore = userData.quizScore || userData.score || userData.totalScore || userData.points || 0;
+  
+  // Try multiple field names for XP
+  const xpPoints = userData.xp || userData.experiencePoints || userData.experience || userData.exp || 0;
+  
+  // Only count streak and achievements if user has participated in quizzes
+  const hasParticipated = quizScore > 0 || userData.quizHistory?.length > 0 || userData.completedQuizzes > 0;
+  const streakBonus = hasParticipated ? (userData.loginStreak || userData.streak || 0) * 10 : 0;
+  const achievementsBonus = hasParticipated ? (userData.achievements?.length || 0) * 50 : 0;
   
   const calculatedScore = quizScore + (xpPoints * 0.1) + streakBonus + achievementsBonus;
   
-  console.log(`🧮 Score calculation for ${userData.displayName}:`, {
+  console.log(`🧮 Score calculation for ${userData.displayName || userData.email}:`, {
     quizScore: `${quizScore} points`,
     xpBonus: `${xpPoints} XP → ${xpPoints * 0.1} points`,
-    streakBonus: `${userData.loginStreak || 0} days → ${streakBonus} points`,
+    streakBonus: `${userData.loginStreak || userData.streak || 0} days → ${streakBonus} points`,
     achievementsBonus: `${userData.achievements?.length || 0} achievements → ${achievementsBonus} points`,
-    totalCalculated: calculatedScore
+    totalCalculated: calculatedScore,
+    rawData: { quizScore: userData.quizScore, score: userData.score, xp: userData.xp, exp: userData.exp }
   });
   
   return Math.round(calculatedScore);
@@ -316,16 +260,32 @@ function sortLeaderboardData() {
   // Sort based on current category filter
   switch (currentFilters.categoryFilter) {
     case 'quiz':
-      currentLeaderboardData.sort((a, b) => (b.quizScore || 0) - (a.quizScore || 0));
+      currentLeaderboardData.sort((a, b) => {
+        const scoreA = a.quizScore || a.score || a.points || 0;
+        const scoreB = b.quizScore || b.score || b.points || 0;
+        return scoreB - scoreA;
+      });
       break;
     case 'xp':
-      currentLeaderboardData.sort((a, b) => (b.xp || 0) - (a.xp || 0));
+      currentLeaderboardData.sort((a, b) => {
+        const xpA = a.xp || a.experiencePoints || a.experience || a.exp || 0;
+        const xpB = b.xp || b.experiencePoints || b.experience || b.exp || 0;
+        return xpB - xpA;
+      });
       break;
     case 'streak':
-      currentLeaderboardData.sort((a, b) => (b.loginStreak || 0) - (a.loginStreak || 0));
+      currentLeaderboardData.sort((a, b) => {
+        const streakA = a.loginStreak || a.streak || 0;
+        const streakB = b.loginStreak || b.streak || 0;
+        return streakB - streakA;
+      });
       break;
     default: // overall
-      currentLeaderboardData.sort((a, b) => (b.totalScore || 0) - (a.totalScore || 0));
+      currentLeaderboardData.sort((a, b) => {
+        const totalA = a.totalScore || calculateOverallScore(a);
+        const totalB = b.totalScore || calculateOverallScore(b);
+        return totalB - totalA;
+      });
   }
   
   console.log(`🔄 Sorted by ${currentFilters.categoryFilter}:`, 
@@ -356,13 +316,14 @@ function applyCategoryFilter() {
 function getScoreForCategory(user, category) {
   switch (category) {
     case 'quiz':
-      return user.quizScore || 0;
+      return user.quizScore || user.score || user.points || 0;
     case 'xp':
-      return user.xp || 0;
+      return user.xp || user.experiencePoints || user.experience || user.exp || 0;
     case 'streak':
-      return user.loginStreak || 0;
+      return user.loginStreak || user.streak || 0;
     default:
-      return user.totalScore || 0;
+      // For overall, try totalScore first, then calculate
+      return user.totalScore || calculateOverallScore(user);
   }
 }
 
@@ -522,8 +483,9 @@ function createLeaderboardRow(user, rank) {
     formattedDate = `Joined ${formatTimeAgo(createdAt)}`;
   }
   
-  // User level
-  const level = calculateUserLevel(user.xp || 0);
+  // User level - check if level field exists, otherwise calculate from XP
+  const userXP = user.xp || user.experiencePoints || user.experience || user.exp || 0;
+  const level = user.level || calculateUserLevel(userXP);
   
   // Handle missing username/email
   const username = user.username || user.displayName || user.email?.split('@')[0] || 'Anonymous';
@@ -603,32 +565,35 @@ function formatTimeAgo(date) {
 
 async function updateLeaderboardStats() {
   try {
-    console.log('📈 Updating leaderboard statistics...');
+    console.log('📈 Updating leaderboard statistics from BACKEND API...');
     
-    // Get all users (without deleted filter to avoid composite index)
-    const usersRef = collection(db, 'users');
-    const q = query(usersRef);
-    const querySnapshot = await getDocs(q);
+    // Use SAME API endpoint as data loading
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:4000'
+      : 'https://oswarrior-backend.onrender.com';
     
-    let allUsers = [];
+    const response = await fetch(`${API_URL}/api/leaderboard`, {
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      throw new Error(`API returned ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (!Array.isArray(data) || data.length === 0) {
+      console.warn('⚠️ No data for stats');
+      return;
+    }
+    
+    let allUsers = data;
     let totalScore = 0;
     let topUser = null;
     let topScore = 0;
     
-    querySnapshot.forEach((doc) => {
-      const userData = doc.data();
-      
-      // Skip deleted users client-side
-      if (userData.deleted === true) {
-        return;
-      }
-      
-      const userScore = userData.totalScore || calculateOverallScore(userData);
-      
-      allUsers.push({
-        ...userData,
-        totalScore: userScore
-      });
+    allUsers.forEach((userData) => {
+      const userScore = userData.totalScore || 0;
       
       totalScore += userScore;
       
@@ -1250,12 +1215,20 @@ function showErrorState(message) {
         <td colspan="7" style="text-align: center; padding: 3rem; color: #FF6B35;">
           <div style="font-size: 2rem; margin-bottom: 1rem;">❌</div>
           <div>${message}</div>
-          <button onclick="loadLeaderboardData()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #00FFFF; color: #000; border: none; border-radius: 5px; cursor: pointer;">
+          <button id="retry-load-btn" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #00FFFF; color: #000; border: none; border-radius: 5px; cursor: pointer;">
             🔄 Retry
           </button>
         </td>
       </tr>
     `;
+    
+    // Attach event listener after creating the button
+    setTimeout(() => {
+      const retryBtn = document.getElementById('retry-load-btn');
+      if (retryBtn) {
+        retryBtn.addEventListener('click', loadLeaderboardData);
+      }
+    }, 0);
   }
 }
 

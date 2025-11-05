@@ -1220,14 +1220,17 @@ app.get("/api/users", async (req, res) => {
       const snap = await db.collection("users").orderBy("xp", "desc").get();
       snap.forEach(doc => {
         const data = doc.data();
-        users.push({
+        const userObj = {
           userId: doc.id,
           name: data.name || data.displayName || data.username || `User-${String(doc.id).slice(0,6)}`,
           email: data.email || null,
           photoURL: data.photoURL || data.profileURL || data.avatar || null,
           xp: Number(data.xp || 0),
-          level: Number(data.level || Math.floor((data.xp || 0) / 100) + 1)
-        });
+          level: Number(data.level || Math.floor((data.xp || 0) / 100) + 1),
+          loginStreak: Number(data.loginStreak || 0)
+        };
+        console.log('DEBUG USER:', userObj); // DEBUG
+        users.push(userObj);
       });
     } else {
       const usersPath = path.join(process.cwd(), "data", "users.json");
