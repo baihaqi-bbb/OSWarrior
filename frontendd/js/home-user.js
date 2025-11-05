@@ -325,8 +325,31 @@ async function loadTop3() {
     const res = await fetch(`${API_BASE}/api/top3`, { credentials: 'include' });
     if (!res.ok) throw new Error("Failed to load top3");
     const body = await res.json();
-    const top = Array.isArray(body.top) ? body.top : (body || []);
-    renderTop3(top);
+    let top = Array.isArray(body.top) ? body.top : (body || []);
+    
+    // Filter out admin users
+    const filteredTop = [];
+    for (const player of top) {
+      if (player.userId) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", player.userId));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            // Skip if user is admin
+            if (userData.role === 'admin') {
+              console.log("Filtering out admin from top3:", player.name || player.displayName);
+              continue;
+            }
+          }
+        } catch (e) {
+          console.warn("Failed to check admin status for", player.userId, e);
+          // If can't check, include the user (fail open)
+        }
+      }
+      filteredTop.push(player);
+    }
+    
+    renderTop3(filteredTop);
   } catch (e) {
     console.error("loadTop3 failed:", e);
     // fallback empty
@@ -799,11 +822,34 @@ async function loadOnlinePlayers() {
     if (!response.ok) throw new Error('Failed to load players');
     
     const data = await response.json();
-    const players = data.leaderboard || [];
+    let players = data.leaderboard || [];
     
-    playersCache = players;
-    renderPlayersList(players);
-    updateOnlineCount(players.length);
+    // Filter out admin users from players list
+    const filteredPlayers = [];
+    for (const player of players) {
+      if (player.uid || player.userId) {
+        try {
+          const userId = player.uid || player.userId;
+          const userDoc = await getDoc(doc(db, "users", userId));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            // Skip if user is admin
+            if (userData.role === 'admin') {
+              console.log("Filtering out admin from players list:", player.displayName || player.email);
+              continue;
+            }
+          }
+        } catch (e) {
+          console.warn("Failed to check admin status for player", player.uid || player.userId, e);
+          // If can't check, include the user (fail open)
+        }
+      }
+      filteredPlayers.push(player);
+    }
+    
+    playersCache = filteredPlayers;
+    renderPlayersList(filteredPlayers);
+    updateOnlineCount(filteredPlayers.length);
     
   } catch (error) {
     console.error('Failed to load online players:', error);
@@ -1446,19 +1492,42 @@ async function loadLeaderboardForHome() {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     
     const data = await response.json();
-    const leaderboard = data.leaderboard || [];
+    let leaderboard = data.leaderboard || [];
+    
+    // Filter out admin users from leaderboard
+    const filteredLeaderboard = [];
+    for (const warrior of leaderboard) {
+      if (warrior.uid || warrior.userId) {
+        try {
+          const userId = warrior.uid || warrior.userId;
+          const userDoc = await getDoc(doc(db, "users", userId));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            // Skip if user is admin
+            if (userData.role === 'admin') {
+              console.log("Filtering out admin from home leaderboard:", warrior.displayName || warrior.email);
+              continue;
+            }
+          }
+        } catch (e) {
+          console.warn("Failed to check admin status for", warrior.uid || warrior.userId, e);
+          // If can't check, include the user (fail open)
+        }
+      }
+      filteredLeaderboard.push(warrior);
+    }
     
     // Get the leaderboard container in the new layout
     const leaderboardContainer = document.querySelector('.top3-container');
     if (!leaderboardContainer) return;
     
-    if (leaderboard.length === 0) {
+    if (filteredLeaderboard.length === 0) {
       leaderboardContainer.innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center;">No warriors yet</p>';
       return;
     }
     
-    // Show top 3 warriors
-    const top3 = leaderboard.slice(0, 3);
+    // Show top 3 warriors (after filtering)
+    const top3 = filteredLeaderboard.slice(0, 3);
     leaderboardContainer.innerHTML = top3.map((warrior, index) => {
       const rankClass = index === 0 ? 'first' : index === 1 ? 'second' : 'third';
       const rankEmoji = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';

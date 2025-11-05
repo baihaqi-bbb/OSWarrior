@@ -6,6 +6,7 @@
 import { 
   collection, 
   getDocs, 
+  getDoc,
   query, 
   orderBy, 
   limit, 
@@ -116,7 +117,7 @@ async function loadLeaderboardData() {
       : 'https://oswarrior-backend.onrender.com';
     
     // Fetch BOTH leaderboard scores AND full user data
-    console.log(`🔄 Fetching leaderboard scores...`);
+    console.log(`🔄 Fetching leaderboard scores from: ${API_URL}/api/leaderboard`);
     const leaderboardResponse = await fetch(`${API_URL}/api/leaderboard`, {
       credentials: 'include'
     });
@@ -126,12 +127,70 @@ async function loadLeaderboardData() {
     }
     
     const leaderboardData = await leaderboardResponse.json();
+    console.log(`✅ Leaderboard API response:`, leaderboardData);
     console.log(`✅ Leaderboard entries: ${leaderboardData?.length || 0}`);
     
+    // AFTER RESET: Leaderboard will be empty, so fetch all users instead
     if (!Array.isArray(leaderboardData) || leaderboardData.length === 0) {
-      console.warn('⚠️ No leaderboard data found');
-      showNotification('⚠️ No leaderboard data available yet. Complete some quizzes first!', 'warning');
-      showErrorState('No leaderboard data available. Complete some quizzes to see rankings!');
+      console.warn('⚠️ Leaderboard is empty (might be after reset). Fetching all users instead...');
+      
+      // Fetch all users from /api/users
+      const usersResponse = await fetch(`${API_URL}/api/users`, {
+        credentials: 'include'
+      });
+      
+      if (usersResponse.ok) {
+        const usersData = await usersResponse.json();
+        console.log('✅ Fetched users data:', usersData);
+        
+        if (usersData.users && usersData.users.length > 0) {
+          // Filter out admins and convert users to leaderboard format
+          const nonAdminUsers = [];
+          
+          for (const user of usersData.users) {
+            // Check if user is admin
+            try {
+              const userDoc = await getDoc(doc(db, "users", user.userId));
+              if (userDoc.exists()) {
+                const userData = userDoc.data();
+                if (userData.role === 'admin') {
+                  console.log(`⚠️ Filtering out admin from users list: ${user.name || user.userId}`);
+                  continue; // Skip admin users
+                }
+              }
+            } catch (err) {
+              console.warn(`Could not check role for ${user.userId}:`, err);
+              // If check fails, include the user (fail-open policy)
+            }
+            
+            nonAdminUsers.push({
+              id: user.userId,
+              username: user.name || user.email || `User-${String(user.userId).slice(0,6)}`,
+              displayName: user.name || user.email || 'Anonymous',
+              email: user.email || '',
+              photoURL: user.photoURL || 'image/default-profile.png',
+              totalScore: 0, // After reset, all scores are 0
+              totalAttempts: 0,
+              quizScore: 0,
+              xp: user.xp || 0,
+              level: user.level || 1,
+              loginStreak: user.loginStreak || 0,
+              achievements: user.achievements || [],
+              lastActive: user.lastLogin || user.updatedAt || null
+            });
+          }
+          
+          currentLeaderboardData = nonAdminUsers;
+          console.log(`✅ Converted ${currentLeaderboardData.length} users to leaderboard format (admins filtered)`);
+          renderLeaderboard();
+          updatePagination();
+          return;
+        }
+      }
+      
+      // If still no data, show empty state
+      showNotification('ℹ️ No user data available. Users need to complete quizzes to appear in leaderboard.', 'info');
+      showErrorState('No user data available. Users need to sign up and complete quizzes to appear in leaderboard!');
       return;
     }
     
@@ -159,8 +218,23 @@ async function loadLeaderboardData() {
     currentLeaderboardData = [];
     
     // Combine leaderboard scores with full user data
-    leaderboardData.forEach((item) => {
+    for (const item of leaderboardData) {
       const fullUserData = usersMap[item.userId] || {};
+      
+      // Check if user is admin and skip them
+      try {
+        const userDoc = await getDoc(doc(db, "users", item.userId));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          if (userData.role === 'admin') {
+            console.log(`⚠️ Filtering out admin from leaderboard: ${item.username || item.userId}`);
+            continue; // Skip admin users
+          }
+        }
+      } catch (err) {
+        console.warn(`Could not check role for ${item.userId}:`, err);
+        // If check fails, include the user (fail-open policy)
+      }
       
       console.log(`👤 User ${item.username || item.userId}:`, {
         totalScore: item.totalScore,
@@ -197,7 +271,7 @@ async function loadLeaderboardData() {
       });
       
       currentLeaderboardData.push(enhancedUserData);
-    });
+    }
     
     console.log(`✅ Active users after filtering: ${currentLeaderboardData.length}`);
     
@@ -297,20 +371,9 @@ function sortLeaderboardData() {
 }
 
 function applyCategoryFilter() {
-  // Additional filtering based on category if needed
-  // For now, just ensure we have valid scores for the selected category
-  currentLeaderboardData = currentLeaderboardData.filter(user => {
-    switch (currentFilters.categoryFilter) {
-      case 'quiz':
-        return (user.quizScore || 0) >= 0; // Include users with 0 quiz score
-      case 'xp':
-        return (user.xp || 0) >= 0;
-      case 'streak':
-        return (user.loginStreak || 0) >= 0;
-      default: // overall
-        return (user.totalScore || 0) >= 0;
-    }
-  });
+  // Don't filter users - show all users regardless of score
+  // Admin should see all users even with 0 scores
+  console.log(`📊 Category filter: ${currentFilters.categoryFilter} - showing all ${currentLeaderboardData.length} users`);
 }
 
 function getScoreForCategory(user, category) {
@@ -1102,38 +1165,62 @@ async function confirmResetRankings() {
     elements.confirmResetBtn.innerHTML = '<span class="loading">Resetting...</span>';
     elements.confirmResetBtn.disabled = true;
     
-    // Get all users
-    const usersRef = collection(db, 'users');
-    const querySnapshot = await getDocs(usersRef);
+    // Use backend API to reset rankings
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:4000'
+      : 'https://oswarrior-backend.onrender.com';
     
-    // Create batch to reset scores
-    const batch = writeBatch(db);
+    const resetUrl = `${API_URL}/api/admin/reset-rankings`;
+    console.log('📡 Calling backend API to reset rankings:', resetUrl);
     
-    querySnapshot.forEach((userDoc) => {
-      const userRef = doc(db, 'users', userDoc.id);
-      batch.update(userRef, {
-        quizScore: 0,
-        totalScore: 0,
-        xp: 0, // Use 'xp' instead of 'experiencePoints'
-        loginStreak: 0,
-        achievements: [],
-        lastScoreUpdate: new Date()
-      });
+    const response = await fetch(resetUrl, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      }
     });
     
-    // Commit batch
-    await batch.commit();
+    console.log('📡 Response status:', response.status, response.statusText);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Error response:', errorText);
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { message: errorText || 'Unknown error' };
+      }
+      throw new Error(errorData.message || errorData.error || `API returned ${response.status}`);
+    }
+    
+    const result = await response.json();
+    console.log('✅ Rankings reset result:', result);
+    console.log(`✅ Reset ${result.resetCount || 0} users via ${result.method || 'unknown'}`);
     
     closeResetModal();
-    showNotification('🏆 All rankings have been reset successfully!', 'success');
+    showNotification(`✅ Successfully reset ${result.resetCount || 0} user rankings!`, 'success');
     
-    // Refresh data
-    loadLeaderboardData();
-    updateLeaderboardStats();
+    // Clear any cached data
+    currentLeaderboardData = [];
+    
+    // Reset filters to default (Overall + All Time)
+    if (elements.categoryFilter) elements.categoryFilter.value = 'overall';
+    if (elements.timeFilter) elements.timeFilter.value = 'all';
+    currentFilters.categoryFilter = 'overall';
+    currentFilters.timeFilter = 'all';
+    
+    // Wait a bit for backend to process, then refresh data
+    console.log('🔄 Refreshing leaderboard data in 2 seconds...');
+    setTimeout(() => {
+      loadLeaderboardData();
+      updateLeaderboardStats();
+    }, 2000);
     
   } catch (error) {
     console.error('❌ Error resetting rankings:', error);
-    alert('Failed to reset rankings. Please try again.');
+    showNotification(`❌ Failed to reset rankings: ${error.message}`, 'error');
     elements.confirmResetBtn.innerHTML = '<span class="btn-icon">🔄</span><span>Reset Rankings</span>';
     elements.confirmResetBtn.disabled = false;
   }

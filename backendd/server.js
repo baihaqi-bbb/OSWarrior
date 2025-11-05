@@ -1023,6 +1023,112 @@ app.post("/api/admin/set-role", async (req, res) => {
   }
 });
 
+// Reset all rankings - Admin only endpoint
+app.post("/api/admin/reset-rankings", async (req, res) => {
+  try {
+    console.log("🔄 Admin reset rankings request received");
+    
+    let resetCount = 0;
+    
+    if (useFirestore && db) {
+      // 1. Reset Firestore users collection
+      const usersSnapshot = await db.collection("users").get();
+      const usersBatch = db.batch();
+      
+      usersSnapshot.forEach((doc) => {
+        const userRef = db.collection("users").doc(doc.id);
+        usersBatch.update(userRef, {
+          xp: 0,
+          level: 1,
+          totalScore: 0,
+          quizScore: 0,
+          loginStreak: 0,
+          achievements: [],
+          completedQuizzes: [],
+          lastScoreUpdate: admin.firestore.FieldValue.serverTimestamp()
+        });
+        resetCount++;
+      });
+      
+      await usersBatch.commit();
+      console.log(`✅ Reset ${resetCount} users in Firestore users collection`);
+      
+      // 2. IMPORTANT: Delete all leaderboards collection documents
+      const leaderboardsSnapshot = await db.collection("leaderboards").get();
+      const leaderboardsBatch = db.batch();
+      
+      leaderboardsSnapshot.forEach((doc) => {
+        leaderboardsBatch.delete(doc.ref);
+      });
+      
+      await leaderboardsBatch.commit();
+      console.log(`✅ Deleted ${leaderboardsSnapshot.size} leaderboard entries from Firestore`);
+    }
+    
+    // 3. Reset local JSON data - users.json
+    const usersPath = path.join(process.cwd(), "data", "users.json");
+    if (fs.existsSync(usersPath)) {
+      try {
+        let users = JSON.parse(fs.readFileSync(usersPath, "utf8") || "[]");
+        users = users.map(user => ({
+          ...user,
+          xp: 0,
+          level: 1,
+          totalScore: 0,
+          quizScore: 0,
+          loginStreak: 0,
+          achievements: [],
+          completedQuizzes: [],
+          lastScoreUpdate: new Date().toISOString()
+        }));
+        fs.writeFileSync(usersPath, JSON.stringify(users, null, 2), "utf8");
+        console.log(`✅ Reset ${users.length} users in local users.json`);
+        if (!useFirestore) resetCount = users.length;
+      } catch (e) {
+        console.warn("⚠️ Failed to reset local users.json:", e);
+      }
+    }
+    
+    // 4. IMPORTANT: Clear leaderboard.json
+    const leaderboardPath = path.join(process.cwd(), "data", "leaderboard.json");
+    if (fs.existsSync(leaderboardPath)) {
+      try {
+        fs.writeFileSync(leaderboardPath, JSON.stringify({}, null, 2), "utf8");
+        console.log("✅ Cleared leaderboard.json");
+      } catch (e) {
+        console.warn("⚠️ Failed to clear leaderboard.json:", e);
+      }
+    }
+    
+    // 5. Reset logs.json (quiz history)
+    const logsPath = path.join(process.cwd(), "data", "logs.json");
+    if (fs.existsSync(logsPath)) {
+      try {
+        fs.writeFileSync(logsPath, JSON.stringify([], null, 2), "utf8");
+        console.log("✅ Cleared logs.json");
+      } catch (e) {
+        console.warn("⚠️ Failed to clear logs.json:", e);
+      }
+    }
+    
+    return res.json({ 
+      ok: true, 
+      message: "All rankings have been reset successfully",
+      resetCount,
+      method: useFirestore ? "firestore+local" : "local",
+      cleared: {
+        users: true,
+        leaderboards: true,
+        logs: true
+      }
+    });
+    
+  } catch (err) {
+    console.error("❌ /api/admin/reset-rankings error:", err);
+    return res.status(500).json({ error: String(err) });
+  }
+});
+
 app.get("/api/top3", async (req, res) => {
   try {
     let top = [];

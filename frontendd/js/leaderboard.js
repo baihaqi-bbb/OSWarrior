@@ -20,6 +20,7 @@ let currentUser = null;
 // Initialize Firebase and get current user
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDofTjaWk5M8m_hyrDRqxOGofzOV7Qlitw",
@@ -39,6 +40,7 @@ if (getApps().length === 0) {
 }
 
 const auth = getAuth(app);
+const db = getFirestore(app);
 
 // Setup authentication listener
 onAuthStateChanged(auth, (user) => {
@@ -160,11 +162,33 @@ async function loadTotal() {
       throw new Error(`HTTP ${res.status}: ${res.statusText}`);
     }
     
-    const data = await res.json();
+    let data = await res.json();
     console.log("Total leaderboard data:", data);
     
+    // Filter out admin users
+    const filteredData = [];
+    for (const player of data) {
+      if (player.userId) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", player.userId));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            // Skip if user is admin
+            if (userData.role === 'admin') {
+              console.log("Filtering out admin from total leaderboard:", player.username);
+              continue;
+            }
+          }
+        } catch (e) {
+          console.warn("Failed to check admin status for", player.userId, e);
+          // If can't check, include the user (fail open)
+        }
+      }
+      filteredData.push(player);
+    }
+    
     restoreTable();
-    renderTableTotal(data);
+    renderTableTotal(filteredData);
     
   } catch (err) {
     console.error("Error loading total leaderboard:", err);
@@ -193,10 +217,32 @@ async function loadWeek(week) {
     const dataObj = await res.json();
     console.log(`Week ${week} leaderboard data:`, dataObj);
     
-    const items = dataObj.items || [];
+    let items = dataObj.items || [];
+    
+    // Filter out admin users from week leaderboard
+    const filteredItems = [];
+    for (const player of items) {
+      if (player.userId) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", player.userId));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            // Skip if user is admin
+            if (userData.role === 'admin') {
+              console.log(`Filtering out admin from Week ${week} leaderboard:`, player.username);
+              continue;
+            }
+          }
+        } catch (e) {
+          console.warn("Failed to check admin status for", player.userId, e);
+          // If can't check, include the user (fail open)
+        }
+      }
+      filteredItems.push(player);
+    }
     
     restoreTable();
-    renderTableWeek(items, week);
+    renderTableWeek(filteredItems, week);
     
   } catch (err) {
     console.error(`Error loading Week ${week} leaderboard:`, err);
