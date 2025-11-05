@@ -273,15 +273,6 @@ async function loadAdminData() {
 // Calculate real daily activity from logs
 async function calculateDailyActivity() {
   try {
-    // Get valid users from Firestore
-    const usersSnapshot = await getDocs(collection(db, 'users'));
-    const validUsers = new Set();
-    usersSnapshot.forEach(doc => {
-      const userData = doc.data();
-      if (userData.email) validUsers.add(userData.email);
-      if (userData.name) validUsers.add(userData.name);
-    });
-    
     // Fetch logs from Firestore
     const logsRef = collection(db, 'logs');
     const logsQuery = query(logsRef, orderBy('timestamp', 'desc'), limit(500));
@@ -289,17 +280,11 @@ async function calculateDailyActivity() {
     
     let logs = [];
     
-    if (snapshot.size === 0) {
-      logs = generateSampleLogs(validUsers);
-    } else {
-      snapshot.forEach(doc => {
-        const logData = doc.data();
-        const logUser = logData.user || logData.userId;
-        if (logUser && validUsers.has(logUser)) {
-          logs.push({ id: doc.id, ...logData });
-        }
-      });
-    }
+    // Use real Firestore logs - DON'T filter by user validation
+    snapshot.forEach(doc => {
+      const logData = doc.data();
+      logs.push({ id: doc.id, ...logData });
+    });
     
     // Count logs from today
     const today = new Date();
@@ -406,8 +391,8 @@ function updateModuleBadges() {
     'quizzes-badge': adminData.stats.totalQuizzes,
     'uploads-badge': Math.floor(Math.random() * 20) + 5,
     'leaderboard-badge': adminData.stats.activeUsers,
-    'reports-badge': 12,
-    'audit-badge': Math.floor(Math.random() * 50) + 10
+    'reports-badge': 12
+    // audit-badge is updated by loadAuditStats() with real alert count
   };
 
   // Update badge numbers
@@ -629,15 +614,6 @@ async function loadAuditStats() {
   try {
     console.log('🔍 Loading audit stats...');
     
-    // Get valid users from Firestore
-    const usersSnapshot = await getDocs(collection(db, 'users'));
-    const validUsers = new Set();
-    usersSnapshot.forEach(doc => {
-      const userData = doc.data();
-      if (userData.email) validUsers.add(userData.email);
-      if (userData.name) validUsers.add(userData.name);
-    });
-    
     // Fetch logs from Firestore
     const logsRef = collection(db, 'logs');
     const logsQuery = query(logsRef, orderBy('timestamp', 'desc'), limit(500));
@@ -645,17 +621,11 @@ async function loadAuditStats() {
     
     let logs = [];
     
-    if (snapshot.size === 0) {
-      logs = generateSampleLogs(validUsers);
-    } else {
-      snapshot.forEach(doc => {
-        const logData = doc.data();
-        const logUser = logData.user || logData.userId;
-        if (logUser && validUsers.has(logUser)) {
-          logs.push({ id: doc.id, ...logData });
-        }
-      });
-    }
+    // Use real Firestore logs - DON'T filter by user validation
+    snapshot.forEach(doc => {
+      const logData = doc.data();
+      logs.push({ id: doc.id, ...logData });
+    });
     
     // Count total events
     const totalEvents = logs.length;
@@ -671,9 +641,11 @@ async function loadAuditStats() {
     // Update UI
     const eventsEl = document.getElementById('recent-events');
     const alertsEl = document.getElementById('active-alerts');
+    const badgeEl = document.getElementById('audit-badge');
     
     if (eventsEl) eventsEl.textContent = totalEvents;
     if (alertsEl) alertsEl.textContent = alerts;
+    if (badgeEl) badgeEl.textContent = alerts; // Badge shows alert count
     
     console.log(`✅ Audit stats loaded: ${totalEvents} events, ${alerts} alerts`);
     
@@ -694,41 +666,20 @@ async function loadRecentActivity() {
   try {
     console.log('🔄 Loading recent system activity...');
     
-    // First, get all valid users from Firestore (same as admin-logs)
-    const usersSnapshot = await getDocs(collection(db, 'users'));
-    const validUsers = new Set();
-    usersSnapshot.forEach(doc => {
-      const userData = doc.data();
-      if (userData.email) validUsers.add(userData.email);
-      if (userData.name) validUsers.add(userData.name);
-    });
-    console.log(`📋 Found ${validUsers.size} valid users in Firestore`);
-    
     // Fetch latest logs from Firestore
     const logsRef = collection(db, 'logs');
-    const recentLogsQuery = query(logsRef, orderBy('timestamp', 'desc'), limit(500));
+    const recentLogsQuery = query(logsRef, orderBy('timestamp', 'desc'), limit(10));
     const snapshot = await getDocs(recentLogsQuery);
     
     let logs = [];
     
-    // If Firestore logs collection is empty, generate sample logs
-    if (snapshot.size === 0) {
-      console.log('⚠️ No logs in Firestore, generating sample logs...');
-      logs = generateSampleLogs(validUsers);
-      console.log(`✅ Generated ${logs.length} sample logs using real Firestore users`);
-    } else {
-      // Use real Firestore logs, filter by valid users
-      snapshot.forEach(doc => {
-        const logData = doc.data();
-        const logUser = logData.user || logData.userId;
-        
-        // Only include logs from users that exist in Firestore
-        if (logUser && validUsers.has(logUser)) {
-          logs.push({ id: doc.id, ...logData });
-        }
-      });
-      console.log(`✅ Loaded ${logs.length} valid log entries from Firestore`);
-    }
+    // Use real Firestore logs - DON'T filter by user validation
+    snapshot.forEach(doc => {
+      const logData = doc.data();
+      logs.push({ id: doc.id, ...logData });
+    });
+    
+    console.log(`✅ Loaded ${logs.length} log entries from Firestore`)
     
     // Take only the first 5 for recent activity display
     const recentLogs = logs.slice(0, 5);
@@ -754,12 +705,17 @@ function formatLogAsActivity(log) {
   const timestamp = log.timestamp?.toDate ? log.timestamp.toDate() : new Date(log.timestamp);
   const timeAgo = getTimeAgo(timestamp);
   
-  // Map action types to icons and titles
+  // Map action types to icons and titles (matching backend log actions)
   const actionMap = {
-    'User Registered': { icon: '👤', color: '#4ade80', title: 'New user registration' },
+    'User Registered': { icon: '👤', color: '#4ade80', title: 'User registered' },
     'User Login': { icon: '🔐', color: '#60a5fa', title: 'User login' },
-    'Quiz Completed': { icon: '🧩', color: '#fbbf24', title: 'Quiz completed' },
+    'Quiz Completed': { icon: '✅', color: '#fbbf24', title: 'Quiz completed' },
     'Quiz Generated': { icon: '🎯', color: '#f87171', title: 'Quiz generated' },
+    'Quiz Created': { icon: '➕', color: '#f87171', title: 'Quiz created' },
+    'Quiz Updated': { icon: '✏️', color: '#a78bfa', title: 'Quiz updated' },
+    'Quiz Deleted': { icon: '🗑️', color: '#ef4444', title: 'Quiz deleted' },
+    'User Role Changed': { icon: '⚙️', color: '#f97316', title: 'Role updated' },
+    'Rankings Reset': { icon: '🔄', color: '#dc2626', title: 'Rankings reset' },
     'Admin Action': { icon: '⚙️', color: '#f87171', title: 'Admin action' },
     'Content uploaded': { icon: '📤', color: '#a78bfa', title: 'Content uploaded' }
   };
