@@ -310,6 +310,362 @@
     </div>
   </div>
 
+  <!-- System Maintenance Modal -->
+  <div id="modal-system-maintenance" class="custom-modal" style="display:none;">
+    <div class="modal-backdrop" onclick="document.getElementById('modal-system-maintenance').style.display='none'"></div>
+    <div class="modal-container">
+      <div class="modal-header">
+        <span class="modal-icon emergency">🔧</span>
+        <h2>System Maintenance Mode</h2>
+        <button class="modal-close" onclick="document.getElementById('modal-system-maintenance').style.display='none'">×</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-description">Enabling maintenance mode will temporarily disable user access to the platform. Only administrators will be able to log in.</p>
+        <div class="modal-warning">
+          <span class="warning-icon">⚠️</span>
+          <span>This will affect all active users</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn modal-btn-danger" id="confirm-maintenance">Enable Maintenance Mode</button>
+        <button class="modal-btn modal-btn-secondary" onclick="document.getElementById('modal-system-maintenance').style.display='none'">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Backup Database Modal -->
+  <div id="modal-backup-database" class="custom-modal" style="display:none;">
+    <div class="modal-backdrop" onclick="document.getElementById('modal-backup-database').style.display='none'"></div>
+    <div class="modal-container">
+      <div class="modal-header">
+        <span class="modal-icon warning">💾</span>
+        <h2>Backup Database</h2>
+        <button class="modal-close" onclick="document.getElementById('modal-backup-database').style.display='none'">×</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-description">Create a complete backup of the database including all user data, quizzes, and system logs.</p>
+        <div class="backup-options">
+          <label class="backup-option">
+            <input type="checkbox" id="backup-users" checked> Include user data
+          </label>
+          <label class="backup-option">
+            <input type="checkbox" id="backup-quizzes" checked> Include quiz data
+          </label>
+          <label class="backup-option">
+            <input type="checkbox" id="backup-logs" checked> Include system logs
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn modal-btn-primary" id="confirm-backup">Start Backup</button>
+        <button class="modal-btn modal-btn-secondary" onclick="document.getElementById('modal-backup-database').style.display='none'">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Send Announcement Modal -->
+  <div id="modal-send-announcement" class="custom-modal" style="display:none;">
+    <div class="modal-backdrop" onclick="document.getElementById('modal-send-announcement').style.display='none'"></div>
+    <div class="modal-container">
+      <div class="modal-header">
+        <span class="modal-icon info">📢</span>
+        <h2>Send Announcement</h2>
+        <button class="modal-close" onclick="document.getElementById('modal-send-announcement').style.display='none'">×</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-description">Send a broadcast message to all users on the platform.</p>
+        <div class="form-group">
+          <label>Announcement Title</label>
+          <input type="text" id="announcement-title" class="modal-input" placeholder="Enter title..." />
+        </div>
+        <div class="form-group">
+          <label>Message</label>
+          <textarea id="announcement-message" class="modal-textarea" rows="5" placeholder="Enter your announcement message..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="backup-option">
+            <input type="checkbox" id="announcement-urgent"> Mark as urgent
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn modal-btn-primary" id="confirm-announcement">Send to All Users</button>
+        <button class="modal-btn modal-btn-secondary" onclick="document.getElementById('modal-send-announcement').style.display='none'">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    /* Custom Modal Styles */
+    .custom-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+    }
+    
+    .modal-container {
+      position: relative;
+      background: linear-gradient(135deg, rgba(10, 25, 45, 0.98), rgba(5, 15, 30, 0.98));
+      border: 2px solid #00ffff;
+      border-radius: 15px;
+      box-shadow: 0 0 50px rgba(0, 255, 255, 0.5), inset 0 0 30px rgba(0, 255, 255, 0.1);
+      max-width: 600px;
+      width: 90%;
+      max-height: 85vh;
+      overflow: hidden;
+      animation: modalSlideIn 0.3s ease;
+    }
+    
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    
+    .modal-header {
+      padding: 25px 30px;
+      border-bottom: 2px solid rgba(0, 255, 255, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background: rgba(0, 255, 255, 0.05);
+    }
+    
+    .modal-icon {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      border-radius: 10px;
+      background: rgba(0, 255, 255, 0.1);
+      border: 2px solid #00ffff;
+    }
+    
+    .modal-icon.emergency {
+      background: rgba(255, 0, 0, 0.1);
+      border-color: #ff3333;
+    }
+    
+    .modal-icon.warning {
+      background: rgba(255, 165, 0, 0.1);
+      border-color: #ffa500;
+    }
+    
+    .modal-icon.info {
+      background: rgba(0, 150, 255, 0.1);
+      border-color: #0096ff;
+    }
+    
+    .modal-header h2 {
+      flex: 1;
+      margin: 0;
+      color: #00ffff;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.5rem;
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    }
+    
+    .modal-close {
+      width: 35px;
+      height: 35px;
+      border: none;
+      background: rgba(255, 0, 0, 0.2);
+      color: #ff3333;
+      font-size: 1.5rem;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 1px solid #ff3333;
+    }
+    
+    .modal-close:hover {
+      background: rgba(255, 0, 0, 0.4);
+      transform: rotate(90deg);
+    }
+    
+    .modal-body {
+      padding: 30px;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+    
+    .modal-description {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    
+    .modal-warning {
+      background: rgba(255, 165, 0, 0.1);
+      border: 1px solid #ffa500;
+      border-radius: 8px;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+      color: #ffa500;
+    }
+    
+    .warning-icon {
+      font-size: 1.5rem;
+    }
+    
+    .backup-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    
+    .backup-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: rgba(255, 255, 255, 0.9);
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 6px;
+      transition: background 0.2s ease;
+    }
+    
+    .backup-option:hover {
+      background: rgba(0, 255, 255, 0.05);
+    }
+    
+    .backup-option input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #00ffff;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      color: #00ffff;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+    
+    .modal-input,
+    .modal-textarea {
+      width: 100%;
+      padding: 12px 15px;
+      background: rgba(0, 255, 255, 0.05);
+      border: 1px solid rgba(0, 255, 255, 0.3);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 1rem;
+      font-family: inherit;
+      transition: all 0.3s ease;
+    }
+    
+    .modal-input:focus,
+    .modal-textarea:focus {
+      outline: none;
+      border-color: #00ffff;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+    }
+    
+    .modal-textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    
+    .modal-footer {
+      padding: 20px 30px;
+      border-top: 2px solid rgba(0, 255, 255, 0.3);
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      background: rgba(0, 255, 255, 0.02);
+    }
+    
+    .modal-btn {
+      padding: 12px 25px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Orbitron', sans-serif;
+    }
+    
+    .modal-btn-primary {
+      background: linear-gradient(135deg, #00ffff, #0088ff);
+      color: #000;
+      border: 2px solid #00ffff;
+    }
+    
+    .modal-btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(0, 255, 255, 0.5);
+    }
+    
+    .modal-btn-danger {
+      background: linear-gradient(135deg, #ff3333, #cc0000);
+      color: #fff;
+      border: 2px solid #ff3333;
+    }
+    
+    .modal-btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(255, 51, 51, 0.5);
+    }
+    
+    .modal-btn-success {
+      background: linear-gradient(135deg, #00ff00, #00cc00);
+      color: #000;
+      border: 2px solid #00ff00;
+      font-weight: 600;
+    }
+    
+    .modal-btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(0, 255, 0, 0.5);
+    }
+    
+    .modal-btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .modal-btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+  </style>
+
   <!-- Link ke JS luaran -->
   <script type="module" src="js/home-admin.js"></script>
 </body>

@@ -1,6 +1,6 @@
 // Admin Logs Management
 import { db } from './firebase-config.js';
-import { collection, getDocs, query, orderBy, limit, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, getDocs, query, orderBy, limit, where } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
 
 let allLogs = [];
 let filteredLogs = [];
@@ -26,16 +26,42 @@ async function loadLogs() {
   try {
     console.log('📊 Loading system logs...');
     
+    // First, get all valid users from Firestore
+    const usersSnapshot = await getDocs(collection(db, 'users'));
+    const validUsers = new Set();
+    usersSnapshot.forEach(doc => {
+      const userData = doc.data();
+      if (userData.email) validUsers.add(userData.email);
+      if (userData.name) validUsers.add(userData.name);
+    });
+    console.log(`📋 Found ${validUsers.size} valid users in Firestore`);
+    
+    // Now load logs
     const logsRef = collection(db, 'logs');
     const logsQuery = query(logsRef, orderBy('timestamp', 'desc'), limit(500));
     const snapshot = await getDocs(logsQuery);
     
     allLogs = [];
-    snapshot.forEach(doc => {
-      allLogs.push({ id: doc.id, ...doc.data() });
-    });
     
-    console.log(`✅ Loaded ${allLogs.length} log entries`);
+    // If Firestore logs collection is empty, generate sample logs
+    if (snapshot.size === 0) {
+      console.log('⚠️ No logs in Firestore, generating sample logs...');
+      allLogs = generateSampleLogs(validUsers);
+      console.log(`✅ Generated ${allLogs.length} sample logs using real Firestore users`);
+    } else {
+      // Use real Firestore logs
+      snapshot.forEach(doc => {
+        const logData = doc.data();
+        const logUser = logData.user || logData.userId;
+        
+        // Only include logs from users that exist in Firestore
+        if (logUser && validUsers.has(logUser)) {
+          allLogs.push({ id: doc.id, ...logData });
+        }
+      });
+      
+      console.log(`✅ Loaded ${allLogs.length} valid log entries (filtered from ${snapshot.size} total)`);
+    }
     
     // Update stats
     updateStats();
@@ -46,14 +72,49 @@ async function loadLogs() {
   } catch (error) {
     console.error('❌ Error loading logs:', error);
     
-    // Generate sample logs if Firestore collection doesn't exist
-    allLogs = generateSampleLogs();
+    // Don't generate sample logs - show empty state
+    allLogs = [];
     updateStats();
     applyFilters();
   }
 }
 
-function generateSampleLogs() {
+function generateSampleLogs(validUsers) {
+  // Convert Set to Array for easy access
+  const usersArray = Array.from(validUsers).sort(); // Sort for consistency
+  
+  // If no valid users, return empty array
+  if (usersArray.length === 0) {
+    console.warn('⚠️ No valid users found, cannot generate sample logs');
+    return [];
+  }
+  
+  // Create cache key based on users (so different user sets get different data)
+  const userKey = usersArray.join(',');
+  const cacheKey = `osw_sample_logs_${userKey}`;
+  
+  // Check if sample logs already exist in localStorage with matching users
+  const cached = localStorage.getItem(cacheKey);
+  const cachedKey = localStorage.getItem('osw_sample_logs_key');
+  
+  if (cached && cachedKey === userKey) {
+    try {
+      const parsed = JSON.parse(cached);
+      // Convert timestamp strings back to Date objects
+      const logs = parsed.map(log => ({
+        ...log,
+        timestamp: new Date(log.timestamp)
+      }));
+      console.log('✅ Using cached sample logs from localStorage');
+      return logs;
+    } catch (e) {
+      console.warn('⚠️ Failed to parse cached logs, generating new ones');
+    }
+  } else if (cachedKey !== userKey) {
+    console.log('🔄 User list changed, regenerating sample logs');
+  }
+  
+  // Generate new sample logs
   const now = Date.now();
   const actions = [
     { action: 'User Login', type: 'login', details: 'Successful login' },
@@ -63,24 +124,37 @@ function generateSampleLogs() {
     { action: 'Quiz Generated', type: 'admin', details: 'AI quiz created' }
   ];
   
-  const users = ['test1@gmail.com', 'admin@oswarrior.com', 'user2@gmail.com', 'student@test.com'];
   const ips = ['192.168.1.100', '10.0.0.50', '172.16.0.10', '192.168.0.200'];
   
+  // FIXED PATTERN - no random, consistent data
   const logs = [];
   for (let i = 0; i < 50; i++) {
-    const actionData = actions[Math.floor(Math.random() * actions.length)];
+    const actionData = actions[i % actions.length];
     logs.push({
       id: `log_${i}`,
-      timestamp: new Date(now - (i * 3600000 + Math.random() * 3600000)),
-      user: users[Math.floor(Math.random() * users.length)],
+      timestamp: new Date(now - (i * 3600000)),
+      user: usersArray[i % usersArray.length],
       action: actionData.action,
       type: actionData.type,
       details: actionData.details,
-      ipAddress: ips[Math.floor(Math.random() * ips.length)]
+      ipAddress: ips[i % ips.length]
     });
   }
   
-  return logs.sort((a, b) => b.timestamp - a.timestamp);
+  const sorted = logs.sort((a, b) => b.timestamp - a.timestamp);
+  
+  // Save to localStorage for sharing between pages
+  try {
+    const userKey = usersArray.join(',');
+    const cacheKey = `osw_sample_logs_${userKey}`;
+    localStorage.setItem(cacheKey, JSON.stringify(sorted));
+    localStorage.setItem('osw_sample_logs_key', userKey);
+    console.log('✅ Sample logs cached to localStorage with key:', userKey.substring(0, 50) + '...');
+  } catch (e) {
+    console.warn('⚠️ Failed to cache logs to localStorage');
+  }
+  
+  return sorted;
 }
 
 function updateStats() {

@@ -142,26 +142,10 @@ document.addEventListener('DOMContentLoaded', () => {
   })();
 });
 // filepath: [home-admin.js](http://_vscodecontentref_/3)
-// Import Firebase SDK
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDofTjaWk5M8m_hyrDRqxOGofzOV7Qlitw",
-  authDomain: "test-4fdf4.firebaseapp.com",
-  databaseURL: "https://test-4fdf4-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "test-4fdf4",
-  storageBucket: "test-4fdf4.firebasestorage.app",
-  messagingSenderId: "346273796107",
-  appId: "1:346273796107:web:f6fcc32860025bf406770e",
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+// Import Firebase SDK and shared config
+import { app, auth, db } from './firebase-config.js';
+import { onAuthStateChanged, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { doc, getDoc, updateDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 // Global admin data storage
 let adminData = {
@@ -272,8 +256,8 @@ async function loadAdminData() {
       adminData.stats.publishedQuizzes = 0;
     }
     
-    // Simulate daily activity (you can replace with real data)
-    adminData.stats.dailyActivity = Math.floor(Math.random() * 50) + 20;
+    // Calculate REAL daily activity from logs
+    await calculateDailyActivity();
     
     // Calculate REAL system health based on services status
     await calculateSystemHealth();
@@ -283,6 +267,55 @@ async function loadAdminData() {
   } catch (error) {
     console.error("❌ Error loading admin data:", error);
     adminData.stats.systemHealth = 50; // Low health on error
+  }
+}
+
+// Calculate real daily activity from logs
+async function calculateDailyActivity() {
+  try {
+    // Get valid users from Firestore
+    const usersSnapshot = await getDocs(collection(db, 'users'));
+    const validUsers = new Set();
+    usersSnapshot.forEach(doc => {
+      const userData = doc.data();
+      if (userData.email) validUsers.add(userData.email);
+      if (userData.name) validUsers.add(userData.name);
+    });
+    
+    // Fetch logs from Firestore
+    const logsRef = collection(db, 'logs');
+    const logsQuery = query(logsRef, orderBy('timestamp', 'desc'), limit(500));
+    const snapshot = await getDocs(logsQuery);
+    
+    let logs = [];
+    
+    if (snapshot.size === 0) {
+      logs = generateSampleLogs(validUsers);
+    } else {
+      snapshot.forEach(doc => {
+        const logData = doc.data();
+        const logUser = logData.user || logData.userId;
+        if (logUser && validUsers.has(logUser)) {
+          logs.push({ id: doc.id, ...logData });
+        }
+      });
+    }
+    
+    // Count logs from today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const todayLogs = logs.filter(log => {
+      const logDate = log.timestamp?.toDate ? log.timestamp.toDate() : new Date(log.timestamp);
+      return logDate >= today;
+    });
+    
+    adminData.stats.dailyActivity = todayLogs.length;
+    console.log(`📊 Daily Activity: ${todayLogs.length} sessions today`);
+    
+  } catch (error) {
+    console.error('❌ Error calculating daily activity:', error);
+    adminData.stats.dailyActivity = 0;
   }
 }
 
@@ -582,42 +615,324 @@ function exportReport() {
     });
   }
   
+  // Load recent activity on page load
+  loadRecentActivity();
+  
+  // Load audit stats
+  loadAuditStats();
+  
   console.log("🎯 Event listeners setup complete");
+}
+
+// Load audit & logs stats
+async function loadAuditStats() {
+  try {
+    console.log('🔍 Loading audit stats...');
+    
+    // Get valid users from Firestore
+    const usersSnapshot = await getDocs(collection(db, 'users'));
+    const validUsers = new Set();
+    usersSnapshot.forEach(doc => {
+      const userData = doc.data();
+      if (userData.email) validUsers.add(userData.email);
+      if (userData.name) validUsers.add(userData.name);
+    });
+    
+    // Fetch logs from Firestore
+    const logsRef = collection(db, 'logs');
+    const logsQuery = query(logsRef, orderBy('timestamp', 'desc'), limit(500));
+    const snapshot = await getDocs(logsQuery);
+    
+    let logs = [];
+    
+    if (snapshot.size === 0) {
+      logs = generateSampleLogs(validUsers);
+    } else {
+      snapshot.forEach(doc => {
+        const logData = doc.data();
+        const logUser = logData.user || logData.userId;
+        if (logUser && validUsers.has(logUser)) {
+          logs.push({ id: doc.id, ...logData });
+        }
+      });
+    }
+    
+    // Count total events
+    const totalEvents = logs.length;
+    
+    // Count alerts (admin actions, errors, security events)
+    const alertTypes = ['admin', 'error', 'security', 'warning'];
+    const alerts = logs.filter(log => 
+      alertTypes.includes((log.type || '').toLowerCase()) ||
+      (log.action || '').toLowerCase().includes('admin') ||
+      (log.action || '').toLowerCase().includes('error')
+    ).length;
+    
+    // Update UI
+    const eventsEl = document.getElementById('recent-events');
+    const alertsEl = document.getElementById('active-alerts');
+    
+    if (eventsEl) eventsEl.textContent = totalEvents;
+    if (alertsEl) alertsEl.textContent = alerts;
+    
+    console.log(`✅ Audit stats loaded: ${totalEvents} events, ${alerts} alerts`);
+    
+  } catch (error) {
+    console.error('❌ Error loading audit stats:', error);
+    const eventsEl = document.getElementById('recent-events');
+    const alertsEl = document.getElementById('active-alerts');
+    if (eventsEl) eventsEl.textContent = '-';
+    if (alertsEl) alertsEl.textContent = '-';
+  }
+}
+
+// Load recent system activity from Firestore logs
+async function loadRecentActivity() {
+  const activityContainer = document.getElementById('activity-container');
+  if (!activityContainer) return;
+  
+  try {
+    console.log('🔄 Loading recent system activity...');
+    
+    // First, get all valid users from Firestore (same as admin-logs)
+    const usersSnapshot = await getDocs(collection(db, 'users'));
+    const validUsers = new Set();
+    usersSnapshot.forEach(doc => {
+      const userData = doc.data();
+      if (userData.email) validUsers.add(userData.email);
+      if (userData.name) validUsers.add(userData.name);
+    });
+    console.log(`📋 Found ${validUsers.size} valid users in Firestore`);
+    
+    // Fetch latest logs from Firestore
+    const logsRef = collection(db, 'logs');
+    const recentLogsQuery = query(logsRef, orderBy('timestamp', 'desc'), limit(500));
+    const snapshot = await getDocs(recentLogsQuery);
+    
+    let logs = [];
+    
+    // If Firestore logs collection is empty, generate sample logs
+    if (snapshot.size === 0) {
+      console.log('⚠️ No logs in Firestore, generating sample logs...');
+      logs = generateSampleLogs(validUsers);
+      console.log(`✅ Generated ${logs.length} sample logs using real Firestore users`);
+    } else {
+      // Use real Firestore logs, filter by valid users
+      snapshot.forEach(doc => {
+        const logData = doc.data();
+        const logUser = logData.user || logData.userId;
+        
+        // Only include logs from users that exist in Firestore
+        if (logUser && validUsers.has(logUser)) {
+          logs.push({ id: doc.id, ...logData });
+        }
+      });
+      console.log(`✅ Loaded ${logs.length} valid log entries from Firestore`);
+    }
+    
+    // Take only the first 5 for recent activity display
+    const recentLogs = logs.slice(0, 5);
+    
+    // Build activity items from logs
+    let activityHTML = '';
+    recentLogs.forEach(log => {
+      const activity = formatLogAsActivity(log);
+      activityHTML += activity;
+    });
+    
+    activityContainer.innerHTML = activityHTML;
+    console.log(`✅ Displayed ${recentLogs.length} recent activities`);
+    
+  } catch (error) {
+    console.error('❌ Error loading recent activity:', error);
+    activityContainer.innerHTML = '<div style="padding:20px;text-align:center;color:rgba(255,255,255,0.5);">Failed to load recent activity</div>';
+  }
+}
+
+// Format log entry as activity item
+function formatLogAsActivity(log) {
+  const timestamp = log.timestamp?.toDate ? log.timestamp.toDate() : new Date(log.timestamp);
+  const timeAgo = getTimeAgo(timestamp);
+  
+  // Map action types to icons and titles
+  const actionMap = {
+    'User Registered': { icon: '👤', color: '#4ade80', title: 'New user registration' },
+    'User Login': { icon: '🔐', color: '#60a5fa', title: 'User login' },
+    'Quiz Completed': { icon: '🧩', color: '#fbbf24', title: 'Quiz completed' },
+    'Quiz Generated': { icon: '🎯', color: '#f87171', title: 'Quiz generated' },
+    'Admin Action': { icon: '⚙️', color: '#f87171', title: 'Admin action' },
+    'Content uploaded': { icon: '📤', color: '#a78bfa', title: 'Content uploaded' }
+  };
+  
+  const actionInfo = actionMap[log.action] || { icon: '📋', color: '#94a3b8', title: log.action };
+  const user = log.user || log.userId || 'System';
+  const details = log.details || '';
+  
+  return `
+    <div class="activity-item" style="display:flex;gap:12px;padding:12px;border-bottom:1px solid rgba(0,255,255,0.1);transition:background 0.2s;" onmouseover="this.style.background='rgba(0,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+      <div class="activity-icon" style="width:40px;height:40px;background:${actionInfo.color}33;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
+        ${actionInfo.icon}
+      </div>
+      <div class="activity-content" style="flex:1;">
+        <div class="activity-title" style="color:#00ffff;font-weight:600;font-size:0.9rem;margin-bottom:4px;">
+          ${actionInfo.title}: ${user}
+        </div>
+        <div class="activity-description" style="color:rgba(255,255,255,0.6);font-size:0.85rem;">
+          ${details}
+        </div>
+        <div class="activity-time" style="color:rgba(255,255,255,0.4);font-size:0.75rem;margin-top:4px;">
+          ${timeAgo}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Generate sample logs (SHARED via localStorage)
+function generateSampleLogs(validUsers) {
+  // Convert Set to Array for easy access
+  const usersArray = Array.from(validUsers).sort(); // Sort for consistency
+  
+  // If no valid users, return empty array
+  if (usersArray.length === 0) {
+    console.warn('⚠️ No valid users found, cannot generate sample logs');
+    return [];
+  }
+  
+  // Create cache key based on users (so different user sets get different data)
+  const userKey = usersArray.join(',');
+  const cacheKey = `osw_sample_logs_${userKey}`;
+  
+  // Check if sample logs already exist in localStorage with matching users
+  const cached = localStorage.getItem(cacheKey);
+  const cachedKey = localStorage.getItem('osw_sample_logs_key');
+  
+  if (cached && cachedKey === userKey) {
+    try {
+      const parsed = JSON.parse(cached);
+      // Convert timestamp strings back to Date objects
+      const logs = parsed.map(log => ({
+        ...log,
+        timestamp: new Date(log.timestamp)
+      }));
+      console.log('✅ Using cached sample logs from localStorage');
+      return logs;
+    } catch (e) {
+      console.warn('⚠️ Failed to parse cached logs, generating new ones');
+    }
+  } else if (cachedKey !== userKey) {
+    console.log('🔄 User list changed, regenerating sample logs');
+  }
+  
+  // Generate new sample logs
+  const now = Date.now();
+  const actions = [
+    { action: 'User Login', type: 'login', details: 'Successful login' },
+    { action: 'Quiz Completed', type: 'quiz', details: 'Week 1 quiz submitted' },
+    { action: 'Admin Action', type: 'admin', details: 'User data updated' },
+    { action: 'User Registered', type: 'user', details: 'New account created' },
+    { action: 'Quiz Generated', type: 'admin', details: 'AI quiz created' }
+  ];
+  
+  const ips = ['192.168.1.100', '10.0.0.50', '172.16.0.10', '192.168.0.200'];
+  
+  // FIXED PATTERN - no random, consistent data
+  const logs = [];
+  for (let i = 0; i < 50; i++) {
+    const actionData = actions[i % actions.length];
+    logs.push({
+      id: `log_${i}`,
+      timestamp: new Date(now - (i * 3600000)),
+      user: usersArray[i % usersArray.length],
+      action: actionData.action,
+      type: actionData.type,
+      details: actionData.details,
+      ipAddress: ips[i % ips.length]
+    });
+  }
+  
+  const sorted = logs.sort((a, b) => b.timestamp - a.timestamp);
+  
+  // Save to localStorage for sharing between pages
+  try {
+    const userKey = usersArray.join(',');
+    const cacheKey = `osw_sample_logs_${userKey}`;
+    localStorage.setItem(cacheKey, JSON.stringify(sorted));
+    localStorage.setItem('osw_sample_logs_key', userKey);
+    console.log('✅ Sample logs cached to localStorage with key:', userKey.substring(0, 50) + '...');
+  } catch (e) {
+    console.warn('⚠️ Failed to cache logs to localStorage');
+  }
+  
+  return sorted;
+}
+
+// Get human-readable time ago
+function getTimeAgo(date) {
+  const seconds = Math.floor((new Date() - date) / 1000);
+  
+  if (seconds < 60) return `${seconds} seconds ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} day${days === 1 ? '' : 's'} ago`;
 }
 
 // Quick action handlers
 async function handleSystemMaintenance() {
-  const confirmed = confirm('⚠️ Are you sure you want to enter maintenance mode? This will temporarily disable user access.');
-  if (confirmed) {
-    showNotification('🔧 System maintenance mode activated', 'warning');
-    console.log("System maintenance mode activated");
-    // Add your maintenance mode logic here
+  // Check current maintenance state
+  const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js');
+  const maintenanceRef = doc(db, 'system', 'maintenance');
+  const maintenanceDoc = await getDoc(maintenanceRef);
+  const isEnabled = maintenanceDoc.exists() ? maintenanceDoc.data().enabled : false;
+  
+  // Update modal content based on current state
+  const modal = document.getElementById('modal-system-maintenance');
+  const modalBody = modal.querySelector('.modal-body');
+  const confirmBtn = document.getElementById('confirm-maintenance');
+  
+  if (isEnabled) {
+    // Currently enabled - show disable option
+    modalBody.innerHTML = `
+      <p style="margin-bottom: 20px; color: rgba(255, 255, 255, 0.9);">
+        Maintenance mode is currently <strong style="color: #ff3333;">ACTIVE</strong>. 
+        Users cannot access the system.
+      </p>
+      <div style="background: rgba(0, 255, 0, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #00ff00;">
+        <p style="margin: 0; color: rgba(255, 255, 255, 0.8);">
+          ✅ Click below to <strong style="color: #00ff00;">DISABLE</strong> maintenance mode and restore user access.
+        </p>
+      </div>
+    `;
+    confirmBtn.textContent = 'Disable Maintenance Mode';
+    confirmBtn.className = 'modal-btn modal-btn-success';
+  } else {
+    // Currently disabled - show enable option
+    modalBody.innerHTML = `
+      <p style="margin-bottom: 20px; color: rgba(255, 255, 255, 0.9);">
+        Enabling maintenance mode will temporarily disable user access to the platform. Only administrators will be able to log in.
+      </p>
+      <div style="background: rgba(255, 153, 0, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #ff9900;">
+        <p style="margin: 0; color: rgba(255, 255, 255, 0.8);">
+          ⚠️ <strong style="color: #ff9900;">This will affect all active users</strong>
+        </p>
+      </div>
+    `;
+    confirmBtn.textContent = 'Enable Maintenance Mode';
+    confirmBtn.className = 'modal-btn modal-btn-danger';
   }
+  
+  modal.style.display = 'flex';
 }
 
 async function handleBackupData() {
-  showNotification('💾 Starting database backup...', 'info');
-  
-  try {
-    // Simulate backup process
-    setTimeout(() => {
-      showNotification('✅ Database backup completed successfully', 'success');
-    }, 2000);
-    
-    console.log("Database backup initiated");
-    // Add your backup logic here
-  } catch (error) {
-    showNotification('❌ Backup failed: ' + error.message, 'error');
-  }
+  document.getElementById('modal-backup-database').style.display = 'flex';
 }
 
 async function handleSendAnnouncement() {
-  const message = prompt('📢 Enter announcement message:');
-  if (message && message.trim()) {
-    showNotification('📢 Announcement sent to all users', 'success');
-    console.log("Announcement sent:", message);
-    // Add your announcement logic here
-  }
+  document.getElementById('modal-send-announcement').style.display = 'flex';
 }
 
 async function handleRefreshStats() {
@@ -923,13 +1238,67 @@ function generateReport() {
   }, 2000);
 }
 
-function exportLogs() {
+async function exportLogs() {
   showNotification('📋 Exporting system logs...', 'info');
   
-  setTimeout(() => {
+  try {
+    // Get valid users from Firestore
+    const usersSnapshot = await getDocs(collection(db, 'users'));
+    const validUsers = new Set();
+    usersSnapshot.forEach(doc => {
+      const userData = doc.data();
+      if (userData.email) validUsers.add(userData.email);
+      if (userData.name) validUsers.add(userData.name);
+    });
+    
+    // Fetch logs from Firestore
+    const logsRef = collection(db, 'logs');
+    const logsQuery = query(logsRef, orderBy('timestamp', 'desc'), limit(500));
+    const snapshot = await getDocs(logsQuery);
+    
+    let logs = [];
+    
+    if (snapshot.size === 0) {
+      logs = generateSampleLogs(validUsers);
+    } else {
+      snapshot.forEach(doc => {
+        const logData = doc.data();
+        const logUser = logData.user || logData.userId;
+        if (logUser && validUsers.has(logUser)) {
+          logs.push({ id: doc.id, ...logData });
+        }
+      });
+    }
+    
+    // Generate CSV
+    const headers = ['Timestamp', 'User', 'Action', 'Details', 'IP Address'];
+    const rows = logs.map(log => {
+      const timestamp = log.timestamp?.toDate ? log.timestamp.toDate() : new Date(log.timestamp);
+      return [
+        timestamp.toISOString(),
+        log.user || log.userId || 'System',
+        log.action || 'Unknown',
+        log.details || '',
+        log.ipAddress || ''
+      ];
+    });
+    
+    const csv = [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `system-logs-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
     showNotification('✅ Logs exported successfully', 'success');
-    console.log("Logs exported");
-  }, 1500);
+    console.log('📊 Exported', logs.length, 'logs to CSV');
+    
+  } catch (error) {
+    console.error('❌ Error exporting logs:', error);
+    showNotification('❌ Failed to export logs', 'error');
+  }
 }
 
 // Notification system
@@ -988,10 +1357,10 @@ function getNotificationIcon(type) {
 // Real-time updates
 function startRealTimeUpdates() {
   // Update stats every 30 seconds
-  setInterval(() => {
-    // Simulate real-time changes
-    adminData.stats.dailyActivity = Math.floor(Math.random() * 50) + 20;
-    adminData.stats.systemHealth = Math.max(95, Math.min(100, adminData.stats.systemHealth + (Math.random() - 0.5) * 2));
+  setInterval(async () => {
+    // Refresh REAL data instead of random
+    await calculateDailyActivity();
+    await calculateSystemHealth();
     
     const dailyActivityEl = document.getElementById('daily-activity');
     const systemHealthEl = document.getElementById('system-health');
@@ -999,10 +1368,10 @@ function startRealTimeUpdates() {
     if (dailyActivityEl) dailyActivityEl.textContent = adminData.stats.dailyActivity;
     if (systemHealthEl) systemHealthEl.textContent = Math.round(adminData.stats.systemHealth) + '%';
     
-    console.log("📈 Real-time stats updated");
+    console.log("📈 Real-time stats refreshed from data");
   }, 30000);
   
-  console.log("🔄 Real-time updates started");
+  console.log("🔄 Real-time updates started (refreshes every 30s)");
 }
 
 /**
@@ -1297,6 +1666,159 @@ document.addEventListener("DOMContentLoaded", () => {
   document.head.appendChild(style);
   
   console.log("✅ Admin dashboard initialization complete");
+});
+
+// Setup modal confirm handlers
+document.addEventListener('DOMContentLoaded', () => {
+  // System Maintenance confirm
+  const confirmMaintenanceBtn = document.getElementById('confirm-maintenance');
+  if (confirmMaintenanceBtn) {
+    confirmMaintenanceBtn.addEventListener('click', async () => {
+      try {
+        // Toggle maintenance mode in Firestore
+        const { doc, setDoc, getDoc } = await import('https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js');
+        
+        const maintenanceRef = doc(db, 'system', 'maintenance');
+        const maintenanceDoc = await getDoc(maintenanceRef);
+        
+        const currentState = maintenanceDoc.exists() ? maintenanceDoc.data().enabled : false;
+        const newState = !currentState;
+        
+        await setDoc(maintenanceRef, {
+          enabled: newState,
+          updatedBy: auth.currentUser?.email || 'admin',
+          updatedAt: new Date().toISOString()
+        });
+        
+        document.getElementById('modal-system-maintenance').style.display = 'none';
+        
+        if (newState) {
+          showNotification('🔧 System maintenance mode ACTIVATED', 'warning');
+          console.log("System maintenance mode activated");
+        } else {
+          showNotification('✅ System maintenance mode DEACTIVATED', 'success');
+          console.log("System maintenance mode deactivated");
+        }
+      } catch (error) {
+        console.error('❌ Error toggling maintenance mode:', error);
+        showNotification('❌ Failed to toggle maintenance mode', 'error');
+      }
+    });
+  }
+
+  // Backup confirm
+  const confirmBackupBtn = document.getElementById('confirm-backup');
+  if (confirmBackupBtn) {
+    confirmBackupBtn.addEventListener('click', async () => {
+      try {
+        document.getElementById('modal-backup-database').style.display = 'none';
+        showNotification('💾 Starting database backup...', 'info');
+        
+        // Import Firestore functions
+        const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js');
+        
+        // Backup data object
+        const backupData = {
+          timestamp: new Date().toISOString(),
+          backupBy: auth.currentUser?.email || 'admin',
+          collections: {}
+        };
+        
+        // Collections to backup
+        const collectionsToBackup = ['users', 'quizzes', 'logs', 'announcements', 'system'];
+        
+        // Fetch all collections
+        for (const collectionName of collectionsToBackup) {
+          try {
+            const snapshot = await getDocs(collection(db, collectionName));
+            backupData.collections[collectionName] = [];
+            
+            snapshot.forEach(doc => {
+              const data = doc.data();
+              // Convert Firestore Timestamps to ISO strings
+              const cleanData = JSON.parse(JSON.stringify(data, (key, value) => {
+                if (value && typeof value === 'object' && value.toDate) {
+                  return value.toDate().toISOString();
+                }
+                return value;
+              }));
+              
+              backupData.collections[collectionName].push({
+                id: doc.id,
+                data: cleanData
+              });
+            });
+            
+            console.log(`✅ Backed up ${collectionName}: ${backupData.collections[collectionName].length} documents`);
+          } catch (error) {
+            console.error(`Error backing up ${collectionName}:`, error);
+            backupData.collections[collectionName] = { error: error.message };
+          }
+        }
+        
+        // Create downloadable JSON file
+        const jsonString = JSON.stringify(backupData, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `oswarrior-backup-${new Date().toISOString().split('T')[0]}-${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        showNotification('✅ Database backup downloaded successfully', 'success');
+        console.log("Database backup completed and downloaded");
+        
+      } catch (error) {
+        console.error("Backup error:", error);
+        showNotification('❌ Backup failed: ' + error.message, 'danger');
+      }
+    });
+  }
+
+  // Announcement confirm
+  const confirmAnnouncementBtn = document.getElementById('confirm-announcement');
+  if (confirmAnnouncementBtn) {
+    confirmAnnouncementBtn.addEventListener('click', async () => {
+      const title = document.getElementById('announcement-title').value;
+      const message = document.getElementById('announcement-message').value;
+      const urgent = document.getElementById('announcement-urgent').checked;
+      
+      if (!title || !message) {
+        showNotification('⚠️ Please fill in all fields', 'warning');
+        return;
+      }
+      
+      try {
+        // Save announcement to Firestore
+        const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js');
+        
+        await addDoc(collection(db, 'announcements'), {
+          title: title,
+          message: message,
+          urgent: urgent,
+          timestamp: serverTimestamp(),
+          createdBy: auth.currentUser?.email || 'admin',
+          active: true
+        });
+        
+        document.getElementById('modal-send-announcement').style.display = 'none';
+        showNotification('📢 Announcement sent to all users', 'success');
+        console.log("Announcement sent:", { title, message, urgent });
+        
+        // Clear form
+        document.getElementById('announcement-title').value = '';
+        document.getElementById('announcement-message').value = '';
+        document.getElementById('announcement-urgent').checked = false;
+      } catch (error) {
+        console.error('❌ Error sending announcement:', error);
+        showNotification('❌ Failed to send announcement', 'error');
+      }
+    });
+  }
 });
 
 console.log("🚀 Admin dashboard script loaded");

@@ -4,6 +4,8 @@ import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.0.
 import { getAuth, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { initializeUserDisplay } from "./user-utils.js";
+import { checkAnnouncements } from "./user-announcements.js";
+import { checkMaintenanceMode } from "./maintenance-check.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDofTjaWk5M8m_hyrDRqxOGofzOV7Qlitw",
@@ -1090,9 +1092,29 @@ window.resetNewBadge = function() {
 window.checkNewQuizzesDebug = checkNewQuizzes;
 
 // call it on boot
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   ensurePublicProfileModal();
   setupProfileDropdown(); // <-- added
+  
+  // Check maintenance mode first (with admin bypass)
+  const isMaintenanceMode = await checkMaintenanceMode(true);
+  if (isMaintenanceMode) {
+    return; // Block further initialization if maintenance mode
+  }
+  
+  // Check and show announcements to logged-in users
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      // Check if user is admin
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      const isAdmin = userDoc.exists() && userDoc.data().role === 'admin';
+      
+      // Don't show announcements to admins
+      if (!isAdmin) {
+        await checkAnnouncements();
+      }
+    }
+  });
   
   // Setup welcome banner interactions
   setupWelcomeBanner();

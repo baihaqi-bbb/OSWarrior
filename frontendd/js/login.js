@@ -15,6 +15,7 @@ import {
   getDoc,
   setDoc
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { checkMaintenanceMode } from "./maintenance-check.js";
 
 // Firebase Configuration
 const firebaseConfig = {
@@ -205,7 +206,13 @@ async function redirectBasedOnRole(user) {
 }
 
 // 🎮 Event Listeners & Modal Handling
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+  // Check maintenance mode first
+  const isMaintenanceMode = await checkMaintenanceMode();
+  if (isMaintenanceMode) {
+    return; // Block login page if maintenance mode active
+  }
+  
   // Initialize system status
   CyberEffects.updateSystemStatus('online', 'SYSTEM ONLINE');
   
@@ -333,6 +340,19 @@ emailBtn.addEventListener("click", async () => {
     
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     
+    // Check if user is admin - allow admins to bypass maintenance
+    const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
+    const isAdmin = userDoc.exists() && userDoc.data().role === 'admin';
+    
+    // If not admin, check maintenance mode
+    if (!isAdmin) {
+      const isMaintenanceMode = await checkMaintenanceMode();
+      if (isMaintenanceMode) {
+        await auth.signOut();
+        return;
+      }
+    }
+    
     CyberEffects.setContainerState('success');
     CyberEffects.showMessage(msg, `✅ Welcome back, ${userCredential.user.email}`, 'success');
 
@@ -374,6 +394,19 @@ googleBtn.addEventListener("click", async () => {
     CyberEffects.updateSystemStatus('warning', 'GOOGLE AUTH...');
     
     const result = await signInWithPopup(auth, provider);
+    
+    // Check if user is admin - allow admins to bypass maintenance
+    const userDoc = await getDoc(doc(db, 'users', result.user.uid));
+    const isAdmin = userDoc.exists() && userDoc.data().role === 'admin';
+    
+    // If not admin, check maintenance mode
+    if (!isAdmin) {
+      const isMaintenanceMode = await checkMaintenanceMode();
+      if (isMaintenanceMode) {
+        await auth.signOut();
+        return;
+      }
+    }
     
     CyberEffects.setContainerState('success');
     CyberEffects.showMessage(msg, `✅ Logged in as ${result.user.displayName}`, 'success');
