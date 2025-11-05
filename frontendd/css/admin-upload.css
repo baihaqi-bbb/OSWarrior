@@ -1577,6 +1577,494 @@
   }
 }
 
+/* ===================================
+   COMPREHENSIVE RESPONSIVE DESIGN
+   =================================== */
+
+/* Large Desktop (1200px and up) - Additional enhancements */
+@media (min-width: 1200px) {
+  .main-container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  
+  .upload-header {
+    padding: 2.5rem;
+  }
+  
+  .upload-form-section {
+    padding: 2rem;
+  }
+  
+  .generated-quizzes-section {
+    padding: 2rem;
+  }
+}
+
+/* Desktop (992px to 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .upload-header {
+    padding: 2rem;
+  }
+  
+  .upload-form-section {
+    padding: 1.8rem;
+  }
+  
+  .week-dropdown-wrapper {
+    max-width: 350px;
+  }
+  
+  .modern-table {
+    font-size: 0.95rem;
+  }
+}
+
+/* Tablet (768px to 991px) - Enhanced */
+@media (min-width: 768px) and (max-width: 991px) {
+  .upload-header h1 {
+    font-size: 2rem;
+  }
+  
+  .upload-form-section {
+    padding: 1.5rem;
+  }
+  
+  .week-dropdown-wrapper {
+    max-width: 100%;
+  }
+  
+  .file-drop-zone {
+    padding: 2rem;
+  }
+  
+  .upload-button-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .upload-btn-main {
+    width: 100%;
+  }
+  
+  .modern-table {
+    font-size: 0.9rem;
+  }
+  
+  .modern-table th,
+  .modern-table td {
+    padding: 0.8rem 0.5rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+/* Mobile Large (481px to 767px) - Enhanced */
+@media (min-width: 481px) and (max-width: 767px) {
+  .upload-header {
+    padding: 1.5rem;
+    text-align: center;
+  }
+  
+  .upload-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .upload-header p {
+    font-size: 0.95rem;
+  }
+  
+  .upload-form-section {
+    padding: 1.2rem;
+    border-radius: 15px;
+  }
+  
+  .week-dropdown-wrapper {
+    width: 100%;
+    max-width: none;
+  }
+  
+  .week-select-btn {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1rem;
+  }
+  
+  .week-dropdown {
+    width: 100%;
+  }
+  
+  .file-drop-zone {
+    padding: 1.5rem;
+    min-height: 200px;
+  }
+  
+  .file-drop-zone i {
+    font-size: 2.5rem;
+  }
+  
+  .file-drop-zone h3 {
+    font-size: 1.1rem;
+  }
+  
+  .file-choose-btn {
+    padding: 0.8rem 1.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .upload-button-container {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  
+  .upload-btn-main {
+    width: 100%;
+    min-width: unset;
+    padding: 1rem 2rem;
+  }
+  
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .modern-table {
+    font-size: 0.85rem;
+    min-width: 700px;
+  }
+  
+  .modern-table th,
+  .modern-table td {
+    padding: 0.7rem 0.4rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  
+  .action-btn {
+    width: 100%;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
+  .modal-content {
+    margin: 1rem;
+    padding: 1.5rem;
+    max-width: 95vw;
+  }
+}
+
+/* Mobile Small (480px and below) - Enhanced */
+@media (max-width: 480px) {
+  .upload-header {
+    padding: 1.2rem;
+    border-radius: 12px;
+  }
+  
+  .upload-header h1 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+  }
+  
+  .upload-header p {
+    font-size: 0.85rem;
+  }
+  
+  .upload-form-section {
+    padding: 1rem;
+    border-radius: 12px;
+  }
+  
+  .section-title {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .week-dropdown-wrapper {
+    width: 100%;
+  }
+  
+  .week-select-btn {
+    width: 100%;
+    padding: 0.9rem;
+    font-size: 0.9rem;
+  }
+  
+  .week-dropdown {
+    width: 100%;
+    max-height: 250px;
+  }
+  
+  .week-item {
+    padding: 0.8rem;
+    font-size: 0.85rem;
+  }
+  
+  .file-drop-zone {
+    padding: 1.2rem;
+    min-height: 180px;
+  }
+  
+  .file-drop-zone i {
+    font-size: 2rem;
+  }
+  
+  .file-drop-zone h3 {
+    font-size: 1rem;
+  }
+  
+  .file-drop-zone p {
+    font-size: 0.85rem;
+  }
+  
+  .file-choose-btn {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.85rem;
+  }
+  
+  .selected-file {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+  
+  .file-info {
+    text-align: center;
+  }
+  
+  .upload-button-container {
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  
+  .upload-btn-main {
+    width: 100%;
+    min-width: unset;
+    padding: 0.9rem 1.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .progress-section {
+    padding: 1rem;
+  }
+  
+  .progress-bar-container {
+    height: 8px;
+  }
+  
+  .generated-quizzes-section {
+    padding: 1rem;
+    border-radius: 12px;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1rem;
+  }
+  
+  .section-title {
+    font-size: 1.2rem;
+  }
+  
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+  
+  .table-responsive {
+    overflow-x: auto;
+    max-height: 500px;
+  }
+  
+  .modern-table {
+    font-size: 0.75rem;
+    min-width: 650px;
+  }
+  
+  .modern-table th {
+    padding: 0.6rem 0.3rem;
+    font-size: 0.75rem;
+  }
+  
+  .modern-table td {
+    padding: 0.5rem 0.3rem;
+  }
+  
+  .quiz-info h4 {
+    font-size: 0.85rem;
+  }
+  
+  .quiz-meta {
+    font-size: 0.7rem;
+  }
+  
+  .status-badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  
+  .action-btn {
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+  }
+  
+  .pagination-controls {
+    flex-wrap: wrap;
+    padding: 0.8rem;
+    gap: 0.5rem;
+  }
+  
+  .pagination-btn {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
+  .modal-content {
+    margin: 0.5rem;
+    padding: 1.2rem;
+    max-width: 98vw;
+  }
+  
+  .modal-content h3 {
+    font-size: 1.2rem;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  
+  .modal-btn {
+    width: 100%;
+    padding: 0.8rem 1.2rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Ultra Small Mobile (360px and below) */
+@media (max-width: 360px) {
+  .upload-header {
+    padding: 1rem;
+  }
+  
+  .upload-header h1 {
+    font-size: 1.3rem;
+  }
+  
+  .upload-form-section {
+    padding: 0.8rem;
+  }
+  
+  .file-drop-zone {
+    padding: 1rem;
+    min-height: 160px;
+  }
+  
+  .generated-quizzes-section {
+    padding: 0.8rem;
+  }
+  
+  .section-header {
+    padding: 0.8rem;
+  }
+  
+  .modern-table {
+    font-size: 0.7rem;
+    min-width: 600px;
+  }
+  
+  .modal-content {
+    padding: 1rem;
+  }
+}
+
+/* Landscape Mobile Orientation */
+@media (max-height: 500px) and (orientation: landscape) {
+  .upload-header {
+    padding: 1rem 1.5rem;
+  }
+  
+  .upload-header h1 {
+    font-size: 1.5rem;
+    margin: 0 0 0.3rem 0;
+  }
+  
+  .upload-form-section {
+    padding: 1rem;
+  }
+  
+  .file-drop-zone {
+    padding: 1rem;
+    min-height: 150px;
+  }
+  
+  .week-dropdown {
+    max-height: 200px;
+  }
+  
+  .table-responsive {
+    max-height: 250px;
+  }
+  
+  .modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+
+/* Touch-friendly enhancements */
+@media (hover: none) and (pointer: coarse) {
+  .week-select-btn,
+  .week-item,
+  .file-choose-btn,
+  .upload-btn-main,
+  .action-btn,
+  .pagination-btn,
+  .modal-btn {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+  
+  /* Remove hover effects */
+  .modern-table tbody tr:hover,
+  .week-item:hover,
+  .action-btn:hover {
+    transform: none;
+  }
+  
+  /* Enhanced tap feedback */
+  .upload-btn-main:active,
+  .action-btn:active,
+  .week-item:active {
+    transform: scale(0.98);
+  }
+  
+  /* Better scroll */
+  .table-responsive,
+  .week-dropdown {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Drag and drop on touch */
+  .file-drop-zone {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
 /* === ANIMATIONS === */
 @keyframes slideIn {
   from {

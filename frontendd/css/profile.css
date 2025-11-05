@@ -331,30 +331,474 @@ body.view-profile {
   100% { transform: translateX(100%); }
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
+/* ===================================
+   COMPREHENSIVE RESPONSIVE DESIGN
+   =================================== */
+
+/* Large Desktop (1200px and up) */
+@media (min-width: 1200px) {
+  .profile-main-container {
+    padding: 30px;
+  }
+  
   .cyber-profile-card {
-    margin: 10px;
-    max-width: none;
+    max-width: 650px;
+  }
+  
+  .profile-header {
+    padding: 45px 35px 35px;
+  }
+  
+  .avatar-glow-ring {
+    width: 140px;
+    height: 140px;
+  }
+  
+  .profile-username {
+    font-size: 2rem;
   }
   
   .cyber-stats-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    padding: 20px;
+    padding: 35px;
+    gap: 20px;
   }
   
   .profile-actions-grid {
-    grid-template-columns: 1fr;
+    padding: 0 35px 35px;
+    gap: 18px;
+  }
+}
+
+/* Desktop (992px to 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .profile-main-container {
+    padding: 25px;
+  }
+  
+  .cyber-profile-card {
+    max-width: 600px;
+  }
+  
+  .profile-header {
+    padding: 40px 30px 30px;
+  }
+  
+  .avatar-glow-ring {
+    width: 130px;
+    height: 130px;
+  }
+  
+  .profile-username {
+    font-size: 1.9rem;
+  }
+}
+
+/* Tablet (768px to 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+  .profile-main-container {
+    padding: 20px;
+  }
+  
+  .cyber-profile-card {
+    max-width: 100%;
+    margin: 0 10px;
+  }
+  
+  .profile-header {
+    padding: 35px 25px 25px;
+  }
+  
+  .avatar-glow-ring {
+    width: 110px;
+    height: 110px;
+  }
+  
+  .profile-level-badge {
+    width: 35px;
+    height: 35px;
+    font-size: 0.8rem;
+  }
+  
+  .profile-username {
+    font-size: 1.6rem;
+  }
+  
+  .profile-email {
+    font-size: 0.85rem;
+  }
+  
+  .cyber-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
-    padding: 0 20px 20px;
+    padding: 25px;
+  }
+  
+  .stat-icon {
+    font-size: 1.8rem;
+  }
+  
+  .stat-number {
+    font-size: 1.6rem;
+  }
+  
+  .profile-actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 0 25px 25px;
+  }
+  
+  .cyber-action-btn {
+    padding: 12px 15px;
+    font-size: 0.85rem;
+  }
+}
+
+/* Mobile Large (481px to 767px) */
+@media (min-width: 481px) and (max-width: 767px) {
+  .profile-main-container {
+    padding: 15px;
+  }
+  
+  .cyber-profile-card {
+    margin: 0 5px;
+    max-width: none;
+    border-radius: 18px;
   }
   
   .profile-header {
     padding: 30px 20px 20px;
   }
   
+  .avatar-glow-ring {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .profile-level-badge {
+    width: 32px;
+    height: 32px;
+    font-size: 0.75rem;
+  }
+  
   .profile-username {
     font-size: 1.5rem;
+  }
+  
+  .profile-email {
+    font-size: 0.8rem;
+  }
+  
+  .profile-title {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .title-icon {
+    font-size: 1rem;
+  }
+  
+  .cyber-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 20px;
+  }
+  
+  .stat-card {
+    padding: 15px;
+  }
+  
+  .stat-icon {
+    font-size: 1.6rem;
+    margin-bottom: 8px;
+  }
+  
+  .stat-number {
+    font-size: 1.5rem;
+  }
+  
+  .stat-label {
+    font-size: 0.8rem;
+  }
+  
+  .profile-actions-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 0 20px 20px;
+  }
+  
+  .cyber-action-btn {
+    padding: 12px 18px;
+    font-size: 0.85rem;
+  }
+  
+  .btn-icon {
+    font-size: 1rem;
+  }
+}
+
+/* Mobile Small (480px and below) */
+@media (max-width: 480px) {
+  .profile-main-container {
+    padding: 10px 5px;
+  }
+  
+  .cyber-profile-card {
+    margin: 0;
+    max-width: none;
+    border-radius: 15px;
+  }
+  
+  .profile-header {
+    padding: 25px 15px 15px;
+  }
+  
+  .profile-bg-effect {
+    height: 2px;
+  }
+  
+  .avatar-glow-ring {
+    width: 90px;
+    height: 90px;
+    padding: 3px;
+  }
+  
+  .profile-level-badge {
+    width: 30px;
+    height: 30px;
+    font-size: 0.7rem;
+    bottom: -3px;
+    right: -3px;
+    border-width: 2px;
+  }
+  
+  .profile-username {
+    font-size: 1.3rem;
+    margin: 0 0 6px 0;
+  }
+  
+  .profile-email {
+    font-size: 0.75rem;
+    margin: 0 0 12px 0;
+  }
+  
+  .profile-title {
+    padding: 5px 10px;
+    font-size: 0.75rem;
+    gap: 6px;
+  }
+  
+  .title-icon {
+    font-size: 0.9rem;
+  }
+  
+  .title-text {
+    font-size: 0.75rem;
+  }
+  
+  .cyber-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 15px;
+  }
+  
+  .stat-card {
+    padding: 12px;
+    border-radius: 12px;
+  }
+  
+  .stat-icon {
+    font-size: 1.5rem;
+    margin-bottom: 6px;
+  }
+  
+  .stat-number {
+    font-size: 1.3rem;
+    margin-bottom: 3px;
+  }
+  
+  .stat-label {
+    font-size: 0.75rem;
+  }
+  
+  .stat-progress {
+    height: 5px;
+    margin-top: 6px;
+  }
+  
+  .progress-bar {
+    height: 5px;
+  }
+  
+  .level-indicator,
+  .achievement-preview,
+  .rank-indicator {
+    font-size: 0.7rem;
+  }
+  
+  .profile-actions-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 0 15px 15px;
+  }
+  
+  .cyber-action-btn {
+    padding: 10px 15px;
+    font-size: 0.8rem;
+    gap: 8px;
+    border-radius: 10px;
+  }
+  
+  .btn-icon {
+    font-size: 0.9rem;
+  }
+}
+
+/* Ultra Small Mobile (360px and below) */
+@media (max-width: 360px) {
+  .profile-main-container {
+    padding: 8px 3px;
+  }
+  
+  .cyber-profile-card {
+    border-radius: 12px;
+  }
+  
+  .profile-header {
+    padding: 20px 12px 12px;
+  }
+  
+  .avatar-glow-ring {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .profile-level-badge {
+    width: 28px;
+    height: 28px;
+    font-size: 0.65rem;
+  }
+  
+  .profile-username {
+    font-size: 1.2rem;
+  }
+  
+  .profile-email {
+    font-size: 0.7rem;
+  }
+  
+  .cyber-stats-grid {
+    padding: 12px;
+    gap: 6px;
+  }
+  
+  .stat-card {
+    padding: 10px;
+  }
+  
+  .stat-icon {
+    font-size: 1.3rem;
+  }
+  
+  .stat-number {
+    font-size: 1.2rem;
+  }
+  
+  .profile-actions-grid {
+    padding: 0 12px 12px;
+    gap: 6px;
+  }
+  
+  .cyber-action-btn {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+  }
+}
+
+/* Landscape Mobile Orientation */
+@media (max-height: 500px) and (orientation: landscape) {
+  .profile-main-container {
+    min-height: auto;
+    padding: 10px 15px;
+  }
+  
+  .cyber-profile-card {
+    max-width: 90vw;
+  }
+  
+  .profile-header {
+    padding: 20px 25px 15px;
+  }
+  
+  .avatar-glow-ring {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .profile-username {
+    font-size: 1.3rem;
+    margin: 0 0 5px 0;
+  }
+  
+  .profile-email {
+    margin: 0 0 10px 0;
+  }
+  
+  .cyber-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 15px;
+    gap: 10px;
+  }
+  
+  .stat-card {
+    padding: 10px;
+  }
+  
+  .stat-icon {
+    font-size: 1.3rem;
+    margin-bottom: 5px;
+  }
+  
+  .stat-number {
+    font-size: 1.2rem;
+  }
+  
+  .profile-actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 0 15px 15px;
+    gap: 8px;
+  }
+  
+  .cyber-action-btn {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+}
+
+/* Touch-friendly enhancements for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .cyber-action-btn {
+    min-height: 44px; /* iOS/Android touch target minimum */
+    touch-action: manipulation;
+  }
+  
+  .profile-title {
+    min-height: 36px;
+  }
+  
+  .stat-card {
+    min-height: 120px;
+  }
+  
+  /* Remove hover effects on touch devices */
+  .cyber-action-btn:hover,
+  .stat-card:hover {
+    transform: none;
+  }
+  
+  /* Enhanced focus styles for touch */
+  .cyber-action-btn:active {
+    border-color: rgba(0, 255, 255, 0.8);
+    background: linear-gradient(45deg, rgba(0, 255, 255, 0.2), rgba(0, 200, 255, 0.1));
+    box-shadow: 0 8px 25px rgba(0, 255, 255, 0.3);
   }
 }

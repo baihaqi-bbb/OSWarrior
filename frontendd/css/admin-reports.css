@@ -37,3 +37,374 @@ main{background:rgba(255,255,255,0.02);padding:18px;border-radius:10px;}
   .reports-controls { flex-direction:column; align-items:stretch; }
   .controls-right { justify-content:flex-end; }
 }
+
+/* ===================================
+   COMPREHENSIVE RESPONSIVE DESIGN
+   =================================== */
+
+/* Large Desktop (1200px and up) */
+@media (min-width: 1200px) {
+  .main-container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  
+  .reports-header {
+    padding: 2.5rem;
+  }
+  
+  .reports-controls {
+    padding: 2rem;
+  }
+  
+  .chart-container {
+    padding: 2rem;
+  }
+}
+
+/* Desktop (992px to 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .reports-header {
+    padding: 2rem;
+  }
+  
+  .reports-controls {
+    padding: 1.8rem;
+  }
+  
+  .chart-container {
+    padding: 1.8rem;
+  }
+}
+
+/* Tablet (768px to 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+  .reports-header h1 {
+    font-size: 2rem;
+  }
+  
+  .reports-controls {
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+  
+  .controls-left {
+    flex: 1 1 100%;
+  }
+  
+  .controls-right {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+  }
+  
+  .chart-container {
+    padding: 1.5rem;
+  }
+  
+  .reports-table {
+    font-size: 0.9rem;
+  }
+  
+  .reports-table th,
+  .reports-table td {
+    padding: 0.8rem 0.5rem;
+  }
+}
+
+/* Mobile Large (481px to 767px) */
+@media (min-width: 481px) and (max-width: 767px) {
+  .reports-header {
+    padding: 1.5rem;
+    text-align: center;
+  }
+  
+  .reports-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .reports-header p {
+    font-size: 0.95rem;
+  }
+  
+  .reports-controls {
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1.2rem;
+  }
+  
+  .controls-left,
+  .controls-right {
+    width: 100%;
+  }
+  
+  .filter-group {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .filter-label {
+    width: 100%;
+  }
+  
+  .filter-select {
+    width: 100%;
+  }
+  
+  .controls-right {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .btn-action {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .chart-container {
+    padding: 1.2rem;
+    border-radius: 15px;
+  }
+  
+  .chart-title {
+    font-size: 1.2rem;
+  }
+  
+  #reportsChart {
+    height: 300px !important;
+  }
+  
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .reports-table {
+    font-size: 0.85rem;
+    min-width: 700px;
+  }
+  
+  .reports-table th,
+  .reports-table td {
+    padding: 0.7rem 0.4rem;
+  }
+}
+
+/* Mobile Small (480px and below) */
+@media (max-width: 480px) {
+  .reports-header {
+    padding: 1.2rem;
+    border-radius: 12px;
+  }
+  
+  .reports-header h1 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+  }
+  
+  .reports-header p {
+    font-size: 0.85rem;
+  }
+  
+  .reports-controls {
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1rem;
+  }
+  
+  .controls-left,
+  .controls-right {
+    width: 100%;
+  }
+  
+  .filter-group {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  
+  .filter-label {
+    width: 100%;
+    font-size: 0.85rem;
+  }
+  
+  .filter-select {
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    font-size: 0.85rem;
+  }
+  
+  .controls-right {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .btn-action {
+    width: 100%;
+    justify-content: center;
+    padding: 0.8rem 1rem;
+    font-size: 0.85rem;
+  }
+  
+  .chart-container {
+    padding: 1rem;
+    border-radius: 12px;
+  }
+  
+  .chart-title {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+  
+  #reportsChart {
+    height: 250px !important;
+  }
+  
+  .table-container {
+    border-radius: 12px;
+  }
+  
+  .table-header {
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1rem;
+  }
+  
+  .table-header h2 {
+    font-size: 1.2rem;
+  }
+  
+  .table-responsive {
+    overflow-x: auto;
+    max-height: 500px;
+  }
+  
+  .reports-table {
+    font-size: 0.75rem;
+    min-width: 650px;
+  }
+  
+  .reports-table th {
+    padding: 0.6rem 0.3rem;
+    font-size: 0.75rem;
+  }
+  
+  .reports-table td {
+    padding: 0.5rem 0.3rem;
+  }
+  
+  .stat-value {
+    font-size: 0.9rem;
+  }
+  
+  .trend-indicator {
+    font-size: 0.7rem;
+  }
+  
+  .pagination-controls {
+    flex-wrap: wrap;
+    padding: 0.8rem;
+    gap: 0.5rem;
+  }
+  
+  .pagination-btn {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Ultra Small Mobile (360px and below) */
+@media (max-width: 360px) {
+  .reports-header {
+    padding: 1rem;
+  }
+  
+  .reports-header h1 {
+    font-size: 1.3rem;
+  }
+  
+  .reports-controls {
+    padding: 0.8rem;
+  }
+  
+  .chart-container {
+    padding: 0.8rem;
+  }
+  
+  #reportsChart {
+    height: 220px !important;
+  }
+  
+  .table-header {
+    padding: 0.8rem;
+  }
+  
+  .reports-table {
+    font-size: 0.7rem;
+    min-width: 600px;
+  }
+}
+
+/* Landscape Mobile Orientation */
+@media (max-height: 500px) and (orientation: landscape) {
+  .reports-header {
+    padding: 1rem 1.5rem;
+  }
+  
+  .reports-header h1 {
+    font-size: 1.5rem;
+    margin: 0 0 0.3rem 0;
+  }
+  
+  .reports-controls {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 0.8rem 1.5rem;
+  }
+  
+  .controls-left {
+    flex: 1 1 60%;
+  }
+  
+  .controls-right {
+    flex: 1 1 35%;
+    flex-direction: row;
+  }
+  
+  .chart-container {
+    padding: 1rem;
+  }
+  
+  #reportsChart {
+    height: 200px !important;
+  }
+  
+  .table-responsive {
+    max-height: 250px;
+  }
+}
+
+/* Touch-friendly enhancements */
+@media (hover: none) and (pointer: coarse) {
+  .btn-action,
+  .filter-select,
+  .pagination-btn {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+  
+  /* Remove hover effects */
+  .reports-table tbody tr:hover {
+    transform: none;
+  }
+  
+  /* Enhanced tap feedback */
+  .btn-action:active {
+    transform: scale(0.98);
+  }
+  
+  /* Better scroll */
+  .table-responsive {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}

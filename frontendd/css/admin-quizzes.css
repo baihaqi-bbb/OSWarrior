@@ -1043,3 +1043,435 @@ button[style*="color:#c00"], .btn-danger {
 @media (max-width: 760px) {
   .search-wrap input#search { height: 38px; padding-left: 38px; font-size: 13px; }
 }
+
+/* ===================================
+   COMPREHENSIVE RESPONSIVE DESIGN
+   =================================== */
+
+/* Large Desktop (1200px and up) */
+@media (min-width: 1200px) {
+  .main-container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  
+  .search-controls {
+    padding: 2rem;
+  }
+  
+  .quizzes-table th,
+  .quizzes-table td {
+    padding: 1.2rem;
+  }
+}
+
+/* Desktop (992px to 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .search-controls {
+    padding: 1.8rem;
+  }
+  
+  .quizzes-table {
+    font-size: 0.95rem;
+  }
+}
+
+/* Tablet (768px to 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+  .page-header h1 {
+    font-size: 2rem;
+  }
+  
+  .search-controls {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  .search-wrap {
+    flex: 1 1 100%;
+  }
+  
+  .control-buttons {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+  }
+  
+  .quizzes-table {
+    font-size: 0.9rem;
+  }
+  
+  .quizzes-table th,
+  .quizzes-table td {
+    padding: 0.8rem 0.5rem;
+  }
+  
+  .action-btn {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Mobile Large (481px to 767px) */
+@media (min-width: 481px) and (max-width: 767px) {
+  .page-header {
+    padding: 1.5rem;
+    text-align: center;
+  }
+  
+  .page-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .search-controls {
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1.2rem;
+  }
+  
+  .search-wrap {
+    width: 100%;
+  }
+  
+  .control-buttons {
+    width: 100%;
+    flex-direction: column;
+  }
+  
+  .btn-action {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .quizzes-table {
+    font-size: 0.85rem;
+    min-width: 800px;
+  }
+  
+  .quizzes-table th,
+  .quizzes-table td {
+    padding: 0.7rem 0.4rem;
+  }
+  
+  .quiz-title {
+    font-size: 0.9rem;
+  }
+  
+  .quiz-week {
+    font-size: 0.75rem;
+  }
+  
+  .status-badge {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  
+  .action-btn {
+    width: 100%;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
+  .modal-content {
+    margin: 1rem;
+    padding: 1.5rem;
+    max-width: 95vw;
+  }
+  
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  
+  .modal-actions .btn-action {
+    width: 100%;
+  }
+}
+
+/* Mobile Small (480px and below) */
+@media (max-width: 480px) {
+  .page-header {
+    padding: 1.2rem;
+    border-radius: 12px;
+  }
+  
+  .page-header h1 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+  }
+  
+  .page-header p {
+    font-size: 0.85rem;
+  }
+  
+  .search-controls {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  
+  .search-wrap {
+    width: 100%;
+  }
+  
+  .search-wrap input {
+    height: 44px;
+    padding-left: 40px;
+    font-size: 0.85rem;
+  }
+  
+  .search-icon {
+    width: 40px;
+    height: 44px;
+  }
+  
+  .control-buttons {
+    width: 100%;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .btn-action {
+    width: 100%;
+    justify-content: center;
+    padding: 0.8rem 1rem;
+    font-size: 0.85rem;
+  }
+  
+  .table-container {
+    border-radius: 12px;
+  }
+  
+  .table-header {
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1rem;
+  }
+  
+  .table-header h2 {
+    font-size: 1.2rem;
+  }
+  
+  .table-responsive {
+    overflow-x: auto;
+    max-height: 500px;
+  }
+  
+  .quizzes-table {
+    font-size: 0.75rem;
+    min-width: 750px;
+  }
+  
+  .quizzes-table th {
+    padding: 0.6rem 0.3rem;
+    font-size: 0.75rem;
+  }
+  
+  .quizzes-table td {
+    padding: 0.5rem 0.3rem;
+  }
+  
+  .quiz-title {
+    font-size: 0.85rem;
+  }
+  
+  .quiz-week {
+    font-size: 0.7rem;
+  }
+  
+  .quiz-info {
+    font-size: 0.75rem;
+  }
+  
+  .difficulty-badge,
+  .status-badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  
+  .action-btn {
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+  }
+  
+  .pagination-controls {
+    flex-wrap: wrap;
+    padding: 0.8rem;
+    gap: 0.5rem;
+  }
+  
+  .pagination-btn {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
+  .modal-content {
+    margin: 0.5rem;
+    padding: 1.2rem;
+    max-width: 98vw;
+  }
+  
+  .modal-content h3 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .form-group {
+    margin-bottom: 0.8rem;
+  }
+  
+  .form-group label {
+    font-size: 0.85rem;
+  }
+  
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 0.7rem 0.9rem;
+    font-size: 0.85rem;
+  }
+  
+  .question-item {
+    padding: 1rem;
+    margin-bottom: 0.8rem;
+  }
+  
+  .question-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .options-grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 1rem;
+  }
+  
+  .modal-actions .btn-action {
+    width: 100%;
+    padding: 0.8rem 1.2rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Ultra Small Mobile (360px and below) */
+@media (max-width: 360px) {
+  .page-header {
+    padding: 1rem;
+  }
+  
+  .page-header h1 {
+    font-size: 1.3rem;
+  }
+  
+  .search-controls {
+    padding: 0.8rem;
+  }
+  
+  .table-header {
+    padding: 0.8rem;
+  }
+  
+  .quizzes-table {
+    font-size: 0.7rem;
+    min-width: 700px;
+  }
+  
+  .modal-content {
+    padding: 1rem;
+  }
+}
+
+/* Landscape Mobile Orientation */
+@media (max-height: 500px) and (orientation: landscape) {
+  .page-header {
+    padding: 1rem 1.5rem;
+  }
+  
+  .page-header h1 {
+    font-size: 1.5rem;
+    margin: 0 0 0.3rem 0;
+  }
+  
+  .search-controls {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  .search-wrap {
+    flex: 1 1 60%;
+  }
+  
+  .control-buttons {
+    flex: 1 1 35%;
+    flex-direction: row;
+  }
+  
+  .table-responsive {
+    max-height: 300px;
+  }
+  
+  .modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+
+/* Touch-friendly enhancements */
+@media (hover: none) and (pointer: coarse) {
+  .btn-action,
+  .action-btn,
+  .pagination-btn,
+  .search-wrap input {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+  
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    min-height: 44px;
+  }
+  
+  /* Remove hover effects */
+  .quizzes-table tbody tr:hover,
+  .action-btn:hover {
+    transform: none;
+  }
+  
+  /* Enhanced tap feedback */
+  .btn-action:active,
+  .action-btn:active {
+    transform: scale(0.98);
+  }
+  
+  /* Better scroll on touch */
+  .table-responsive {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}

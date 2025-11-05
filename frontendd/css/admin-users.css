@@ -419,6 +419,626 @@
   }
 }
 
+/* ===================================
+   COMPREHENSIVE RESPONSIVE DESIGN
+   =================================== */
+
+/* Large Desktop (1200px and up) */
+@media (min-width: 1200px) {
+  .main-container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  
+  .users-header {
+    padding: 2.5rem;
+  }
+  
+  .users-controls {
+    padding: 2rem;
+  }
+  
+  .users-table th,
+  .users-table td {
+    padding: 1.2rem;
+  }
+}
+
+/* Desktop (992px to 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .users-header {
+    padding: 2rem;
+  }
+  
+  .users-controls {
+    padding: 1.8rem;
+  }
+  
+  .users-table {
+    font-size: 0.95rem;
+  }
+}
+
+/* Tablet (768px to 991px) - Enhanced */
+@media (min-width: 768px) and (max-width: 991px) {
+  .users-header h1 {
+    font-size: 2rem;
+  }
+  
+  .users-controls {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  .search-wrapper {
+    flex: 1 1 100%;
+  }
+  
+  .filter-controls {
+    flex: 1 1 100%;
+  }
+  
+  .users-table {
+    font-size: 0.9rem;
+  }
+  
+  .users-table th,
+  .users-table td {
+    padding: 0.8rem 0.5rem;
+  }
+  
+  .user-avatar img {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .modal-content {
+    max-width: 90vw;
+  }
+}
+
+/* Mobile Large (481px to 767px) - Enhanced */
+@media (min-width: 481px) and (max-width: 767px) {
+  .users-header {
+    padding: 1.5rem;
+    text-align: center;
+  }
+  
+  .users-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .users-header p {
+    font-size: 0.95rem;
+  }
+  
+  .header-actions {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .users-controls {
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1.2rem;
+  }
+  
+  .search-wrapper {
+    width: 100%;
+  }
+  
+  .search-input {
+    width: 100%;
+  }
+  
+  .filter-controls {
+    width: 100%;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  
+  .filter-select {
+    width: 100%;
+  }
+  
+  .btn-action {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .users-table {
+    font-size: 0.85rem;
+    min-width: 800px;
+  }
+  
+  .users-table th,
+  .users-table td {
+    padding: 0.7rem 0.4rem;
+  }
+  
+  .user-avatar img {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .user-info h4 {
+    font-size: 0.9rem;
+  }
+  
+  .user-info p {
+    font-size: 0.75rem;
+  }
+  
+  .status-chip {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+  }
+  
+  .role-select {
+    padding: 0.5rem 0.7rem;
+    font-size: 0.8rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  
+  .btn-small {
+    width: 100%;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
+  .pagination-controls {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .modal-content {
+    margin: 1rem;
+    padding: 0;
+    max-width: 95vw;
+  }
+  
+  .confirmation-actions,
+  .success-actions,
+  .warning-actions,
+  .danger-actions {
+    flex-direction: column;
+    padding: 1.5rem;
+  }
+  
+  .user-preview-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .preview-item {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  
+  .preview-value {
+    max-width: 100%;
+    text-align: center;
+  }
+}
+
+/* Mobile Small (480px and below) - Enhanced */
+@media (max-width: 480px) {
+  .users-header {
+    padding: 1.2rem;
+    border-radius: 12px;
+  }
+  
+  .users-header h1 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+  }
+  
+  .users-header p {
+    font-size: 0.85rem;
+  }
+  
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+  
+  .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .users-controls {
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1rem;
+  }
+  
+  .search-wrapper {
+    width: 100%;
+  }
+  
+  .search-input {
+    width: 100%;
+    padding: 0.7rem 0.9rem 0.7rem 2.5rem;
+    font-size: 0.85rem;
+  }
+  
+  .search-icon {
+    width: 2.5rem;
+    height: 100%;
+  }
+  
+  .filter-controls {
+    width: 100%;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .filter-label {
+    font-size: 0.85rem;
+  }
+  
+  .filter-select {
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    font-size: 0.85rem;
+  }
+  
+  .btn-action {
+    width: 100%;
+    justify-content: center;
+    padding: 0.8rem 1rem;
+    font-size: 0.85rem;
+  }
+  
+  .users-container {
+    border-radius: 12px;
+  }
+  
+  .table-header {
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1rem;
+  }
+  
+  .table-header h2 {
+    font-size: 1.2rem;
+  }
+  
+  .table-responsive {
+    overflow-x: auto;
+    max-height: 500px;
+  }
+  
+  .users-table {
+    font-size: 0.75rem;
+    min-width: 750px;
+  }
+  
+  .users-table th {
+    padding: 0.6rem 0.3rem;
+    font-size: 0.75rem;
+  }
+  
+  .users-table td {
+    padding: 0.5rem 0.3rem;
+  }
+  
+  .user-avatar img {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .user-info h4 {
+    font-size: 0.85rem;
+  }
+  
+  .user-info p {
+    font-size: 0.7rem;
+  }
+  
+  .stats-item {
+    font-size: 0.7rem;
+  }
+  
+  .status-chip {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+  
+  .role-select {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  
+  .btn-small {
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+  }
+  
+  .pagination-controls {
+    flex-wrap: wrap;
+    padding: 0.8rem;
+    gap: 0.5rem;
+  }
+  
+  .pagination-info {
+    order: -1;
+    width: 100%;
+    text-align: center;
+    font-size: 0.85rem;
+  }
+  
+  .pagination-buttons {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .pagination-btn {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
+  .modal-content {
+    margin: 0.5rem;
+    padding: 0;
+    max-width: 98vw;
+  }
+  
+  .confirmation-header,
+  .success-header,
+  .warning-header,
+  .danger-header {
+    padding: 1.5rem;
+  }
+  
+  .confirmation-header h3,
+  .success-header h3,
+  .warning-header h3,
+  .danger-header h3 {
+    font-size: 1.2rem;
+  }
+  
+  .confirmation-icon,
+  .success-icon,
+  .warning-icon,
+  .danger-icon {
+    font-size: 2.5rem;
+  }
+  
+  .confirmation-body,
+  .success-body,
+  .warning-body,
+  .danger-body {
+    padding: 1.2rem;
+  }
+  
+  .confirm-message,
+  .success-message,
+  .warning-message,
+  .danger-message {
+    font-size: 0.95rem;
+  }
+  
+  .user-preview-card,
+  .success-details,
+  .user-info-card {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 0.8rem;
+    text-align: center;
+  }
+  
+  .preview-avatar img,
+  .info-avatar img {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .preview-item,
+  .success-item {
+    flex-direction: column;
+    gap: 0.3rem;
+    text-align: center;
+  }
+  
+  .preview-value,
+  .success-value {
+    max-width: 100%;
+    text-align: center;
+  }
+  
+  .warning-note,
+  .success-note,
+  .danger-note {
+    flex-direction: column;
+    padding: 1rem;
+    font-size: 0.85rem;
+  }
+  
+  .confirmation-actions,
+  .success-actions,
+  .warning-actions,
+  .danger-actions {
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1.2rem;
+  }
+  
+  .confirm-btn,
+  .cancel-btn,
+  .success-btn,
+  .secondary-btn,
+  .warning-btn,
+  .danger-btn {
+    width: 100%;
+    padding: 0.8rem 1.2rem;
+    font-size: 0.85rem;
+  }
+  
+  .duplicates-container {
+    max-height: 300px;
+  }
+  
+  .duplicate-group {
+    padding: 1rem;
+  }
+  
+  .duplicate-user {
+    flex-direction: column;
+    gap: 0.8rem;
+    text-align: center;
+  }
+  
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .form-group label {
+    font-size: 0.85rem;
+  }
+  
+  .form-group input,
+  .form-group select {
+    padding: 0.7rem 0.9rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Ultra Small Mobile (360px and below) */
+@media (max-width: 360px) {
+  .users-header {
+    padding: 1rem;
+  }
+  
+  .users-header h1 {
+    font-size: 1.3rem;
+  }
+  
+  .users-controls {
+    padding: 0.8rem;
+  }
+  
+  .table-header {
+    padding: 0.8rem;
+  }
+  
+  .users-table {
+    font-size: 0.7rem;
+    min-width: 700px;
+  }
+  
+  .modal-content {
+    margin: 0.3rem;
+  }
+  
+  .confirmation-body,
+  .success-body,
+  .warning-body,
+  .danger-body {
+    padding: 1rem;
+  }
+}
+
+/* Landscape Mobile Orientation */
+@media (max-height: 500px) and (orientation: landscape) {
+  .users-header {
+    padding: 1rem 1.5rem;
+  }
+  
+  .users-header h1 {
+    font-size: 1.5rem;
+    margin: 0 0 0.3rem 0;
+  }
+  
+  .users-controls {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 0.8rem 1.5rem;
+  }
+  
+  .search-wrapper {
+    flex: 1 1 60%;
+  }
+  
+  .filter-controls {
+    flex: 1 1 35%;
+    flex-direction: row;
+  }
+  
+  .table-responsive {
+    max-height: 250px;
+  }
+  
+  .modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .duplicates-container {
+    max-height: 200px;
+  }
+}
+
+/* Touch-friendly enhancements */
+@media (hover: none) and (pointer: coarse) {
+  .btn-action,
+  .btn-small,
+  .btn-primary,
+  .search-input,
+  .filter-select,
+  .role-select,
+  .pagination-btn {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+  
+  .form-group input,
+  .form-group select {
+    min-height: 44px;
+  }
+  
+  /* Remove hover effects */
+  .users-table tbody tr:hover,
+  .btn-action:hover {
+    transform: none;
+  }
+  
+  /* Enhanced tap feedback */
+  .btn-action:active,
+  .btn-small:active,
+  .pagination-btn:active {
+    transform: scale(0.98);
+  }
+  
+  /* Better scroll */
+  .table-responsive,
+  .duplicates-container {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}
+
 /* === FORM STYLES FOR ADD USER MODAL === */
 .form-group {
   margin-bottom: 20px;

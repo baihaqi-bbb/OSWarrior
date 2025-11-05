@@ -9,3 +9,149 @@
 body.home-admin{font-family:'Poppins',sans-serif;background:#051213;color:#fff;}
 .navbar{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:rgba(0,0,0,.45);}
 main{background:rgba(255,255,255,0.02);padding:18px;border-radius:10px;}
+
+/* ===================================
+   COMPREHENSIVE RESPONSIVE DESIGN
+   =================================== */
+
+/* Large Desktop (1200px and up) */
+@media (min-width: 1200px) {
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 28px;
+  }
+  
+  .navbar {
+    padding: 16px 40px;
+  }
+}
+
+/* Desktop (992px to 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+  main {
+    padding: 24px;
+  }
+  
+  .navbar {
+    padding: 15px 30px;
+  }
+}
+
+/* Tablet (768px to 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+  .navbar {
+    padding: 14px 25px;
+  }
+  
+  main {
+    padding: 20px;
+    border-radius: 15px;
+  }
+}
+
+/* Mobile Large (481px to 767px) */
+@media (min-width: 481px) and (max-width: 767px) {
+  .navbar {
+    padding: 12px 18px;
+  }
+  
+  .profile-img {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .profile-dropdown {
+    top: 42px;
+    min-width: 180px;
+  }
+  
+  main {
+    padding: 16px;
+    border-radius: 12px;
+  }
+}
+
+/* Mobile Small (480px and below) */
+@media (max-width: 480px) {
+  .navbar {
+    padding: 10px 15px;
+    flex-wrap: wrap;
+  }
+  
+  .profile-container {
+    gap: 6px;
+  }
+  
+  .profile-img {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .profile-dropdown {
+    top: 40px;
+    right: -10px;
+    min-width: 160px;
+    border-radius: 8px;
+  }
+  
+  .profile-dropdown a,
+  .profile-dropdown button {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+  
+  main {
+    padding: 14px;
+    border-radius: 10px;
+  }
+}
+
+/* Ultra Small Mobile (360px and below) */
+@media (max-width: 360px) {
+  .navbar {
+    padding: 8px 12px;
+  }
+  
+  .profile-img {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .profile-dropdown {
+    min-width: 150px;
+  }
+  
+  main {
+    padding: 12px;
+  }
+}
+
+/* Landscape Mobile Orientation */
+@media (max-height: 500px) and (orientation: landscape) {
+  .navbar {
+    padding: 8px 20px;
+  }
+  
+  main {
+    padding: 12px 18px;
+  }
+}
+
+/* Touch-friendly enhancements */
+@media (hover: none) and (pointer: coarse) {
+  .profile-container {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+  
+  .profile-dropdown a,
+  .profile-dropdown button {
+    min-height: 44px;
+  }
+  
+  /* Enhanced tap feedback */
+  .profile-container:active {
+    opacity: 0.8;
+  }
+}
