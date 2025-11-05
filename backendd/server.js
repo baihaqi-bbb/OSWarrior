@@ -111,6 +111,40 @@ if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 const localDbPath = path.join(dataDir, "quizzes.json");
 if (!fs.existsSync(localDbPath)) fs.writeFileSync(localDbPath, "[]", "utf8");
 
+// 🔥 CENTRALIZED LOGGING FUNCTION
+async function logActivity(userId, username, action, type, details, req = null) {
+  try {
+    const logEntry = {
+      timestamp: new Date(),
+      user: username || `User-${String(userId).slice(0,6)}`,
+      userId: userId || null,
+      action: action,
+      type: type, // 'login', 'quiz', 'user', 'admin'
+      details: details,
+      ipAddress: req ? (req.headers['x-forwarded-for'] || req.connection.remoteAddress || '-') : '-'
+    };
+
+    if (useFirestore && db) {
+      await db.collection("logs").add(logEntry);
+      console.log(`📝 [LOG] ${action} - ${username || userId}`);
+    } else {
+      const logsPath = path.join(process.cwd(), "data", "logs.json");
+      let logs = [];
+      if (fs.existsSync(logsPath)) {
+        try { logs = JSON.parse(fs.readFileSync(logsPath, "utf8") || "[]"); } catch { logs = []; }
+      }
+      logs.push({ id: String(Date.now()), ...logEntry, timestamp: logEntry.timestamp.toISOString() });
+      // Keep only last 500 logs to prevent file from growing too large
+      if (logs.length > 500) logs = logs.slice(-500);
+      fs.writeFileSync(logsPath, JSON.stringify(logs, null, 2), "utf8");
+      console.log(`📝 [LOG] ${action} - ${username || userId}`);
+    }
+  } catch (error) {
+    console.warn("⚠️ Failed to log activity:", error?.message || error);
+    // Don't fail the request if logging fails
+  }
+}
+
 function readLocalQuizzes() {
   try { return JSON.parse(fs.readFileSync(localDbPath, "utf8") || "[]"); } catch { return []; }
 }
@@ -576,6 +610,17 @@ Short labels to expand: ${JSON.stringify(shortOptions)}
     }
 
     console.log("🎉 Quiz generation completed successfully!");
+    
+    // Log quiz generation
+    await logActivity(
+      'admin',
+      'Admin',
+      'Quiz Generated',
+      'admin',
+      `Generated quiz: ${quizDoc.title} (${quizDoc.questions.length} questions, Week ${weeks ? weeks.join(',') : 'N/A'})`,
+      req
+    );
+    
     return res.json({ 
       ok: true, 
       quizId, 
@@ -919,6 +964,16 @@ app.post("/api/week/:week/submit", async (req, res) => {
       try { fs.writeFileSync(lbPath, JSON.stringify(dbObj, null, 2), "utf8"); } catch (e) { console.warn("Failed to save local leaderboard:", e?.message || e); }
     }
 
+    // Log quiz completion
+    await logActivity(
+      userId,
+      normalizedUsername,
+      "Quiz Completed",
+      "quiz",
+      `Week ${week} quiz - Score: ${score}/${total} (${Math.round((score/total)*100)}%)`,
+      req
+    );
+
     if (activeQuizzes[sessionKey]) delete activeQuizzes[sessionKey];
 
     return res.json({ ok: true, score, total, resultId, details });
@@ -1001,7 +1056,6 @@ app.post("/api/admin/set-role", async (req, res) => {
 
     if (useFirestore && db) {
       await db.collection("users").doc(String(targetUid)).set({ role }, { merge: true });
-      return res.json({ ok: true, method: "firestore" });
     } else {
       const usersPath = path.join(process.cwd(), "data", "users.json");
       let arr = [];
@@ -1015,8 +1069,19 @@ app.post("/api/admin/set-role", async (req, res) => {
         arr.push({ id: String(targetUid), uid: String(targetUid), role });
       }
       fs.writeFileSync(usersPath, JSON.stringify(arr, null, 2), "utf8");
-      return res.json({ ok: true, method: "local" });
     }
+    
+    // Log role change
+    await logActivity(
+      'admin',
+      'Admin',
+      'User Role Changed',
+      'admin',
+      `Set role to '${role}' for user ${targetUid.slice(0, 8)}`,
+      req
+    );
+    
+    return res.json({ ok: true, method: useFirestore ? "firestore" : "local" });
   } catch (err) {
     console.error("/api/admin/set-role error:", err);
     return res.status(500).json({ error: String(err) });
@@ -1132,6 +1197,16 @@ app.post("/api/admin/reset-rankings", async (req, res) => {
         console.warn("⚠️ Failed to clear logs.json:", e);
       }
     }
+    
+    // Log rankings reset
+    await logActivity(
+      'admin',
+      'Admin',
+      'Rankings Reset',
+      'admin',
+      `Reset all rankings - ${resetCount} users affected`,
+      req
+    );
     
     return res.json({ 
       ok: true, 
@@ -1428,17 +1503,29 @@ app.get("/api/quizzes/:id", async (req, res) => {
 app.post("/api/quizzes", async (req, res) => {
   try {
     const body = req.body || {};
+    let id;
     if (useFirestore && db) {
       const r = await db.collection("quizzes").add(body);
-      return res.json({ id: r.id });
+      id = r.id;
     } else {
       const p = path.join(process.cwd(), "data", "quizzes.json");
       const arr = fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8") || "[]") : [];
-      const id = String(Date.now());
+      id = String(Date.now());
       arr.unshift({ id, ...body });
       fs.writeFileSync(p, JSON.stringify(arr, null, 2), "utf8");
-      return res.json({ id });
     }
+    
+    // Log quiz creation
+    await logActivity(
+      'admin',
+      'Admin',
+      'Quiz Created',
+      'admin',
+      `Created quiz: ${body.title || 'Untitled Quiz'}`,
+      req
+    );
+    
+    return res.json({ id });
   } catch (e) { console.error(e); res.status(500).json({ error: String(e) }); }
 });
 
@@ -1448,7 +1535,6 @@ app.put("/api/quizzes/:id", async (req, res) => {
     const payload = req.body || {};
     if (useFirestore && db) {
       await db.collection("quizzes").doc(id).set(payload, { merge: true });
-      return res.json({ ok: true });
     } else {
       const p = path.join(process.cwd(), "data", "quizzes.json");
       const arr = fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8") || "[]") : [];
@@ -1456,8 +1542,19 @@ app.put("/api/quizzes/:id", async (req, res) => {
       if (idx === -1) return res.status(404).json({ error: "Not found" });
       arr[idx] = Object.assign({}, arr[idx], payload);
       fs.writeFileSync(p, JSON.stringify(arr, null, 2), "utf8");
-      return res.json({ ok: true });
     }
+    
+    // Log quiz update
+    await logActivity(
+      'admin',
+      'Admin',
+      'Quiz Updated',
+      'admin',
+      `Updated quiz ID: ${id}${payload.published !== undefined ? (payload.published ? ' (Published)' : ' (Unpublished)') : ''}`,
+      req
+    );
+    
+    return res.json({ ok: true });
   } catch (e) { console.error(e); res.status(500).json({ error: String(e) }); }
 });
 
@@ -1466,14 +1563,24 @@ app.delete("/api/quizzes/:id", async (req, res) => {
     const id = String(req.params.id);
     if (useFirestore && db) {
       await db.collection("quizzes").doc(id).delete();
-      return res.json({ ok: true });
     } else {
       const p = path.join(process.cwd(), "data", "quizzes.json");
       let arr = fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8") || "[]") : [];
       arr = arr.filter(x => (x.id||x.quizId) !== id);
       fs.writeFileSync(p, JSON.stringify(arr, null, 2), "utf8");
-      return res.json({ ok: true });
     }
+    
+    // Log quiz deletion
+    await logActivity(
+      'admin',
+      'Admin',
+      'Quiz Deleted',
+      'admin',
+      `Deleted quiz ID: ${id}`,
+      req
+    );
+    
+    return res.json({ ok: true });
   } catch (e) { console.error(e); res.status(500).json({ error: String(e) }); }
 });
 
@@ -1639,6 +1746,50 @@ app.get("/api/user/:userId/quiz-attempts", async (req, res) => {
     }
   } catch (err) {
     console.error("/api/user/:userId/quiz-attempts error:", err);
+    return res.status(500).json({ error: String(err) });
+  }
+});
+
+// Log user login (called from frontend after Firebase Auth)
+app.post("/api/log-login", async (req, res) => {
+  try {
+    const { userId, username, email } = req.body || {};
+    if (!userId) return res.status(400).json({ error: "userId required" });
+    
+    await logActivity(
+      userId,
+      username || email || `User-${String(userId).slice(0,6)}`,
+      'User Login',
+      'login',
+      'Successful login',
+      req
+    );
+    
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("/api/log-login error:", err);
+    return res.status(500).json({ error: String(err) });
+  }
+});
+
+// Log user registration (called from frontend after Firebase Auth signup)
+app.post("/api/log-register", async (req, res) => {
+  try {
+    const { userId, username, email } = req.body || {};
+    if (!userId) return res.status(400).json({ error: "userId required" });
+    
+    await logActivity(
+      userId,
+      username || email || `User-${String(userId).slice(0,6)}`,
+      'User Registered',
+      'user',
+      'New account created',
+      req
+    );
+    
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("/api/log-register error:", err);
     return res.status(500).json({ error: String(err) });
   }
 });

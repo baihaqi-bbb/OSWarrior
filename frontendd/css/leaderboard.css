@@ -5,6 +5,7 @@
 body {
   margin: 0 !important;
   padding: 0 !important;
+  padding-top: 70px !important; /* Space for fixed navbar */
   font-family: 'Orbitron', 'Segoe UI', monospace !important;
   background: url("../image/background.png") no-repeat center center fixed !important;
   background-size: cover !important;
@@ -420,10 +421,14 @@ body {
 
 /* Tablet (768px and below) */
 @media (max-width: 768px) {
+  body {
+    padding-top: 80px !important; /* Extra space for mobile navbar */
+  }
+  
   .leaderboard-container {
     flex-direction: column;
     max-width: 98vw;
-    margin: 20px auto;
+    margin: 10px auto;
     padding: 15px;
     border-radius: 15px;
   }
@@ -534,8 +539,12 @@ body {
 
 /* Mobile Small (480px and below) */
 @media (max-width: 480px) {
+  body {
+    padding-top: 85px !important; /* More space for small mobile */
+  }
+  
   .leaderboard-container {
-    margin: 10px 5px;
+    margin: 5px;
     border-radius: 12px;
     border-left: 1px solid rgba(0, 255, 255, 0.3);
     border-right: 1px solid rgba(0, 255, 255, 0.3);

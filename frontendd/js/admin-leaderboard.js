@@ -148,19 +148,34 @@ async function loadLeaderboardData() {
           const nonAdminUsers = [];
           
           for (const user of usersData.users) {
-            // Check if user is admin
+            // Query Firestore to check role AND get lastActive date
+            let lastActiveDate = null;
+            
             try {
               const userDoc = await getDoc(doc(db, "users", user.userId));
               if (userDoc.exists()) {
                 const userData = userDoc.data();
+                
+                // Skip admin users
                 if (userData.role === 'admin') {
                   console.log(`⚠️ Filtering out admin from users list: ${user.name || user.userId}`);
-                  continue; // Skip admin users
+                  continue;
+                }
+                
+                // Get lastActive from Firestore (check multiple fields)
+                lastActiveDate = userData.lastLogin || userData.lastActive || userData.updatedAt || userData.createdAt || null;
+                
+                if (lastActiveDate) {
+                  console.log(`📅 Got lastActive for ${user.name || user.userId}:`, lastActiveDate);
                 }
               }
             } catch (err) {
-              console.warn(`Could not check role for ${user.userId}:`, err);
-              // If check fails, include the user (fail-open policy)
+              console.warn(`Could not fetch Firestore data for ${user.userId}:`, err);
+            }
+            
+            // Fallback to backend data if Firestore fails
+            if (!lastActiveDate) {
+              lastActiveDate = user.lastLogin || user.updatedAt || user.createdAt || null;
             }
             
             nonAdminUsers.push({
@@ -176,7 +191,7 @@ async function loadLeaderboardData() {
               level: user.level || 1,
               loginStreak: user.loginStreak || 0,
               achievements: user.achievements || [],
-              lastActive: user.lastLogin || user.updatedAt || null
+              lastActive: lastActiveDate
             });
           }
           
@@ -221,19 +236,34 @@ async function loadLeaderboardData() {
     for (const item of leaderboardData) {
       const fullUserData = usersMap[item.userId] || {};
       
-      // Check if user is admin and skip them
+      // Query Firestore to check role AND get lastActive
+      let lastActiveDate = null;
+      
       try {
         const userDoc = await getDoc(doc(db, "users", item.userId));
         if (userDoc.exists()) {
           const userData = userDoc.data();
+          
+          // Skip admin users
           if (userData.role === 'admin') {
             console.log(`⚠️ Filtering out admin from leaderboard: ${item.username || item.userId}`);
-            continue; // Skip admin users
+            continue;
+          }
+          
+          // Get lastActive from Firestore (priority)
+          lastActiveDate = userData.lastLogin || userData.lastActive || userData.updatedAt || userData.createdAt || null;
+          
+          if (lastActiveDate) {
+            console.log(`📅 Got lastActive for ${item.username || item.userId}:`, lastActiveDate);
           }
         }
       } catch (err) {
-        console.warn(`Could not check role for ${item.userId}:`, err);
-        // If check fails, include the user (fail-open policy)
+        console.warn(`Could not fetch Firestore data for ${item.userId}:`, err);
+      }
+      
+      // Fallback to backend data if no Firestore date
+      if (!lastActiveDate) {
+        lastActiveDate = fullUserData.lastLogin || fullUserData.updatedAt || fullUserData.createdAt || null;
       }
       
       console.log(`👤 User ${item.username || item.userId}:`, {
@@ -241,7 +271,8 @@ async function loadLeaderboardData() {
         totalAttempts: item.totalAttempts,
         xp: fullUserData.xp,
         level: fullUserData.level,
-        loginStreak: fullUserData.loginStreak
+        loginStreak: fullUserData.loginStreak,
+        lastActive: lastActiveDate
       });
       
       // Combine leaderboard score with full user data
@@ -260,7 +291,7 @@ async function loadLeaderboardData() {
         level: fullUserData.level || calculateUserLevel(fullUserData.xp || 0),
         loginStreak: fullUserData.loginStreak || 0,
         achievements: fullUserData.achievements || [],
-        lastActive: fullUserData.lastLogin || fullUserData.updatedAt || null
+        lastActive: lastActiveDate
       };
       
       console.log(`✨ Enhanced data for ${item.username}:`, {
@@ -522,38 +553,129 @@ function createLeaderboardRow(user, rank) {
   const rankClass = rank <= 3 ? `rank-${rank}` : 'rank-other';
   const rankIcon = rank === 1 ? '👑' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
   
-  // User badges - handle missing achievements
-  const badges = user.achievements || [];
-  const badgeIcons = badges.slice(0, 3).map(achievement => {
-    const badgeMap = {
-      'first_quiz': '🎯',
-      'quiz_master': '🏆',
-      'speedster': '⚡',
-      'scholar': '📚',
-      'streak_7': '🔥',
-      'streak_30': '🌟'
-    };
-    return badgeMap[achievement] || '🏅';
-  }).join(' ');
+  // Map achievement IDs to badge icons (same as achievement page)
+  const achievementBadgeMap = {
+    // Beginner
+    'first_steps': { icon: '🎯', title: 'First Steps' },
+    'quick_learner': { icon: '⚡', title: 'Quick Learner' },
+    'knowledge_seeker': { icon: '📖', title: 'Knowledge Seeker' },
+    
+    // Performance
+    'perfect_score': { icon: '🎖️', title: 'Perfect Score' },
+    'hat_trick': { icon: '🔥', title: 'Hat Trick' },
+    'perfectionist': { icon: '🏅', title: 'Perfectionist' },
+    'elite_scorer': { icon: '⭐', title: 'Elite Scorer' },
+    
+    // Speed
+    'speed_demon': { icon: '🚀', title: 'Speed Demon' },
+    'lightning_fast': { icon: '⌛', title: 'Lightning Fast' },
+    'rush_hour': { icon: '🏃', title: 'Rush Hour' },
+    
+    // Consistency
+    'consistent_learner': { icon: '📚', title: 'Consistent Learner' },
+    'weekly_warrior': { icon: '🎯', title: 'Weekly Warrior' },
+    'quiz_master': { icon: '👑', title: 'Quiz Master' },
+    'scholar': { icon: '🎓', title: 'Scholar' },
+    
+    // Mastery
+    'knowledge_explorer': { icon: '🧠', title: 'Knowledge Explorer' },
+    'quiz_conqueror': { icon: '🌍', title: 'Quiz Conqueror' },
+    'diamond_league': { icon: '💎', title: 'Diamond League' },
+    'quiz_emperor': { icon: '👑', title: 'Quiz Emperor' },
+    
+    // Special
+    'lucky_strike': { icon: '🎲', title: 'Lucky Strike' },
+    'second_chance': { icon: '🔄', title: 'Second Chance' },
+    'accuracy_expert': { icon: '🎯', title: 'Accuracy Expert' },
+    'time_master': { icon: '⏰', title: 'Time Master' }
+  };
   
-  // Format last active - handle missing dates
-  let formattedDate = 'Unknown';
-  if (user.lastActive) {
-    const lastActive = user.lastActive?.toDate ? user.lastActive.toDate() : new Date(user.lastActive);
-    formattedDate = formatTimeAgo(lastActive);
-  } else if (user.createdAt) {
-    const createdAt = user.createdAt?.toDate ? user.createdAt.toDate() : new Date(user.createdAt);
-    formattedDate = `Joined ${formatTimeAgo(createdAt)}`;
+  // Calculate badges from quiz attempts (same logic as achievement page)
+  const badges = [];
+  const totalAttempts = user.totalAttempts || 0;
+  
+  // First Steps - 1+ quiz
+  if (totalAttempts >= 1) {
+    badges.push(achievementBadgeMap['first_steps']);
   }
   
-  // User level - check if level field exists, otherwise calculate from XP
-  const userXP = user.xp || user.experiencePoints || user.experience || user.exp || 0;
-  const level = user.level || calculateUserLevel(userXP);
+  // Knowledge Seeker - 3+ quizzes
+  if (totalAttempts >= 3) {
+    badges.push(achievementBadgeMap['knowledge_seeker']);
+  }
   
-  // Handle missing username/email
+  // Quiz Master - 10+ quizzes
+  if (totalAttempts >= 10) {
+    badges.push(achievementBadgeMap['quiz_master']);
+  }
+  
+  // Scholar - 25+ quizzes
+  if (totalAttempts >= 25) {
+    badges.push(achievementBadgeMap['scholar']);
+  }
+  
+  // Get top 3 badges
+  const topBadges = badges.slice(0, 3);
+  const badgeIcons = topBadges.length > 0 
+    ? topBadges.map(b => `<span title="${b.title}">${b.icon}</span>`).join(' ')
+    : '<span style="opacity: 0.3;" title="No badges yet">—</span>';
+  
+  // User info (define early for logging)
   const username = user.username || user.displayName || user.email?.split('@')[0] || 'Anonymous';
   const email = user.email || 'No email';
   const profilePicture = user.profilePicture || user.photoURL || 'image/default-profile.png';
+  
+  // User level
+  const userXP = user.xp || user.experiencePoints || user.experience || user.exp || 0;
+  const level = user.level || calculateUserLevel(userXP);
+  
+  // Format last active with better date handling
+  let formattedDate = '<span style="opacity: 0.5; color: rgba(255,255,255,0.4);">Never</span>';
+  let dateValue = null;
+  
+  // Try multiple date fields
+  if (user.lastActive) {
+    dateValue = user.lastActive?.toDate ? user.lastActive.toDate() : 
+                typeof user.lastActive === 'string' ? new Date(user.lastActive) : 
+                typeof user.lastActive === 'number' ? new Date(user.lastActive) : null;
+  } else if (user.lastLogin) {
+    dateValue = user.lastLogin?.toDate ? user.lastLogin.toDate() : 
+                typeof user.lastLogin === 'string' ? new Date(user.lastLogin) : null;
+  } else if (user.updatedAt) {
+    dateValue = user.updatedAt?.toDate ? user.updatedAt.toDate() : 
+                typeof user.updatedAt === 'string' ? new Date(user.updatedAt) : null;
+  } else if (user.createdAt) {
+    dateValue = user.createdAt?.toDate ? user.createdAt.toDate() : 
+                typeof user.createdAt === 'string' ? new Date(user.createdAt) : null;
+  }
+  
+  // Format the date if valid
+  if (dateValue && !isNaN(dateValue.getTime())) {
+    const now = new Date();
+    const diffMs = now - dateValue;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) {
+      formattedDate = '<span style="color: #4CAF50; font-weight: 600;">🟢 Just now</span>';
+    } else if (diffMins < 5) {
+      formattedDate = '<span style="color: #4CAF50; font-weight: 600;">🟢 Online</span>';
+    } else if (diffMins < 60) {
+      formattedDate = `<span style="color: #00FFFF;">${diffMins}m ago</span>`;
+    } else if (diffHours < 24) {
+      formattedDate = `<span style="color: #00FFFF;">${diffHours}h ago</span>`;
+    } else if (diffDays === 1) {
+      formattedDate = '<span style="color: rgba(255,255,255,0.8);">Yesterday</span>';
+    } else if (diffDays < 7) {
+      formattedDate = `<span style="color: rgba(255,255,255,0.7);">${diffDays}d ago</span>`;
+    } else if (diffDays < 30) {
+      const weeks = Math.floor(diffDays / 7);
+      formattedDate = `<span style="color: rgba(255,255,255,0.6);">${weeks}w ago</span>`;
+    } else {
+      formattedDate = `<span style="color: rgba(255,255,255,0.5);">${dateValue.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>`;
+    }
+  }
   
   row.innerHTML = `
     <td>

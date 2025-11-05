@@ -154,6 +154,22 @@ async function createUserAccount(user) {
     CyberEffects.updateSystemStatus('online', 'ACCOUNT CREATED');
     CyberEffects.showMessage(msg, `🚀 Warrior account created! Redirecting to ${role} portal...`, 'success');
     
+    // Log registration activity to backend
+    try {
+      await fetch('https://oswarrior-backend.onrender.com/api/log-register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.uid,
+          username: user.displayName || user.email?.split('@')[0] || 'User',
+          email: user.email
+        })
+      });
+      console.log('📝 Registration activity logged');
+    } catch (logError) {
+      console.warn('⚠️ Failed to log registration:', logError);
+    }
+    
     setTimeout(() => {
       if (role === "admin") {
         window.location.href = "home-admin.html";

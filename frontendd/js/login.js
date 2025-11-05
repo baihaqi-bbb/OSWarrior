@@ -190,6 +190,22 @@ async function redirectBasedOnRole(user) {
     CyberEffects.updateSystemStatus('online', 'ACCESS GRANTED');
     CyberEffects.showMessage(msg, `🚀 Access granted! Redirecting to ${role} portal...`, 'success');
     
+    // Log login activity to backend
+    try {
+      await fetch('https://oswarrior-backend.onrender.com/api/log-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.uid,
+          username: user.displayName || user.email?.split('@')[0] || 'User',
+          email: user.email
+        })
+      });
+      console.log('📝 Login activity logged');
+    } catch (logError) {
+      console.warn('⚠️ Failed to log login:', logError);
+    }
+    
     setTimeout(() => {
       if (role === "admin") {
         window.location.href = "home-admin.html";
