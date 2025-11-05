@@ -98,7 +98,7 @@ const achievementTypes = {
   QUICK_LEARNER: {
     id: 'quick_learner',
     title: '⚡ Quick Learner',
-    description: 'Answer a question in under 5 seconds',
+    description: 'Complete quiz in under 50 seconds with 80%+ score',
     icon: '⚡',
     points: 25,
     tier: 'bronze'
@@ -123,8 +123,8 @@ const achievementTypes = {
   },
   HAT_TRICK: {
     id: 'hat_trick',
-    title: '� Hat Trick',
-    description: 'Get 3 perfect scores',
+    title: '🔥 Hat Trick',
+    description: 'Score 100% on 3 different quizzes',
     icon: '🔥',
     points: 200,
     tier: 'silver'
@@ -132,7 +132,7 @@ const achievementTypes = {
   PERFECTIONIST: {
     id: 'perfectionist',
     title: '🏅 Perfectionist',
-    description: 'Get 5 perfect scores',
+    description: 'Score 100% on 5 different quizzes',
     icon: '🏅',
     points: 350,
     tier: 'gold'
@@ -150,7 +150,7 @@ const achievementTypes = {
   SPEED_DEMON: {
     id: 'speed_demon',
     title: '🚀 Speed Demon',
-    description: 'Complete a quiz in under 2 minutes',
+    description: 'Complete quiz in under 2 minutes with 70%+ score',
     icon: '🚀',
     points: 150,
     tier: 'silver'
@@ -158,7 +158,7 @@ const achievementTypes = {
   LIGHTNING_FAST: {
     id: 'lightning_fast',
     title: '⌛ Lightning Fast',
-    description: 'Complete a quiz in under 1 minute',
+    description: 'Complete quiz in under 1 minute with 60%+ score',
     icon: '⌛',
     points: 250,
     tier: 'gold'
@@ -166,7 +166,7 @@ const achievementTypes = {
   RUSH_HOUR: {
     id: 'rush_hour',
     title: '🏃 Rush Hour',
-    description: 'Answer 5 questions consecutively in under 3 seconds each',
+    description: 'Complete quiz in under 75 seconds with 70%+ score',
     icon: '🏃',
     points: 200,
     tier: 'silver'
@@ -227,7 +227,7 @@ const achievementTypes = {
     id: 'diamond_league',
     title: '💎 Diamond League',
     description: 'Achieve top 3 in leaderboard',
-    icon: '�',
+    icon: '💎',
     points: 750,
     tier: 'diamond'
   },
@@ -244,7 +244,7 @@ const achievementTypes = {
   LUCKY_STRIKE: {
     id: 'lucky_strike',
     title: '🎲 Lucky Strike',
-    description: 'Get perfect score on first attempt of the day',
+    description: 'Score 100% on your very first quiz attempt',
     icon: '🎲',
     points: 100,
     tier: 'silver'
@@ -252,7 +252,7 @@ const achievementTypes = {
   SECOND_CHANCE: {
     id: 'second_chance',
     title: '🔄 Second Chance',
-    description: 'Improve your score by retaking a quiz',
+    description: 'Improve score by 20%+ when retaking same week quiz',
     icon: '🔄',
     points: 75,
     tier: 'bronze'
@@ -268,7 +268,7 @@ const achievementTypes = {
   TIME_MASTER: {
     id: 'time_master',
     title: '⏰ Time Master',
-    description: 'Complete 10 quizzes with time remaining',
+    description: 'Complete 10 quizzes under 3 minutes with 70%+ score',
     icon: '⏰',
     points: 350,
     tier: 'gold'
@@ -459,8 +459,14 @@ function calculateAchievements(attempts) {
     });
   }
   
-  // Quick Learner - Answer under 5 seconds (approximated by fast completion)
-  const quickAnswers = normalizedAttempts.filter(a => a.score >= 80 && a.timeSpent > 0 && a.timeSpent < 30);
+  // Quick Learner - Answer under 5 seconds per question on average with good score (10 questions × 5s = 50s total, need 80%+)
+  const quickAnswers = normalizedAttempts.filter(a => {
+    // Calculate percentage correctly
+    const percentage = a.totalQuestions > 0 && a.score <= a.totalQuestions 
+      ? (a.score / a.totalQuestions) * 100 
+      : a.score;
+    return percentage >= 80 && a.timeSpent > 0 && a.timeSpent < 50;
+  });
   if (quickAnswers.length >= 1) {
     earned.push({
       ...achievementTypes.QUICK_LEARNER,
@@ -480,11 +486,17 @@ function calculateAchievements(attempts) {
 
   // 💯 PERFORMANCE ACHIEVEMENTS
   
-  // Perfect Score calculations - check for 100% scores
+  // Perfect Score calculations - STRICT 100% only (10/10)
   const perfectScores = normalizedAttempts.filter(a => {
-    const isPercent = a.score >= 95; // Allow small rounding errors
-    const isMaxScore = a.totalQuestions > 0 && a.score >= a.totalQuestions * 0.95;
-    return isPercent || isMaxScore;
+    // Check if raw score equals total questions (e.g., 10/10)
+    if (a.totalQuestions > 0 && a.score === a.totalQuestions) {
+      return true;
+    }
+    // Or check if already percentage and is 100%
+    const percentage = a.totalQuestions > 0 && a.score <= a.totalQuestions
+      ? (a.score / a.totalQuestions) * 100
+      : a.score;
+    return percentage === 100;
   });
   
   console.log("Perfect scores found:", perfectScores.length);
@@ -519,9 +531,12 @@ function calculateAchievements(attempts) {
   // Elite Scorer - 90%+ average across 5 quizzes
   if (normalizedAttempts.length >= 5) {
     const recent5 = normalizedAttempts.slice(0, 5);
-    const avgScore = recent5.reduce((sum, a) => sum + (a.score || 0), 0) / 5;
+    // Calculate proper percentage average
+    const totalCorrect = recent5.reduce((sum, a) => sum + (a.score || 0), 0);
+    const totalQuestions = recent5.reduce((sum, a) => sum + (a.totalQuestions || 10), 0);
+    const avgPercentage = (totalCorrect / totalQuestions) * 100;
     
-    if (avgScore >= 90) {
+    if (avgPercentage >= 90) {
       earned.push({
         ...achievementTypes.ELITE_SCORER,
         dateEarned: recent5[4].timestamp,
@@ -532,8 +547,13 @@ function calculateAchievements(attempts) {
 
   // ⚡ SPEED ACHIEVEMENTS
   
-  // Speed Demon - Under 2 minutes (120 seconds)
-  const speedAttempts = normalizedAttempts.filter(a => a.timeSpent && a.timeSpent < 120);
+  // Speed Demon - Under 2 minutes (120 seconds) with minimum 70% score
+  const speedAttempts = normalizedAttempts.filter(a => {
+    const percentage = a.totalQuestions > 0 && a.score <= a.totalQuestions
+      ? (a.score / a.totalQuestions) * 100
+      : a.score;
+    return a.timeSpent && a.timeSpent < 120 && percentage >= 70;
+  });
   if (speedAttempts.length >= 1) {
     earned.push({
       ...achievementTypes.SPEED_DEMON,
@@ -542,8 +562,13 @@ function calculateAchievements(attempts) {
     });
   }
   
-  // Lightning Fast - Under 1 minute (60 seconds)
-  const lightningAttempts = normalizedAttempts.filter(a => a.timeSpent && a.timeSpent < 60);
+  // Lightning Fast - Under 1 minute (60 seconds) with minimum 60% score
+  const lightningAttempts = normalizedAttempts.filter(a => {
+    const percentage = a.totalQuestions > 0 && a.score <= a.totalQuestions
+      ? (a.score / a.totalQuestions) * 100
+      : a.score;
+    return a.timeSpent && a.timeSpent < 60 && percentage >= 60;
+  });
   if (lightningAttempts.length >= 1) {
     earned.push({
       ...achievementTypes.LIGHTNING_FAST,
@@ -552,8 +577,13 @@ function calculateAchievements(attempts) {
     });
   }
   
-  // Rush Hour - Consistent fast answers (approximated by very short completion time)
-  const rushAttempts = normalizedAttempts.filter(a => a.timeSpent && a.timeSpent < 45 && a.score >= 70);
+  // Rush Hour - Complete quiz quickly with good score (10 questions × 15s = 150s max, complete in under 75s = fast, 70%+ score)
+  const rushAttempts = normalizedAttempts.filter(a => {
+    const percentage = a.totalQuestions > 0 && a.score <= a.totalQuestions
+      ? (a.score / a.totalQuestions) * 100
+      : a.score;
+    return a.timeSpent && a.timeSpent < 75 && percentage >= 70;
+  });
   if (rushAttempts.length >= 1) {
     earned.push({
       ...achievementTypes.RUSH_HOUR,
@@ -636,8 +666,8 @@ function calculateAchievements(attempts) {
 
   // 🎊 SPECIAL ACHIEVEMENTS
   
-  // Lucky Strike - Perfect score (using first perfect score)
-  if (perfectScores.length >= 1) {
+  // Lucky Strike - Perfect score on FIRST attempt only (only if first quiz was perfect)
+  if (perfectScores.length >= 1 && normalizedAttempts.length === 1 && normalizedAttempts[0].score === normalizedAttempts[0].totalQuestions) {
     earned.push({
       ...achievementTypes.LUCKY_STRIKE,
       dateEarned: perfectScores[0].timestamp,
@@ -645,12 +675,21 @@ function calculateAchievements(attempts) {
     });
   }
   
-  // Second Chance - Improvement over previous attempt
+  // Second Chance - Significant improvement over previous attempt (need 20%+ improvement)
   if (normalizedAttempts.length >= 2) {
     for (let i = 1; i < normalizedAttempts.length; i++) {
       const current = normalizedAttempts[i-1];
       const previous = normalizedAttempts[i];
-      if (current.score > previous.score && current.week === previous.week) {
+      
+      const currentPercent = current.totalQuestions > 0 && current.score <= current.totalQuestions
+        ? (current.score / current.totalQuestions) * 100
+        : current.score;
+      const previousPercent = previous.totalQuestions > 0 && previous.score <= previous.totalQuestions
+        ? (previous.score / previous.totalQuestions) * 100
+        : previous.score;
+      
+      // Need at least 20% improvement and same week
+      if (currentPercent > previousPercent + 20 && current.week === previous.week) {
         earned.push({
           ...achievementTypes.SECOND_CHANCE,
           dateEarned: current.timestamp,
@@ -664,7 +703,9 @@ function calculateAchievements(attempts) {
   // Accuracy Expert - 95%+ accuracy over 10 quizzes
   if (normalizedAttempts.length >= 10) {
     const recent10 = normalizedAttempts.slice(0, 10);
-    const avgAccuracy = recent10.reduce((sum, a) => sum + (a.score || 0), 0) / 10;
+    const totalCorrect = recent10.reduce((sum, a) => sum + (a.score || 0), 0);
+    const totalQuestions = recent10.reduce((sum, a) => sum + (a.totalQuestions || 10), 0);
+    const avgAccuracy = (totalCorrect / totalQuestions) * 100;
     
     if (avgAccuracy >= 95) {
       earned.push({
@@ -675,8 +716,13 @@ function calculateAchievements(attempts) {
     }
   }
   
-  // Time Master - Complete 10 quizzes with time remaining (fast completion)
-  const timelyAttempts = normalizedAttempts.filter(a => a.timeSpent && a.timeSpent < 180); // Under 3 minutes
+  // Time Master - Complete 10 quizzes with time remaining (under 3 minutes with good 70%+ score)
+  const timelyAttempts = normalizedAttempts.filter(a => {
+    const percentage = a.totalQuestions > 0 && a.score <= a.totalQuestions
+      ? (a.score / a.totalQuestions) * 100
+      : a.score;
+    return a.timeSpent && a.timeSpent < 180 && percentage >= 70;
+  });
   if (timelyAttempts.length >= 10) {
     earned.push({
       ...achievementTypes.TIME_MASTER,

@@ -139,6 +139,15 @@ function stopQuizTimer() {
 }
 
 function getFormattedQuizTime() {
+  // Calculate actual elapsed time from quiz start
+  if (quizStartTime) {
+    const elapsed = Math.floor((Date.now() - quizStartTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+  
+  // Fallback to stored time if available
   const minutes = Math.floor(totalQuizTime / 60);
   const seconds = totalQuizTime % 60;
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
@@ -254,7 +263,7 @@ function showCompletionModal(results) {
   };
   
   document.getElementById('back-to-menu').onclick = () => {
-    window.location.href = 'quiz.html';
+    window.location.href = 'home-user.html';
   };
   
   // Show modal

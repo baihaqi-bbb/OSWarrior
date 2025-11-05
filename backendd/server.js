@@ -1063,9 +1063,20 @@ app.post("/api/admin/reset-rankings", async (req, res) => {
       
       await leaderboardsBatch.commit();
       console.log(`✅ Deleted ${leaderboardsSnapshot.size} leaderboard entries from Firestore`);
+      
+      // 3. CRITICAL: Delete all results collection documents (quiz submission history)
+      const resultsSnapshot = await db.collection("results").get();
+      const resultsBatch = db.batch();
+      
+      resultsSnapshot.forEach((doc) => {
+        resultsBatch.delete(doc.ref);
+      });
+      
+      await resultsBatch.commit();
+      console.log(`✅ Deleted ${resultsSnapshot.size} quiz results from Firestore results collection`);
     }
     
-    // 3. Reset local JSON data - users.json
+    // 4. Reset local JSON data - users.json
     const usersPath = path.join(process.cwd(), "data", "users.json");
     if (fs.existsSync(usersPath)) {
       try {
@@ -1089,7 +1100,7 @@ app.post("/api/admin/reset-rankings", async (req, res) => {
       }
     }
     
-    // 4. IMPORTANT: Clear leaderboard.json
+    // 5. IMPORTANT: Clear leaderboard.json
     const leaderboardPath = path.join(process.cwd(), "data", "leaderboard.json");
     if (fs.existsSync(leaderboardPath)) {
       try {
@@ -1100,7 +1111,18 @@ app.post("/api/admin/reset-rankings", async (req, res) => {
       }
     }
     
-    // 5. Reset logs.json (quiz history)
+    // 6. CRITICAL: Clear results.json (quiz submission history)
+    const resultsPath = path.join(process.cwd(), "data", "results.json");
+    if (fs.existsSync(resultsPath)) {
+      try {
+        fs.writeFileSync(resultsPath, JSON.stringify([], null, 2), "utf8");
+        console.log("✅ Cleared results.json (quiz submissions)");
+      } catch (e) {
+        console.warn("⚠️ Failed to clear results.json:", e);
+      }
+    }
+    
+    // 7. Reset logs.json (quiz history)
     const logsPath = path.join(process.cwd(), "data", "logs.json");
     if (fs.existsSync(logsPath)) {
       try {
@@ -1119,6 +1141,7 @@ app.post("/api/admin/reset-rankings", async (req, res) => {
       cleared: {
         users: true,
         leaderboards: true,
+        results: true,
         logs: true
       }
     });

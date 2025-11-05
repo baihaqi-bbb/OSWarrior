@@ -2,7 +2,7 @@
 
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { initializeUserDisplay } from "./user-utils.js";
 import { checkAnnouncements } from "./user-announcements.js";
 import { checkMaintenanceMode } from "./maintenance-check.js";
@@ -178,6 +178,31 @@ function updatePowerCores(level = 1) {
   });
 }
 
+function updateCyberQuizArenaCard(userData) {
+  // Calculate quiz completion from user data
+  const completedQuizzes = userData.completedQuizzes?.length || 0;
+  const totalQuizzes = 14; // Total available quizzes
+  const progressPercent = Math.round((completedQuizzes / totalQuizzes) * 100);
+  
+  console.log("🎮 Cyber Quiz Arena Card Update:", {
+    completedQuizzes,
+    totalQuizzes,
+    progressPercent
+  });
+  
+  // Update the "0/14 Completed" text in Cyber Quiz Arena card
+  const progressTextEl = document.querySelector(".mission-card.quiz .progress-text");
+  if (progressTextEl) {
+    progressTextEl.textContent = `${completedQuizzes}/${totalQuizzes} Completed`;
+  }
+  
+  // Update the progress bar in Cyber Quiz Arena card
+  const progressFillEl = document.querySelector(".mission-card.quiz .progress-fill");
+  if (progressFillEl) {
+    progressFillEl.style.width = `${progressPercent}%`;
+  }
+}
+
 function updateMissionProgress(userData) {
   // Calculate mission progress from user data
   const completedQuizzes = userData.completedQuizzes?.length || 0;
@@ -185,6 +210,15 @@ function updateMissionProgress(userData) {
   const totalXP = userData.xp || 0;
   const successRate = completedQuizzes > 0 ? Math.round((completedQuizzes / totalQuizzes) * 100) : 0;
   const progressPercent = Math.round((completedQuizzes / totalQuizzes) * 100);
+  
+  console.log("🎯 Mission Progress Update:", {
+    completedQuizzes,
+    totalQuizzes,
+    totalXP,
+    successRate,
+    progressPercent,
+    completedQuizzesArray: userData.completedQuizzes
+  });
   
   // Update mission counter
   const counterEl = document.querySelector(".mission-counter .counter");
@@ -220,16 +254,61 @@ function loadUserXP(uid, displayName) {
       throw new Error(`API error: ${res.status}`);
     }
   })
-  .then(userData => {
+  .then(async userData => {
     console.log("User XP data from backend:", userData);
     const xp = Number(userData.xp || 0);
     const level = Number(userData.level || Math.floor(xp / 100) + 1);
     const maxForLevel = Math.max(100, level * 100);
     const name = userData.name || userData.displayName || displayName || "Warrior";
     
-    // Update both XP bar and mission progress
+    // FORCE INITIALIZE completedQuizzes as empty array
+    userData.completedQuizzes = [];
+    
+    // Fetch completed quizzes from Firestore results collection
+    try {
+      console.log(`🔍 Fetching results for userId: ${uid}`);
+      const resultsQuery = query(
+        collection(db, "results"),
+        where("userId", "==", uid)
+      );
+      const resultsSnapshot = await getDocs(resultsQuery);
+      
+      console.log(`📊 Results snapshot size: ${resultsSnapshot.size}`);
+      
+      if (resultsSnapshot.empty) {
+        console.log("✅ No quiz results found - user hasn't completed any quizzes yet");
+        userData.completedQuizzes = [];
+      } else {
+        const completedQuizzes = [];
+        resultsSnapshot.forEach(doc => {
+          const result = doc.data();
+          console.log(`📝 Found result:`, result);
+          completedQuizzes.push({
+            quizId: result.quizId,
+            week: result.week,
+            score: result.score,
+            total: result.total,
+            createdAt: result.createdAt
+          });
+        });
+        userData.completedQuizzes = completedQuizzes;
+        console.log(`✅ Fetched ${completedQuizzes.length} completed quizzes for user`);
+      }
+    } catch (err) {
+      console.error("❌ Error fetching completed quizzes:", err);
+      userData.completedQuizzes = [];
+    }
+    
+    console.log("🎯 Final userData being passed to updateMissionProgress:", {
+      xp: userData.xp,
+      completedQuizzes: userData.completedQuizzes,
+      completedCount: userData.completedQuizzes?.length || 0
+    });
+    
+    // Update both XP bar, mission progress, AND Cyber Quiz Arena card
     updateXPBar(xp, maxForLevel, level, name);
     updateMissionProgress(userData);
+    updateCyberQuizArenaCard(userData);
   })
   .catch(err => {
     console.warn("loadUserXP failed:", err);
@@ -240,19 +319,48 @@ function loadUserXP(uid, displayName) {
         credentials: 'include'
       })
       .then(res => res.ok ? res.json() : null)
-      .then(userData => {
+      .then(async userData => {
         if (userData) {
           console.log("User data loaded on retry:", userData);
           const xp = Number(userData.xp || 0);
           const level = Number(userData.level || Math.floor(xp / 100) + 1);
           const maxForLevel = Math.max(100, level * 100);
           const name = userData.name || userData.displayName || displayName || "Warrior";
+          
+          // Fetch completed quizzes from Firestore
+          try {
+            const resultsQuery = query(
+              collection(db, "results"),
+              where("userId", "==", uid)
+            );
+            const resultsSnapshot = await getDocs(resultsQuery);
+            const completedQuizzes = [];
+            resultsSnapshot.forEach(doc => {
+              const result = doc.data();
+              completedQuizzes.push({
+                quizId: result.quizId,
+                week: result.week,
+                score: result.score,
+                total: result.total,
+                createdAt: result.createdAt
+              });
+            });
+            userData.completedQuizzes = completedQuizzes;
+          } catch (err) {
+            console.warn("Could not fetch completed quizzes on retry:", err);
+            userData.completedQuizzes = [];
+          }
+          
           updateXPBar(xp, maxForLevel, level, name);
           updateMissionProgress(userData);
+          updateCyberQuizArenaCard(userData);
         } else {
           // Final fallback to default values
           console.log("Using fallback user data");
+          const fallbackData = { xp: 0, completedQuizzes: [] };
           updateXPBar(0, 100, 1, displayName || "Warrior");
+          updateMissionProgress(fallbackData);
+          updateCyberQuizArenaCard(fallbackData);
         }
       })
       .catch(() => {
@@ -1383,7 +1491,7 @@ async function loadRealCardData() {
     if (quizResponse.ok) {
       const quizData = await quizResponse.json();
       const totalQuizzes = quizData.length || 0;
-      const maxXP = totalQuizzes * 20; // Assuming 20 XP per quiz
+      const maxXP = totalQuizzes * 120; // 14 quizzes × 120 XP (100 base + 20 bonus for perfect score)
       
       // Update quiz card stats
       const quizChallengesStat = document.querySelector('.quiz .stat');
