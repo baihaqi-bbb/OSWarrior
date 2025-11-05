@@ -98,15 +98,7 @@ function setupProfileDropdown() {
 
 // Setup dropdown button functions
 function setupDropdownButtons() {
-  // Theme toggle
-  const toggleThemeBtn = document.getElementById("toggle-theme");
-  if (toggleThemeBtn) {
-    toggleThemeBtn.addEventListener("click", () => {
-      document.body.classList.toggle("dark-theme");
-      const isDark = document.body.classList.contains("dark-theme");
-      localStorage.setItem("theme", isDark ? "dark" : "light");
-    });
-  }
+  let uploadedAvatarData = null; // Store uploaded image data
   
   // Change avatar
   const changeAvatarBtn = document.getElementById("change-avatar");
@@ -114,11 +106,165 @@ function setupDropdownButtons() {
     changeAvatarBtn.addEventListener("click", () => {
       const modal = document.getElementById("modal-change-avatar");
       const input = document.getElementById("input-avatar-url");
+      const fileInput = document.getElementById("input-avatar-file");
+      const previewContainer = document.getElementById("avatar-preview-container");
       
       if (modal && input) {
         input.value = "";
+        if (fileInput) fileInput.value = "";
+        if (previewContainer) previewContainer.style.display = "none";
+        uploadedAvatarData = null;
         modal.style.display = "flex";
         input.focus();
+      }
+    });
+  }
+  
+  // Handle upload button click
+  const uploadBtn = document.getElementById("upload-from-device");
+  const fileInput = document.getElementById("input-avatar-file");
+  
+  if (uploadBtn && fileInput) {
+    uploadBtn.addEventListener("click", () => {
+      fileInput.click();
+    });
+  }
+  
+  // Handle file upload with compression
+  if (fileInput) {
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          // Compress image before storing
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Resize to max 300x300 for avatar
+            const maxSize = 300;
+            let width = img.width;
+            let height = img.height;
+            
+            if (width > height) {
+              if (width > maxSize) {
+                height *= maxSize / width;
+                width = maxSize;
+              }
+            } else {
+              if (height > maxSize) {
+                width *= maxSize / height;
+                height = maxSize;
+              }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Convert to compressed JPEG
+            uploadedAvatarData = canvas.toDataURL('image/jpeg', 0.7);
+            
+            console.log(`✅ Image compressed: ${Math.round(uploadedAvatarData.length / 1024)}KB`);
+            
+            // Show preview
+            const previewImg = document.getElementById("avatar-preview-img");
+            const previewContainer = document.getElementById("avatar-preview-container");
+            if (previewImg && previewContainer) {
+              previewImg.src = uploadedAvatarData;
+              previewContainer.style.display = "block";
+            }
+            
+            // Clear URL input
+            const urlInput = document.getElementById("input-avatar-url");
+            if (urlInput) urlInput.value = "";
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      } else {
+        alert("Please select a valid image file!");
+      }
+    });
+  }
+  
+  // Avatar modal save with upload support
+  const saveAvatarBtn = document.getElementById("save-avatar-btn");
+  if (saveAvatarBtn) {
+    saveAvatarBtn.addEventListener("click", async () => {
+      const input = document.getElementById("input-avatar-url");
+      const modal = document.getElementById("modal-change-avatar");
+      
+      if (!auth.currentUser) {
+        alert("User not authenticated!");
+        return;
+      }
+      
+      const uid = auth.currentUser.uid;
+      let newAvatarUrl = null;
+      
+      try {
+        // Priority: URL input > uploaded file
+        if (input && input.value.trim()) {
+          newAvatarUrl = input.value.trim();
+          console.log("💾 Using URL from input:", newAvatarUrl);
+        } else if (uploadedAvatarData) {
+          // For uploaded files, save to localStorage
+          console.log("💾 Saving uploaded image to localStorage...");
+          localStorage.setItem("avatar", uploadedAvatarData);
+          
+          // Update UI directly
+          const profileImgs = document.querySelectorAll("#profile-img, #profile-img-navbar");
+          profileImgs.forEach(img => {
+            if (img) img.src = uploadedAvatarData;
+          });
+          
+          // Clear Firebase photoURL
+          try {
+            await updateProfile(auth.currentUser, { photoURL: null });
+          } catch (e) {
+            console.warn("Could not clear Firebase photoURL:", e);
+          }
+          
+          if (modal) modal.style.display = "none";
+          uploadedAvatarData = null;
+          alert("✅ Avatar berjaya ditukar!");
+          return;
+        }
+        
+        if (newAvatarUrl) {
+          console.log("💾 Updating Firebase profile with URL:", newAvatarUrl);
+          
+          // Update Firebase user profile
+          await updateProfile(auth.currentUser, { photoURL: newAvatarUrl });
+          
+          // Update Firestore
+          try {
+            await updateDoc(doc(db, "users", uid), { photoURL: newAvatarUrl });
+          } catch (firestoreErr) {
+            console.warn("Firestore update failed:", firestoreErr);
+          }
+          
+          // Update UI
+          const profileImgs = document.querySelectorAll("#profile-img, #profile-img-navbar");
+          profileImgs.forEach(img => {
+            if (img) img.src = newAvatarUrl;
+          });
+          
+          // Save to localStorage
+          localStorage.setItem("avatar", newAvatarUrl);
+          
+          if (modal) modal.style.display = "none";
+          uploadedAvatarData = null;
+          alert("✅ Avatar berjaya ditukar!");
+        } else {
+          alert("Sila masukkan URL gambar atau pilih gambar dari device");
+        }
+      } catch (err) {
+        console.error("❌ Avatar update error:", err);
+        alert("Gagal kemaskini avatar: " + err.message);
       }
     });
   }
@@ -286,7 +432,14 @@ onAuthStateChanged(auth, async (user) => {
     let displayName = user.displayName || user.email?.split('@')[0] || "Warrior";
     let photoURL = user.photoURL || DEFAULT_AVATAR;
     
-    // Try to get additional user data from Firestore
+    // PRIORITY 1: Check localStorage for uploaded avatar (base64)
+    const savedAvatar = localStorage.getItem("avatar");
+    if (savedAvatar && savedAvatar.startsWith('data:image')) {
+      photoURL = savedAvatar;
+      console.log("✅ Using uploaded avatar from localStorage");
+    }
+    
+    // PRIORITY 2: Try to get additional user data from Firestore
     try {
       const userDocRef = doc(db, "users", user.uid);
       const userDocSnap = await getDoc(userDocRef);
@@ -295,9 +448,11 @@ onAuthStateChanged(auth, async (user) => {
         const userData = userDocSnap.data();
         console.log("Firestore user data found:", userData);
         
-        // Use Firestore data if available
+        // Use Firestore data if available (but localStorage uploaded image takes priority)
         displayName = userData.name || userData.displayName || displayName;
-        photoURL = userData.photoURL || userData.avatar || photoURL;
+        if (!savedAvatar || !savedAvatar.startsWith('data:image')) {
+          photoURL = userData.photoURL || userData.avatar || photoURL;
+        }
       }
     } catch (firestoreError) {
       console.warn("Failed to fetch Firestore user data:", firestoreError);

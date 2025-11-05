@@ -1444,21 +1444,6 @@ if (viewAchievementsBtn) {
   });
 }
 
-const toggleThemeBtn = document.getElementById("toggle-theme");
-if (toggleThemeBtn) {
-  toggleThemeBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const body = document.body;
-    if (body.classList.contains("dark-mode")) {
-      body.classList.remove("dark-mode");
-      localStorage.setItem("osw-theme", "light");
-    } else {
-      body.classList.add("dark-mode");
-      localStorage.setItem("osw-theme", "dark");
-    }
-  });
-}
-
 const changeAvatarBtn = document.getElementById("change-avatar");
 if (changeAvatarBtn) {
   changeAvatarBtn.addEventListener("click", (e) => {

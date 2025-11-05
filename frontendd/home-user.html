@@ -24,7 +24,7 @@
     <div class="navbar-right">
       <div class="profile-container" id="profile-toggle">
         <span id="username-navbar">Warrior</span>
-        <img id="profile-img" class="profile-img" src="image/default-profile.png" alt="Profile"/>
+        <img id="profile-img-navbar" class="profile-img" src="image/default-profile.png" alt="Profile"/>
       </div>
     </div>
   </div>
@@ -37,7 +37,6 @@
     <!-- 🧰 Quick Settings Section -->
     <div class="settings-section">
       <p class="settings-title">⚙️ Quick Settings</p>
-      <button id="toggle-theme">🌗 Dark / Light Mode</button>
       <button id="change-avatar">🖼️ Change Avatar</button>
       <button id="edit-name">✏️ Edit Name</button>
     </div>
@@ -311,7 +310,20 @@
     <div class="modal-content">
       <h3>🖼️ Change Avatar</h3>
       <input type="text" id="input-avatar-url" placeholder="Paste image URL or leave empty for default">
-      <div class="modal-actions">
+      <div class="upload-divider" style="margin: 25px 0;">
+        <span>OR</span>
+      </div>
+      <div class="upload-section" style="margin: 30px 0 25px 0;">
+        <button type="button" class="upload-btn" id="upload-from-device" style="margin-top: 0;">
+          📁 Upload from Device
+        </button>
+        <input type="file" id="input-avatar-file" accept="image/*" style="display:none;">
+        <div id="avatar-preview-container" style="display:none; text-align:center; margin-top:20px;">
+          <img id="avatar-preview-img" style="max-width:120px; max-height:120px; border-radius:50%; border:3px solid #00FFFF; box-shadow: 0 0 15px rgba(0,255,255,0.3);">
+          <p style="color:#00FFFF; font-size:0.8rem; margin-top:8px; font-family:'Orbitron',monospace;">Preview</p>
+        </div>
+      </div>
+      <div class="modal-actions" style="margin-top: 35px; padding-top: 25px; border-top: 1px solid rgba(0, 255, 255, 0.2);">
         <button id="save-avatar-btn" class="btn-action">💾 Save</button>
         <button id="cancel-avatar-btn" class="btn-action btn-cancel">❌ Cancel</button>
       </div>
@@ -319,6 +331,7 @@
   </div>
 
   <!-- Link ke JS luaran -->
-  <script type="module" src="js/home-user.js?v=3"></script>
+  <script type="module" src="js/common-navbar.js"></script>
+  <script type="module" src="js/home-user.js?v=4"></script>
 </body>
 </html>

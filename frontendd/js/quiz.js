@@ -303,14 +303,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Theme toggle (placeholder)
-  const themeToggle = document.getElementById('toggle-theme');
-  if (themeToggle) {
-    themeToggle.addEventListener('click', () => {
-      showNotification('🌗 Theme toggle coming soon!', 'info');
-    });
-  }
-
   // Navigation links
   const viewProfile = document.getElementById('view-profile');
   const viewAchievements = document.getElementById('view-achievements');

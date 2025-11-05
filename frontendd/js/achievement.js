@@ -1,7 +1,7 @@
 // Import Firebase SDK
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 // ✅ Firebase Config
 const firebaseConfig = {
@@ -283,73 +283,88 @@ async function loadUserAchievements(userId) {
     console.log("=== ACHIEVEMENT SYSTEM DEBUG ===");
     console.log("Loading achievements for user:", userId);
     
-    // Get attempts from backend API (same as quiz system)
+    // PRIORITY 1: Query Firestore results collection directly (most accurate)
     let attempts = [];
     let foundData = false;
     
-    // Try multiple backend endpoints
-    const endpoints = [
-      `${API_BASE}/api/user/${encodeURIComponent(userId)}`,
-      `${API_BASE}/api/user/${encodeURIComponent(userId)}/stats`,
-      `${API_BASE}/api/user/${encodeURIComponent(userId)}/attempts`,
-      `${API_BASE}/api/users/${encodeURIComponent(userId)}`,
-    ];
-    
-    for (const endpoint of endpoints) {
-      try {
-        console.log("Trying endpoint:", endpoint);
-        const response = await fetch(endpoint, {
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json'
-          }
+    try {
+      console.log("🔍 Querying Firestore results collection...");
+      const resultsQuery = query(
+        collection(db, "results"),
+        where("userId", "==", userId)
+      );
+      
+      const resultsSnapshot = await getDocs(resultsQuery);
+      console.log(`📊 Firestore query found ${resultsSnapshot.size} results`);
+      
+      if (!resultsSnapshot.empty) {
+        resultsSnapshot.forEach(doc => {
+          const result = doc.data();
+          attempts.push({
+            score: Number(result.score || 0),
+            totalQuestions: Number(result.total || result.totalQuestions || 10),
+            timeSpent: Number(result.timeSpent || result.duration || 0),
+            week: Number(result.week || result.weekNumber || 1),
+            timestamp: result.createdAt || result.timestamp || Date.now(),
+            source: 'firestore_results'
+          });
         });
-        
-        console.log("Response status:", response.status, "for", endpoint);
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log("Response data:", data);
+        foundData = true;
+        console.log(`✅ Loaded ${attempts.length} attempts from Firestore`);
+      }
+    } catch (firestoreError) {
+      console.warn("⚠️ Firestore query failed:", firestoreError);
+    }
+    
+    // FALLBACK: Try backend API endpoints if Firestore query fails
+    if (!foundData) {
+      console.log("⚠️ No Firestore data, trying backend endpoints...");
+      const endpoints = [
+        `${API_BASE}/api/user/${encodeURIComponent(userId)}`,
+        `${API_BASE}/api/user/${encodeURIComponent(userId)}/stats`,
+        `${API_BASE}/api/user/${encodeURIComponent(userId)}/attempts`,
+        `${API_BASE}/api/users/${encodeURIComponent(userId)}`,
+      ];
+      
+      for (const endpoint of endpoints) {
+        try {
+          console.log("Trying endpoint:", endpoint);
+          const response = await fetch(endpoint, {
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
           
-          // Try to extract attempts from different possible data structures
-          if (data) {
-            if (data.attempts && Array.isArray(data.attempts)) {
-              attempts = attempts.concat(data.attempts);
-              foundData = true;
-            }
-            if (data.quizzes && Array.isArray(data.quizzes)) {
-              attempts = attempts.concat(data.quizzes);
-              foundData = true;
-            }
-            if (data.quizAttempts && Array.isArray(data.quizAttempts)) {
-              attempts = attempts.concat(data.quizAttempts);
-              foundData = true;
-            }
-            if (data.submissions && Array.isArray(data.submissions)) {
-              attempts = attempts.concat(data.submissions);
-              foundData = true;
-            }
+          console.log("Response status:", response.status, "for", endpoint);
+          
+          if (response.ok) {
+            const data = await response.json();
+            console.log("Response data:", data);
             
-            // Check if data has quiz stats that indicate completed quizzes
-            if (data.quizzesCompleted > 0 || data.totalQuizzes > 0 || data.level > 1 || data.xp > 0) {
-              console.log("Found quiz stats - creating achievement based on stats");
-              if (attempts.length === 0) {
-                // Create achievement based on user stats
-                attempts.push({
-                  score: data.averageScore || data.score || 80,
-                  totalQuestions: 10,
-                  timeSpent: 120,
-                  week: 1,
-                  timestamp: { seconds: Date.now() / 1000 - 3600 },
-                  source: 'stats'
-                });
+            // Try to extract attempts from different possible data structures
+            if (data) {
+              if (data.attempts && Array.isArray(data.attempts)) {
+                attempts = attempts.concat(data.attempts);
+                foundData = true;
               }
-              foundData = true;
+              if (data.quizzes && Array.isArray(data.quizzes)) {
+                attempts = attempts.concat(data.quizzes);
+                foundData = true;
+              }
+              if (data.quizAttempts && Array.isArray(data.quizAttempts)) {
+                attempts = attempts.concat(data.quizAttempts);
+                foundData = true;
+              }
+              if (data.submissions && Array.isArray(data.submissions)) {
+                attempts = attempts.concat(data.submissions);
+                foundData = true;
+              }
             }
           }
+        } catch (endpointError) {
+          console.warn("Endpoint failed:", endpoint, endpointError.message);
         }
-      } catch (endpointError) {
-        console.warn("Endpoint failed:", endpoint, endpointError.message);
       }
     }
     
@@ -1146,9 +1161,6 @@ if(viewProfileBtn) viewProfileBtn.addEventListener("click", () => window.locatio
 
 const viewAchievementsBtn = document.getElementById("view-achievements");
 if(viewAchievementsBtn) viewAchievementsBtn.addEventListener("click", () => window.location.href="achievements.html");
-
-const toggleThemeBtn = document.getElementById("toggle-theme");
-if(toggleThemeBtn) toggleThemeBtn.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
 
 const changeAvatarBtn = document.getElementById("change-avatar");
 if(changeAvatarBtn) changeAvatarBtn.addEventListener("click", () => {

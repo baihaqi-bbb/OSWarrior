@@ -158,7 +158,7 @@ function updateXPBar(xp = 0, maxXP = 100, level = 1, name = 'Warrior') {
   if (bar) bar.style.width = Math.max(0, Math.min(100, (xp / maxXP) * 100)) + "%";
   const cur = document.getElementById("xp-current"); if (cur) cur.textContent = `${xp}`;
   const max = document.getElementById("xp-max"); if (max) max.textContent = `${maxXP} XP`;
-  const lvl = document.getElementById("player-level"); if (lvl) lvl.textContent = `Level ${level}`;
+  const lvl = document.getElementById("player-level"); if (lvl) lvl.textContent = `Lv ${level}`;
   const pname = document.getElementById("player-name"); if (pname) pname.textContent = `${name} 👑`;
   
   // Update power cores based on level
@@ -279,20 +279,38 @@ function loadUserXP(uid, displayName) {
         console.log("✅ No quiz results found - user hasn't completed any quizzes yet");
         userData.completedQuizzes = [];
       } else {
-        const completedQuizzes = [];
+        const allResults = [];
+        const uniqueWeeks = new Set();
+        
         resultsSnapshot.forEach(doc => {
           const result = doc.data();
           console.log(`📝 Found result:`, result);
-          completedQuizzes.push({
+          allResults.push({
             quizId: result.quizId,
             week: result.week,
             score: result.score,
             total: result.total,
             createdAt: result.createdAt
           });
+          
+          // Track unique weeks
+          if (result.week) {
+            uniqueWeeks.add(String(result.week));
+          }
         });
+        
+        // Only count UNIQUE weeks as completed quizzes
+        // User can retake same week multiple times but counts as 1 completion
+        const completedQuizzes = Array.from(uniqueWeeks).map(week => {
+          // Get best attempt for this week
+          const weekAttempts = allResults.filter(r => String(r.week) === week);
+          // Sort by score descending, keep best one
+          weekAttempts.sort((a, b) => (b.score || 0) - (a.score || 0));
+          return weekAttempts[0];
+        });
+        
         userData.completedQuizzes = completedQuizzes;
-        console.log(`✅ Fetched ${completedQuizzes.length} completed quizzes for user`);
+        console.log(`✅ Fetched ${allResults.length} total attempts, ${completedQuizzes.length} unique weeks completed`);
       }
     } catch (err) {
       console.error("❌ Error fetching completed quizzes:", err);
@@ -478,7 +496,15 @@ onAuthStateChanged(auth, async (user) => {
     
     // populate some UI nodes if present
     const profileImg = document.getElementById("profile-img");
-    if (profileImg) profileImg.src = user.photoURL || DEFAULT_AVATAR;
+    if (profileImg) {
+      // Check localStorage first for uploaded images (base64)
+      const savedAvatar = localStorage.getItem("avatar");
+      if (savedAvatar && savedAvatar.startsWith('data:image')) {
+        profileImg.src = savedAvatar;
+      } else {
+        profileImg.src = user.photoURL || savedAvatar || DEFAULT_AVATAR;
+      }
+    }
 
     // Skip Firestore operations since we're using backend now
     // const userRef = doc(db, "users", user.uid);
@@ -1280,24 +1306,94 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupSidebarToggle();
   
   // Setup dropdown button functions
-  const toggleThemeBtn = document.getElementById("toggle-theme");
-  if (toggleThemeBtn) {
-    toggleThemeBtn.addEventListener("click", () => {
-      document.body.classList.toggle("dark-theme");
-      localStorage.setItem("theme", document.body.classList.contains("dark-theme") ? "dark" : "light");
-    });
-  }
+  let uploadedAvatarData = null; // Store uploaded image data
   
   const changeAvatarBtn = document.getElementById("change-avatar");
   if (changeAvatarBtn) {
     changeAvatarBtn.addEventListener("click", () => {
       const modal = document.getElementById("modal-change-avatar");
       const input = document.getElementById("input-avatar-url");
+      const fileInput = document.getElementById("input-avatar-file");
+      const previewContainer = document.getElementById("avatar-preview-container");
       
       if (modal && input) {
         input.value = "";
+        if (fileInput) fileInput.value = "";
+        if (previewContainer) previewContainer.style.display = "none";
+        uploadedAvatarData = null;
         modal.style.display = "flex";
         input.focus();
+      }
+    });
+  }
+  
+  // Handle upload button click
+  const uploadBtn = document.getElementById("upload-from-device");
+  const fileInput = document.getElementById("input-avatar-file");
+  
+  if (uploadBtn && fileInput) {
+    uploadBtn.addEventListener("click", () => {
+      fileInput.click();
+    });
+  }
+  
+  // Handle file upload with compression
+  if (fileInput) {
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          // Compress image before storing
+          const img = new Image();
+          img.onload = () => {
+            // Create canvas to resize/compress image
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Resize to max 300x300 for avatar (smaller = less storage)
+            const maxSize = 300;
+            let width = img.width;
+            let height = img.height;
+            
+            if (width > height) {
+              if (width > maxSize) {
+                height *= maxSize / width;
+                width = maxSize;
+              }
+            } else {
+              if (height > maxSize) {
+                width *= maxSize / height;
+                height = maxSize;
+              }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Convert to compressed JPEG (quality 0.7 = good balance)
+            uploadedAvatarData = canvas.toDataURL('image/jpeg', 0.7);
+            
+            console.log(`✅ Image compressed: ${Math.round(uploadedAvatarData.length / 1024)}KB`);
+            
+            // Show preview
+            const previewImg = document.getElementById("avatar-preview-img");
+            const previewContainer = document.getElementById("avatar-preview-container");
+            if (previewImg && previewContainer) {
+              previewImg.src = uploadedAvatarData;
+              previewContainer.style.display = "block";
+            }
+            
+            // Clear URL input
+            const urlInput = document.getElementById("input-avatar-url");
+            if (urlInput) urlInput.value = "";
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      } else {
+        alert("Please select a valid image file!");
       }
     });
   }
@@ -1309,17 +1405,50 @@ document.addEventListener("DOMContentLoaded", async () => {
       const input = document.getElementById("input-avatar-url");
       const modal = document.getElementById("modal-change-avatar");
       
-      if (input && input.value.trim() && auth.currentUser) {
-        const newAvatarUrl = input.value.trim();
-        const uid = auth.currentUser.uid;
+      if (!auth.currentUser) {
+        alert("User not authenticated!");
+        return;
+      }
+      
+      const uid = auth.currentUser.uid;
+      let newAvatarUrl = null;
+      
+      try {
+        // Priority: URL input > uploaded file (Firebase doesn't support base64 in photoURL)
+        if (input && input.value.trim()) {
+          newAvatarUrl = input.value.trim();
+          console.log("💾 Using URL from input:", newAvatarUrl);
+        } else if (uploadedAvatarData) {
+          // For uploaded files, save to localStorage only (can't save base64 to Firebase photoURL)
+          console.log("💾 Saving uploaded image to localStorage...");
+          localStorage.setItem("avatar", uploadedAvatarData);
+          
+          // Update UI directly with base64
+          const profileImg = document.getElementById("profile-img");
+          if (profileImg) profileImg.src = uploadedAvatarData;
+          
+          // Clear Firebase photoURL to use localStorage version
+          try {
+            await updateProfile(auth.currentUser, { photoURL: null });
+          } catch (e) {
+            console.warn("Could not clear Firebase photoURL:", e);
+          }
+          
+          if (modal) modal.style.display = "none";
+          uploadedAvatarData = null;
+          alert("✅ Avatar berjaya ditukar!\n(Gambar disimpan di browser sahaja)");
+          return;
+        }
         
-        try {
-          // Update Firebase user profile
+        if (newAvatarUrl) {
+          console.log("💾 Updating Firebase profile with URL:", newAvatarUrl);
+          
+          // Update Firebase user profile (only works with URLs)
           await updateProfile(auth.currentUser, { photoURL: newAvatarUrl });
           
           // Update Firestore if available
           try {
-            await updateDoc(doc(db, "users", uid), { profileURL: newAvatarUrl });
+            await updateDoc(doc(db, "users", uid), { photoURL: newAvatarUrl });
           } catch (firestoreErr) {
             console.warn("Firestore update failed, continuing with local update:", firestoreErr);
           }
@@ -1332,13 +1461,14 @@ document.addEventListener("DOMContentLoaded", async () => {
           localStorage.setItem("avatar", newAvatarUrl);
           
           if (modal) modal.style.display = "none";
-          alert("Avatar berjaya ditukar!");
-        } catch (err) {
-          console.error("Avatar update error:", err);
-          alert("Gagal kemaskini avatar: " + err.message);
+          uploadedAvatarData = null;
+          alert("✅ Avatar berjaya ditukar!");
+        } else {
+          alert("Sila masukkan URL gambar atau pilih gambar dari device");
         }
-      } else {
-        alert("Sila masukkan URL gambar yang sah");
+      } catch (err) {
+        console.error("❌ Avatar update error:", err);
+        alert("Gagal kemaskini avatar: " + err.message);
       }
     });
   }
@@ -1542,27 +1672,12 @@ async function loadRealCardData() {
       console.error("Failed to load leaderboard:", leaderboardResponse.status);
     }
     
-    // Load current user's achievements
+    // Load current user's rank in arena
     const currentUser = auth.currentUser;
     if (currentUser) {
       const userResponse = await fetch(`${API_BASE}/api/user/${currentUser.uid}`);
       if (userResponse.ok) {
         const userData = await userResponse.json();
-        const userAchievements = userData.achievements || [];
-        const unlockedCount = userAchievements.length;
-        const totalAchievements = 20; // Total possible achievements
-        
-        // Update achievements stats
-        const achievementsStat = document.querySelector('.achievement .stat');
-        if (achievementsStat) {
-          achievementsStat.textContent = `🎖️ ${unlockedCount} Unlocked`;
-        }
-        
-        // Update achievement counter in header
-        const achievementCounter = document.querySelector('.achievement-counter .counter');
-        if (achievementCounter) {
-          achievementCounter.textContent = `${unlockedCount}/${totalAchievements}`;
-        }
         
         // Update user's rank in arena rankings card
         if (leaderboardData && leaderboardData.warriors) {
@@ -1662,83 +1777,154 @@ async function loadLeaderboardForHome() {
 // Load achievement stats for home page display
 async function loadHomeAchievementStats(userId) {
   try {
-    console.log("Loading achievement stats for home page...");
+    console.log("🏆 Loading achievement stats for home page, userId:", userId);
     
-    // Use the same logic as achievement.js - check if user has any quiz data
-    // Since the achievement page shows 3 achievements, let's assume some basic achievements
+    // Fetch quiz results from Firestore - EXACT SAME as achievement.js
+    const resultsQuery = query(
+      collection(db, "results"),
+      where("userId", "==", userId)
+    );
     
-    // Try to get user data to see if they exist
-    const response = await fetch(`${API_BASE}/api/user/${encodeURIComponent(userId)}`, {
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+    const resultsSnapshot = await getDocs(resultsQuery);
+    console.log(`📊 Found ${resultsSnapshot.size} quiz results`);
     
-    if (response.ok) {
-      const userData = await response.json();
-      console.log("User data:", userData);
-      
-      // Since achievement page shows 3 achievements, and we can't access the exact same data,
-      // let's use a simplified calculation based on user existence and level
-      const earnedAchievements = [];
-      const userLevel = userData.level || 1;
-      const userXP = userData.xp || 0;
-      
-      // Basic achievements based on user having an account and some activity
-      if (userLevel >= 1 && userXP >= 0) {
-        earnedAchievements.push({ name: "First Steps", tier: "bronze" });
-        console.log("Earned: First Steps (user exists)");
-      }
-      
-      if (userXP >= 50) {
-        earnedAchievements.push({ name: "Quick Learner", tier: "bronze" });
-        console.log("Earned: Quick Learner (XP >= 50)");
-      }
-      
-      if (userXP >= 100) {
-        earnedAchievements.push({ name: "Knowledge Seeker", tier: "silver" });
-        console.log("Earned: Knowledge Seeker (XP >= 100)");
-      }
-      
-      if (userXP >= 200) {
-        earnedAchievements.push({ name: "Perfect Score", tier: "gold" });
-        console.log("Earned: Perfect Score (XP >= 200)");
-      }
-      
-      // Count rare badges (silver, gold, platinum, diamond)
-      const rareBadges = earnedAchievements.filter(a => 
-        ['silver', 'gold', 'platinum', 'diamond'].includes(a.tier)
-      ).length;
-      
-      console.log("=== HOME ACHIEVEMENT SUMMARY (XP-based) ===");
-      console.log("User XP:", userXP, "Level:", userLevel);
-      console.log("Total earned achievements:", earnedAchievements.length);
-      console.log("Rare badges:", rareBadges);
-      console.log("Achievement list:", earnedAchievements.map(a => a.name));
-      
-      updateHomeAchievementDisplay(earnedAchievements.length, rareBadges);
-      
-    } else {
-      console.log("User data not found, showing 0 achievements");
-      updateHomeAchievementDisplay(0, 0);
+    if (resultsSnapshot.empty) {
+      console.log("No quiz attempts - showing 0 achievements");
+      updateHomeAchievementDisplay(0, 0, 0);
+      return;
     }
     
+    // Build attempts array - EXACT SAME normalization as achievement.js
+    const attempts = [];
+    
+    resultsSnapshot.forEach(doc => {
+      const result = doc.data();
+      
+      // Normalize timestamp
+      let timestamp = result.createdAt;
+      if (typeof timestamp === 'string') {
+        timestamp = { seconds: new Date(timestamp).getTime() / 1000 };
+      } else if (timestamp instanceof Date) {
+        timestamp = { seconds: timestamp.getTime() / 1000 };
+      } else if (typeof timestamp === 'number') {
+        timestamp = { seconds: timestamp };
+      } else {
+        timestamp = { seconds: Date.now() / 1000 };
+      }
+      
+      // Normalize score data
+      const score = Number(result.score || 0);
+      const totalQuestions = Number(result.total || result.totalQuestions || 10);
+      const timeSpent = Number(result.timeSpent || result.duration || 0);
+      const week = Number(result.week || result.weekNumber || 1);
+      
+      // Calculate percentage - EXACT SAME as achievement.js line 439
+      let percentage = score;
+      if (totalQuestions > 0 && score <= totalQuestions) {
+        percentage = (score / totalQuestions) * 100;
+      }
+      
+      attempts.push({
+        score: percentage, // Use percentage like achievement.js
+        totalQuestions: totalQuestions,
+        timeSpent: timeSpent,
+        week: week,
+        timestamp: timestamp
+      });
+    });
+    
+    // Sort by timestamp - EXACT SAME as achievement.js line 446
+    attempts.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+    
+    console.log(`📈 Total quiz attempts: ${attempts.length}`);
+    console.log("Normalized attempts:", attempts);
+    console.log("Score details:", attempts.map(a => ({
+      rawScore: a.score,
+      totalQ: a.totalQuestions,
+      timeSpent: a.timeSpent,
+      week: a.week
+    })));
+    
+    // Count UNIQUE weeks completed (same week retakes = 1 quiz only)
+    const uniqueWeeks = new Set(attempts.map(a => String(a.week)));
+    const uniqueQuizzesCompleted = uniqueWeeks.size;
+    console.log(`📊 Unique weeks completed: ${uniqueQuizzesCompleted} (out of ${attempts.length} total attempts)`);
+    
+    // Calculate achievements - score is ALREADY percentage from normalization above
+    const earnedAchievements = [];
+    
+    // First Steps - Complete first quiz (any week)
+    if (attempts.length >= 1) {
+      console.log("✅ First Steps earned");
+      earnedAchievements.push({ name: "First Steps", tier: "bronze", points: 50 });
+    }
+    
+    // Quick Learner - Under 50s with 80%+ score
+    const quickAnswers = attempts.filter(a => {
+      const passes = a.score >= 80 && a.timeSpent > 0 && a.timeSpent < 50;
+      console.log(`Quick Learner check: score=${a.score}, time=${a.timeSpent}, passes=${passes}`);
+      return passes;
+    });
+    console.log(`Quick Learner filter result: ${quickAnswers.length} attempts`);
+    if (quickAnswers.length >= 1) {
+      console.log("✅ Quick Learner earned");
+      earnedAchievements.push({ name: "Quick Learner", tier: "bronze", points: 75 });
+    }
+    
+    // Knowledge Seeker - Complete 3 UNIQUE WEEKS (not 3 attempts of same week)
+    if (uniqueQuizzesCompleted >= 3) {
+      console.log("✅ Knowledge Seeker earned");
+      earnedAchievements.push({ name: "Knowledge Seeker", tier: "bronze", points: 75 });
+    }
+    
+    // Perfect Score achievements - score is already percentage
+    const perfectScores = attempts.filter(a => a.score === 100);
+    
+    if (perfectScores.length >= 1) {
+      earnedAchievements.push({ name: "Perfect Score", tier: "silver", points: 100 });
+    }
+    if (perfectScores.length >= 3) {
+      earnedAchievements.push({ name: "Hat Trick", tier: "silver", points: 200 });
+    }
+    if (perfectScores.length >= 5) {
+      earnedAchievements.push({ name: "Perfectionist", tier: "gold", points: 350 });
+    }
+    
+    // Calculate total achievement points
+    const achievementPoints = earnedAchievements.reduce((sum, a) => sum + (a.points || 0), 0);
+    
+    console.log("=== HOME ACHIEVEMENT SUMMARY ===");
+    console.log("Earned:", earnedAchievements.length, "achievements");
+    console.log("Unique weeks completed:", uniqueQuizzesCompleted);
+    console.log("Total attempts:", attempts.length);
+    console.log("Points:", achievementPoints);
+    console.log("Achievement list:", earnedAchievements.map(a => a.name));
+    
+    updateHomeAchievementDisplay(earnedAchievements.length, uniqueQuizzesCompleted, achievementPoints);
+    
   } catch (error) {
-    console.error("Failed to load achievement stats:", error);
-    updateHomeAchievementDisplay(0, 0);
+    console.error("❌ Failed to load achievement stats:", error);
+    updateHomeAchievementDisplay(0, 0, 0);
   }
 }
 
-function updateHomeAchievementDisplay(totalAchievements, rareBadges) {
+function updateHomeAchievementDisplay(earnedCount, quizzesCompleted, achievementPoints) {
   const achievementCountEl = document.getElementById("home-achievement-count");
   const rareBadgesEl = document.getElementById("home-rare-badges");
+  const counterBadge = document.querySelector('.achievement-counter .counter');
   
   if (achievementCountEl) {
-    achievementCountEl.textContent = `🎖️ ${totalAchievements} Achievements`;
+    // Format: "X EARNED • Y QUIZZES • Z POINTS" - same as achievement page
+    achievementCountEl.textContent = `${earnedCount} EARNED • ${quizzesCompleted} QUIZZES • ${achievementPoints} POINTS`;
   }
   
   if (rareBadgesEl) {
-    rareBadgesEl.textContent = `⭐ ${rareBadges} Rare Badges`;
+    // Show just the earned count for rare badges stat
+    rareBadgesEl.textContent = `${earnedCount} Unlocked`;
+  }
+  
+  if (counterBadge) {
+    // Update counter badge: earned/total (total = 20 achievements available)
+    counterBadge.textContent = `${earnedCount}/20`;
   }
 }

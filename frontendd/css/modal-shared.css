@@ -116,7 +116,9 @@
   display: flex;
   gap: 15px;
   justify-content: center;
-  margin-top: 25px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0, 255, 255, 0.15);
 }
 
 /* Modal Buttons */
@@ -156,6 +158,93 @@
   background: linear-gradient(45deg, rgba(0, 255, 255, 0.2), rgba(0, 200, 255, 0.1));
   box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
   transform: translateY(-2px);
+}
+
+/* Upload Divider */
+.upload-divider {
+  text-align: center;
+  margin: 20px 0;
+  position: relative;
+}
+
+.upload-divider::before,
+.upload-divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(0, 255, 255, 0.3), transparent);
+}
+
+.upload-divider::before {
+  left: 0;
+}
+
+.upload-divider::after {
+  right: 0;
+}
+
+.upload-divider span {
+  color: rgba(0, 255, 255, 0.6);
+  font-size: 0.8rem;
+  font-family: 'Orbitron', monospace;
+  padding: 0 10px;
+  background: #001a33;
+}
+
+/* Upload Section */
+.upload-section {
+  margin: 25px 0 20px 0;
+}
+
+.upload-btn {
+  display: block;
+  width: 100%;
+  padding: 14px 20px;
+  margin-top: 5px;
+  border: 2px dashed rgba(0, 255, 255, 0.5);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.08), rgba(0, 200, 255, 0.03));
+  color: #00FFFF;
+  font-family: 'Orbitron', monospace;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.upload-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(0, 255, 255, 0.1);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+
+.upload-btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.upload-btn:hover {
+  border-color: rgba(0, 255, 255, 0.9);
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.18), rgba(0, 200, 255, 0.08));
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.3), inset 0 0 10px rgba(0, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.upload-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
 }
 
 /* Save Button (Primary) */
