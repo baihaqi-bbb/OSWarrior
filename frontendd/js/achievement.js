@@ -918,8 +918,8 @@ function displayAchievements(achievements, totalAttempts) {
     const lockedGrid = document.createElement("div");
     lockedGrid.className = "category-grid locked-grid";
     
-    // Show only first few locked achievements to avoid clutter
-    lockedAchievements.slice(0, 6).forEach((locked, index) => {
+    // Show ALL locked achievements
+    lockedAchievements.forEach((locked, index) => {
       const card = document.createElement("div");
       card.className = `achievement-card locked ${locked.tier}`;
       card.style.animationDelay = `${(achievements.length + index) * 0.1}s`;
