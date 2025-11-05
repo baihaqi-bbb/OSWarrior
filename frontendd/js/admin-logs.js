@@ -26,41 +26,24 @@ async function loadLogs() {
   try {
     console.log('📊 Loading system logs...');
     
-    // First, get all valid users from Firestore
-    const usersSnapshot = await getDocs(collection(db, 'users'));
-    const validUsers = new Set();
-    usersSnapshot.forEach(doc => {
-      const userData = doc.data();
-      if (userData.email) validUsers.add(userData.email);
-      if (userData.name) validUsers.add(userData.name);
-    });
-    console.log(`📋 Found ${validUsers.size} valid users in Firestore`);
-    
-    // Now load logs
+    // Load logs from Firestore
     const logsRef = collection(db, 'logs');
     const logsQuery = query(logsRef, orderBy('timestamp', 'desc'), limit(500));
     const snapshot = await getDocs(logsQuery);
     
     allLogs = [];
     
-    // If Firestore logs collection is empty, generate sample logs
+    // If Firestore logs collection is empty, show empty state
     if (snapshot.size === 0) {
-      console.log('⚠️ No logs in Firestore, generating sample logs...');
-      allLogs = generateSampleLogs(validUsers);
-      console.log(`✅ Generated ${allLogs.length} sample logs using real Firestore users`);
+      console.log('⚠️ No logs in Firestore yet');
     } else {
-      // Use real Firestore logs
+      // Use real Firestore logs - DON'T filter by user validation
       snapshot.forEach(doc => {
         const logData = doc.data();
-        const logUser = logData.user || logData.userId;
-        
-        // Only include logs from users that exist in Firestore
-        if (logUser && validUsers.has(logUser)) {
-          allLogs.push({ id: doc.id, ...logData });
-        }
+        allLogs.push({ id: doc.id, ...logData });
       });
       
-      console.log(`✅ Loaded ${allLogs.length} valid log entries (filtered from ${snapshot.size} total)`);
+      console.log(`✅ Loaded ${allLogs.length} log entries from Firestore`);
     }
     
     // Update stats
