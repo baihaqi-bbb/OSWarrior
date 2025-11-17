@@ -58,7 +58,9 @@ const passwordInput = document.getElementById("password");
 // 👥 Admin Email List
 const adminEmails = [
   "admin1@email.com",
-  "admin2@email.com"
+  "admin2@email.com",
+  "admin@oswarrior.com",  // Default admin
+  "dev@admin.com"         // Dev admin
   // Add more admin emails here
 ];
 
@@ -121,7 +123,18 @@ async function redirectBasedOnRole(user) {
     CyberEffects.updateSystemStatus('warning', 'VERIFYING ACCESS...');
     
     const userDocRef = doc(db, "users", user.uid);
-    const userDoc = await getDoc(userDocRef);
+    let userDoc;
+    
+    // Try to get user document with error handling
+    try {
+      userDoc = await getDoc(userDocRef);
+    } catch (firestoreError) {
+      console.error("Firestore access error:", firestoreError);
+      // If Firestore fails, redirect to default user page
+      CyberEffects.updateSystemStatus('warning', 'REDIRECTING...');
+      setTimeout(() => window.location.href = "home-user.html", 1000);
+      return;
+    }
 
     let role = "user";
     const now = new Date();
@@ -129,7 +142,14 @@ async function redirectBasedOnRole(user) {
     
     if (userDoc.exists()) {
       const userData = userDoc.data();
-      role = userData.role || "user";
+      
+      // ✅ CHECK IF EMAIL IS IN ADMIN LIST (OVERRIDE EXISTING ROLE)
+      if (adminEmails.includes(user.email)) {
+        role = "admin";
+        console.log("✅ Admin email detected, setting role to admin");
+      } else {
+        role = userData.role || "user";
+      }
       
       // Calculate login streak
       const lastLoginDate = userData.lastLogin ? new Date(userData.lastLogin).toISOString().split('T')[0] : null;
@@ -150,10 +170,10 @@ async function redirectBasedOnRole(user) {
         newStreak = 1;
       }
       
-      // Update user with new login data
+      // Update user with new login data (INCLUDING UPDATED ROLE)
       await setDoc(userDocRef, {
         ...userData,
-        role,
+        role,  // This will now update to "admin" if email is in adminEmails
         lastLogin: now.toISOString(),
         loginCount: (userData.loginCount || 0) + 1,
         loginStreak: newStreak
@@ -206,13 +226,19 @@ async function redirectBasedOnRole(user) {
       console.warn('⚠️ Failed to log login:', logError);
     }
     
-    setTimeout(() => {
-      if (role === "admin") {
-        window.location.href = "home-admin.html";
-      } else {
-        window.location.href = "home-user.html";
-      }
-    }, 1500);
+    // ✅ IMMEDIATE REDIRECT - No setTimeout delay
+    // Double-check email for admin redirect (fallback)
+    const isAdminEmail = adminEmails.includes(user.email);
+    
+    console.log("🔍 Login redirect check - Email:", user.email, "Role:", role, "IsAdminEmail:", isAdminEmail);
+    
+    if (role === "admin" || isAdminEmail) {
+      console.log("🚀 ADMIN DETECTED - Redirecting to ADMIN dashboard");
+      window.location.href = "home-admin.html";
+    } else {
+      console.log("🚀 USER DETECTED - Redirecting to USER dashboard");
+      window.location.href = "home-user.html";
+    }
 
   } catch (error) {
     console.error("Role verification error:", error);
@@ -356,9 +382,16 @@ emailBtn.addEventListener("click", async () => {
     
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     
-    // Check if user is admin - allow admins to bypass maintenance
-    const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
-    const isAdmin = userDoc.exists() && userDoc.data().role === 'admin';
+    // Check if user is admin - allow admins to bypass maintenance (with proper error handling)
+    let isAdmin = false;
+    try {
+      const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
+      isAdmin = userDoc.exists() && userDoc.data().role === 'admin';
+    } catch (roleError) {
+      console.warn("Could not check admin role:", roleError);
+      // Continue with login even if role check fails
+      isAdmin = false;
+    }
     
     // If not admin, check maintenance mode
     if (!isAdmin) {
@@ -411,9 +444,16 @@ googleBtn.addEventListener("click", async () => {
     
     const result = await signInWithPopup(auth, provider);
     
-    // Check if user is admin - allow admins to bypass maintenance
-    const userDoc = await getDoc(doc(db, 'users', result.user.uid));
-    const isAdmin = userDoc.exists() && userDoc.data().role === 'admin';
+    // Check if user is admin - allow admins to bypass maintenance (with proper error handling)
+    let isAdmin = false;
+    try {
+      const userDoc = await getDoc(doc(db, 'users', result.user.uid));
+      isAdmin = userDoc.exists() && userDoc.data().role === 'admin';
+    } catch (roleError) {
+      console.warn("Could not check admin role:", roleError);
+      // Continue with login even if role check fails
+      isAdmin = false;
+    }
     
     // If not admin, check maintenance mode
     if (!isAdmin) {

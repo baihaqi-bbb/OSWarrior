@@ -11,17 +11,43 @@ const db = getFirestore();
 
 let usersCache = [];
 
+// Admin emails list (same as other admin pages)
+const adminEmails = [
+  "admin1@email.com",
+  "admin2@email.com",
+  "admin@oswarrior.com",
+  "dev@admin.com"
+];
+
 // require admin role and load users
 onAuthStateChanged(auth, async (user) => {
-  if (!user) return window.location.href = "index.html";
+  if (!user) {
+    console.log("No user authenticated, redirecting to login");
+    return window.location.href = "index.html";
+  }
+  
+  console.log("User authenticated:", user.email);
+  
+  // ✅ Check email first (most reliable)
+  if (adminEmails.includes(user.email)) {
+    console.log("✅ Admin email verified:", user.email);
+    await loadUsers();
+    return;
+  }
+  
+  // Otherwise check Firestore role
   try {
     const meDoc = await getDoc(doc(db, "users", user.uid));
     const me = meDoc.exists() ? meDoc.data() : null;
-    if (!me || me.role !== "admin") return window.location.href = "index.html";
+    if (!me || me.role !== "admin") {
+      console.log("Access denied: Not admin");
+      return window.location.href = "home-user.html";
+    }
     await loadUsers();
   } catch (e) {
     console.error("Role check / load users error:", e);
-    window.location.href = "index.html";
+    // If Firestore fails but not admin email, redirect to user page
+    window.location.href = "home-user.html";
   }
 });
 

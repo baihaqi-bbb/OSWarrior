@@ -494,6 +494,46 @@ onAuthStateChanged(auth, async (user) => {
     
     console.log("User authenticated:", user.uid, user.displayName || user.email);
     
+    // ✅ CHECK IF USER IS ADMIN - REDIRECT TO ADMIN PAGE
+    // Check email first (most reliable)
+    const adminEmails = [
+      "admin1@email.com",
+      "admin2@email.com", 
+      "admin@oswarrior.com",
+      "dev@admin.com"
+    ];
+    
+    console.log("🔍 Checking if admin email:", user.email, "List:", adminEmails);
+    
+    if (adminEmails.includes(user.email)) {
+      console.log("🔐 Admin email detected! Email:", user.email);
+      console.log("🚀 REDIRECTING TO ADMIN DASHBOARD NOW!");
+      setTimeout(() => {
+        window.location.href = "home-admin.html";
+      }, 100);
+      return;
+    }
+    
+    console.log("✅ Regular user, continuing to user dashboard");
+    
+    // Also check Firestore role as backup
+    try {
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+      
+      if (userDocSnap.exists()) {
+        const userData = userDocSnap.data();
+        if (userData.role === 'admin') {
+          console.log("🔐 Admin role detected in Firestore, redirecting to admin dashboard...");
+          window.location.href = "home-admin.html";
+          return;
+        }
+      }
+    } catch (adminCheckError) {
+      console.warn("Could not check admin role in Firestore:", adminCheckError);
+      // Continue as regular user if check fails
+    }
+    
     // populate some UI nodes if present
     const profileImg = document.getElementById("profile-img");
     if (profileImg) {

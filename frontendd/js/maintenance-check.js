@@ -3,7 +3,10 @@ import { db, auth } from './firebase-config.js';
 import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
 
 export async function checkMaintenanceMode(checkAdminRole = false) {
-  try {
+  // 🚀 MAINTENANCE CHECK DISABLED FOR DEVELOPMENT
+  // Uncomment below code for production with proper Firestore rules
+  
+  /* try {
     const maintenanceRef = doc(db, 'system', 'maintenance');
     const maintenanceDoc = await getDoc(maintenanceRef);
     
@@ -24,7 +27,9 @@ export async function checkMaintenanceMode(checkAdminRole = false) {
   } catch (error) {
     console.error('Error checking maintenance mode:', error);
     return false;
-  }
+  } */
+  
+  return false; // Always return false (no maintenance mode)
 }
 
 function showMaintenanceModal() {

@@ -23,6 +23,14 @@ try {
 const auth = getAuth();
 const db = getFirestore();
 
+// Admin emails list
+const adminEmails = [
+  "admin1@email.com",
+  "admin2@email.com",
+  "admin@oswarrior.com",
+  "dev@admin.com"
+];
+
 // expose firebaseSignOut for admin-common.js
 window.firebaseSignOut = async function () {
   await signOut(auth);
@@ -30,6 +38,7 @@ window.firebaseSignOut = async function () {
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
+    console.log("admin-init: No user, redirecting to login");
     window.location.href = "index.html";
     return;
   }
@@ -40,16 +49,25 @@ onAuthStateChanged(auth, async (user) => {
   if (profileImg) profileImg.src = user.photoURL || "image/default-profile.png";
   if (usernameNavbar) usernameNavbar.textContent = user.displayName || user.email || "Admin";
 
+  // ✅ Check email first (most reliable)
+  if (adminEmails.includes(user.email)) {
+    console.log("admin-init: ✅ Admin email verified:", user.email);
+    return; // Allow access
+  }
+
   // role check using users collection; redirect if not admin
   try {
     const udoc = await getDoc(doc(db, "users", user.uid));
     const role = udoc.exists() ? udoc.data().role : null;
     if (role !== "admin") {
-      window.location.href = "index.html";
+      console.log("admin-init: Access denied, not admin");
+      window.location.href = "home-user.html";
       return;
     }
+    console.log("admin-init: ✅ Admin role verified from Firestore");
   } catch (err) {
     console.error("admin-init role check error:", err);
-    window.location.href = "index.html";
+    // If Firestore fails but not admin email, redirect to user page
+    window.location.href = "home-user.html";
   }
 });

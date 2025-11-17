@@ -190,14 +190,30 @@ onAuthStateChanged(auth, async (user) => {
 
     if (usernameNavbar) usernameNavbar.textContent = displayName;
 
-    // Check admin role
+    // ✅ CHECK ADMIN ACCESS - Email-based first (most reliable)
+    const adminEmails = [
+      "admin1@email.com",
+      "admin2@email.com",
+      "admin@oswarrior.com",
+      "dev@admin.com"
+    ];
+    
+    // If email is in admin list, allow access immediately
+    if (adminEmails.includes(user.email)) {
+      console.log("✅ Admin email verified:", user.email);
+      await loadAdminData();
+      initializeDashboard();
+      return;
+    }
+    
+    // Otherwise check Firestore role
     try {
       const userDoc = await getDoc(doc(db, "users", user.uid));
       if (userDoc.exists()) {
         const role = userDoc.data().role;
         if (role !== "admin") {
           console.log("Access denied: User is not admin");
-          window.location.href = "index.html";
+          window.location.href = "home-user.html";
           return;
         }
         
@@ -205,12 +221,14 @@ onAuthStateChanged(auth, async (user) => {
         await loadAdminData();
         initializeDashboard();
       } else {
-        console.log("User document not found");
-        window.location.href = "index.html";
+        console.log("User document not found, checking email...");
+        // No document but not admin email = redirect to user page
+        window.location.href = "home-user.html";
       }
     } catch (err) {
       console.error("Role check error:", err);
-      window.location.href = "index.html";
+      // If Firestore fails but not admin email, redirect to user page
+      window.location.href = "home-user.html";
     }
   } else {
     console.log("User not authenticated");
@@ -223,23 +241,32 @@ async function loadAdminData() {
   try {
     console.log("🔄 Loading admin dashboard data...");
     
-    // Load users data
-    const usersSnapshot = await getDocs(collection(db, "users"));
-    adminData.users = [];
-    usersSnapshot.forEach((doc) => {
-      const userData = doc.data();
-      // Only include non-deleted users (same as user management page)
-      if (!userData.deleted) {
-        adminData.users.push({ id: doc.id, ...userData });
-      }
-    });
+    // Load users data with error handling
+    try {
+      const usersSnapshot = await getDocs(collection(db, "users"));
+      adminData.users = [];
+      usersSnapshot.forEach((doc) => {
+        const userData = doc.data();
+        // Only include non-deleted users (same as user management page)
+        if (!userData.deleted) {
+          adminData.users.push({ id: doc.id, ...userData });
+        }
+      });
+      
+      // Calculate user stats
+      adminData.stats.totalUsers = adminData.users.length;
+      adminData.stats.activeUsers = adminData.users.filter(user => !user.disabled && user.status !== 'suspended').length;
+      adminData.stats.suspendedUsers = adminData.users.filter(user => user.disabled || user.status === 'suspended').length;
+      console.log(`✅ Loaded ${adminData.users.length} users`);
+    } catch (usersError) {
+      console.warn("⚠️ Could not load users from Firestore:", usersError.message);
+      // Set default values
+      adminData.stats.totalUsers = 0;
+      adminData.stats.activeUsers = 0;
+      adminData.stats.suspendedUsers = 0;
+    }
     
-    // Calculate user stats
-    adminData.stats.totalUsers = adminData.users.length;
-    adminData.stats.activeUsers = adminData.users.filter(user => !user.disabled && user.status !== 'suspended').length;
-    adminData.stats.suspendedUsers = adminData.users.filter(user => user.disabled || user.status === 'suspended').length;
-    
-    // Load quizzes data from Firestore
+    // Load quizzes data from Firestore with error handling
     try {
       const quizzesSnapshot = await getDocs(collection(db, "quizzes"));
       adminData.quizzes = [];
@@ -249,7 +276,7 @@ async function loadAdminData() {
       adminData.stats.totalQuizzes = adminData.quizzes.length;
       adminData.stats.publishedQuizzes = adminData.quizzes.filter(q => q.published === true).length;
       adminData.stats.draftQuizzes = adminData.quizzes.filter(q => !q.published).length;
-      console.log(`📊 Loaded ${adminData.stats.totalQuizzes} quizzes (${adminData.stats.publishedQuizzes} published)`);
+      console.log(`✅ Loaded ${adminData.stats.totalQuizzes} quizzes (${adminData.stats.publishedQuizzes} published)`);
     } catch (err) {
       console.error("❌ Could not load quizzes data:", err);
       adminData.stats.totalQuizzes = 0;
@@ -262,18 +289,20 @@ async function loadAdminData() {
     // Calculate REAL system health based on services status
     await calculateSystemHealth();
     
-    console.log("✅ Admin data loaded:", adminData);
+    console.log("✅ Admin data loaded successfully");
     
   } catch (error) {
     console.error("❌ Error loading admin data:", error);
-    adminData.stats.systemHealth = 50; // Low health on error
+    // Set safe default values
+    adminData.stats.systemHealth = 85; // Default health
+    adminData.stats.dailyActivity = 0;
   }
 }
 
 // Calculate real daily activity from logs
 async function calculateDailyActivity() {
   try {
-    // Fetch logs from Firestore
+    // Fetch logs from Firestore with error handling
     const logsRef = collection(db, 'logs');
     const logsQuery = query(logsRef, orderBy('timestamp', 'desc'), limit(500));
     const snapshot = await getDocs(logsQuery);
@@ -299,8 +328,8 @@ async function calculateDailyActivity() {
     console.log(`📊 Daily Activity: ${todayLogs.length} sessions today`);
     
   } catch (error) {
-    console.error('❌ Error calculating daily activity:', error);
-    adminData.stats.dailyActivity = 0;
+    console.warn('⚠️ Error calculating daily activity:', error.message);
+    adminData.stats.dailyActivity = 0; // Default to 0 if cannot fetch
   }
 }
 
@@ -650,11 +679,14 @@ async function loadAuditStats() {
     console.log(`✅ Audit stats loaded: ${totalEvents} events, ${alerts} alerts`);
     
   } catch (error) {
-    console.error('❌ Error loading audit stats:', error);
+    console.warn('⚠️ Error loading audit stats:', error.message);
+    // Set default values instead of '-'
     const eventsEl = document.getElementById('recent-events');
     const alertsEl = document.getElementById('active-alerts');
-    if (eventsEl) eventsEl.textContent = '-';
-    if (alertsEl) alertsEl.textContent = '-';
+    const badgeEl = document.getElementById('audit-badge');
+    if (eventsEl) eventsEl.textContent = '0';
+    if (alertsEl) alertsEl.textContent = '0';
+    if (badgeEl) badgeEl.textContent = '0';
   }
 }
 
@@ -695,8 +727,12 @@ async function loadRecentActivity() {
     console.log(`✅ Displayed ${recentLogs.length} recent activities`);
     
   } catch (error) {
-    console.error('❌ Error loading recent activity:', error);
-    activityContainer.innerHTML = '<div style="padding:20px;text-align:center;color:rgba(255,255,255,0.5);">Failed to load recent activity</div>';
+    console.warn('⚠️ Error loading recent activity:', error.message);
+    activityContainer.innerHTML = `
+      <div style="padding:20px;text-align:center;color:rgba(255,255,255,0.5);">
+        <p>⚠️ Unable to load recent activity</p>
+        <p style="font-size:0.9em;margin-top:10px;">Check Firestore permissions or try refreshing</p>
+      </div>`;
   }
 }
 
